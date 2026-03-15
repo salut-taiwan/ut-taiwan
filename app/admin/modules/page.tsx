@@ -29,7 +29,7 @@ export default function AdminModulesPage() {
     }).finally(() => setLoading(false));
   }, [page, user]);
 
-  if (isLoading) return <div className="text-center py-16 text-gray-400">Memuat...</div>;
+  if (isLoading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
 
   const totalPages = Math.ceil(total / LIMIT);
@@ -38,36 +38,36 @@ export default function AdminModulesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <Link href="/admin" className="text-sm text-blue-600 hover:underline">&larr; Admin</Link>
-          <h1 className="text-2xl font-bold text-gray-900 mt-1">Manajemen Modul</h1>
-          <p className="text-sm text-gray-500">{total} modul total</p>
+          <Link href="/admin" className="text-sm text-indigo-600 hover:underline">&larr; Admin</Link>
+          <h1 className="text-2xl font-bold text-slate-900 mt-1">Manajemen Modul</h1>
+          <p className="text-sm text-slate-500">{total} modul total</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="text-center py-12 text-gray-400">Memuat...</div>
+          <div className="text-center py-12 text-slate-400">Memuat...</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-700">Kode</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-700">Nama</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-700">Edisi</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-700">Harga Mhs</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-700">Status</th>
+                <th className="text-left px-4 py-3 text-slate-500 text-xs uppercase tracking-wide font-semibold">Kode</th>
+                <th className="text-left px-4 py-3 text-slate-500 text-xs uppercase tracking-wide font-semibold">Nama</th>
+                <th className="text-left px-4 py-3 text-slate-500 text-xs uppercase tracking-wide font-semibold">Edisi</th>
+                <th className="text-right px-4 py-3 text-slate-500 text-xs uppercase tracking-wide font-semibold">Harga Mhs</th>
+                <th className="text-center px-4 py-3 text-slate-500 text-xs uppercase tracking-wide font-semibold">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-50">
               {modules.map(mod => (
-                <tr key={mod.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-mono text-xs text-blue-600 font-semibold">{mod.tbo_code}</td>
-                  <td className="px-4 py-3 text-gray-900 max-w-xs truncate">{mod.name}</td>
-                  <td className="px-4 py-3 text-gray-500">{mod.edition || '-'}</td>
-                  <td className="px-4 py-3 text-right">{mod.price_student ? formatIDR(mod.price_student) : '-'}</td>
+                <tr key={mod.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3 font-mono text-xs text-indigo-600 font-semibold">{mod.tbo_code}</td>
+                  <td className="px-4 py-3 text-slate-900 max-w-xs truncate">{mod.name}</td>
+                  <td className="px-4 py-3 text-slate-500">{mod.edition || '-'}</td>
+                  <td className="px-4 py-3 text-right text-slate-900">{mod.price_student ? formatIDR(mod.price_student) : '-'}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      mod.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                      mod.is_available ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                     }`}>
                       {mod.is_available ? 'Tersedia' : 'Tidak'}
                     </span>
@@ -82,12 +82,12 @@ export default function AdminModulesPage() {
       {totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-4">
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-40">
+            className="px-4 py-2 border border-slate-200 rounded-lg text-sm disabled:opacity-40 hover:bg-slate-50 text-slate-700">
             Sebelumnya
           </button>
-          <span className="px-4 py-2 text-sm text-gray-600">Halaman {page} dari {totalPages}</span>
+          <span className="px-4 py-2 text-sm text-slate-600">Halaman {page} dari {totalPages}</span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-40">
+            className="px-4 py-2 border border-slate-200 rounded-lg text-sm disabled:opacity-40 hover:bg-slate-50 text-slate-700">
             Selanjutnya
           </button>
         </div>

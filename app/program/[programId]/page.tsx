@@ -59,7 +59,7 @@ export default function ProgramDetailPage() {
     await api.cart.addItem(moduleId);
   }
 
-  if (loading) return <div className="text-center py-16 text-gray-400">Memuat...</div>;
+  if (loading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
   if (!program) return <div className="text-center py-16 text-red-500">Program tidak ditemukan</div>;
 
   const displaySubjects = activeTab === 'semester' ? semesterSubjects : subjects;
@@ -67,19 +67,19 @@ export default function ProgramDetailPage() {
   return (
     <div>
       <div className="mb-6">
-        <Link href="/program" className="text-sm text-blue-600 hover:underline">&larr; Semua Program Studi</Link>
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">{program.name}</h1>
-        <p className="text-gray-500 text-sm mt-1">
+        <Link href="/program" className="text-sm text-indigo-600 hover:underline">&larr; Semua Program Studi</Link>
+        <h1 className="text-2xl font-bold text-slate-900 mt-2">{program.name}</h1>
+        <p className="text-slate-500 text-sm mt-1">
           {program.faculties?.name} &bull; {program.level} &bull; {program.total_sks} SKS
         </p>
       </div>
 
       {/* Tab switcher */}
-      <div className="flex gap-2 mb-6 border-b border-gray-200">
+      <div className="flex gap-2 mb-6 border-b border-slate-200">
         <button
           onClick={() => setActiveTab('semester')}
           className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'semester' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+            activeTab === 'semester' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
           Per Semester
@@ -87,7 +87,7 @@ export default function ProgramDetailPage() {
         <button
           onClick={() => setActiveTab('all')}
           className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'all' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+            activeTab === 'all' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
           Semua Mata Kuliah
@@ -105,10 +105,10 @@ export default function ProgramDetailPage() {
                   key={sem}
                   onClick={() => setActiveSemester(sem)}
                   disabled={count === 0}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-30 ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors disabled:opacity-30 ${
                     activeSemester === sem
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
                   Semester {sem}
@@ -120,11 +120,11 @@ export default function ProgramDetailPage() {
 
           {semesterSubjects.length > 0 && (
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-gray-600">{semesterSubjects.length} mata kuliah di Semester {activeSemester}</p>
+              <p className="text-sm text-slate-600">{semesterSubjects.length} mata kuliah di Semester {activeSemester}</p>
               <button
                 onClick={handleAddSemesterToCart}
                 disabled={addingAll}
-                className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold shadow-sm"
               >
                 {addingAll ? 'Menambahkan...' : 'Tambah Semua ke Keranjang'}
               </button>
@@ -136,7 +136,7 @@ export default function ProgramDetailPage() {
       {/* Subject list */}
       <div className="space-y-4">
         {displaySubjects.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">Belum ada data mata kuliah untuk semester ini</div>
+          <div className="text-center py-12 text-slate-400">Belum ada data mata kuliah untuk semester ini</div>
         ) : (
           displaySubjects.map(subject => (
             <SubjectCard key={subject.id} subject={subject} onAddToCart={handleAddModuleToCart} />
@@ -152,41 +152,41 @@ function SubjectCard({ subject, onAddToCart }: { subject: SubjectDTO; onAddToCar
   const modules = (subject.subject_modules || []).map(sm => sm.modules);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
       >
         <div className="flex items-center gap-3 text-left">
-          <span className="font-mono text-xs text-blue-600 font-semibold whitespace-nowrap">{subject.code}</span>
-          <span className="font-medium text-gray-900">{subject.name}</span>
-          <span className="text-xs text-gray-400 whitespace-nowrap">{subject.sks} SKS</span>
+          <span className="font-mono text-xs text-indigo-600 font-semibold whitespace-nowrap">{subject.code}</span>
+          <span className="font-medium text-slate-900">{subject.name}</span>
+          <span className="text-xs text-slate-400 whitespace-nowrap">{subject.sks} SKS</span>
           {subject.notes && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{subject.notes}</span>}
         </div>
-        <svg className={`w-4 h-4 text-gray-400 flex-shrink-0 ml-2 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className={`w-4 h-4 text-slate-400 flex-shrink-0 ml-2 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       {expanded && modules.length > 0 && (
-        <div className="border-t border-gray-100 divide-y divide-gray-50">
+        <div className="border-t border-slate-100 divide-y divide-slate-50">
           {modules.map(mod => (
-            <div key={mod.id} className="flex items-center justify-between px-5 py-3 bg-gray-50">
+            <div key={mod.id} className="flex items-center justify-between px-5 py-3 bg-slate-50">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <span className="font-mono text-xs text-gray-500 whitespace-nowrap">{mod.tbo_code}</span>
-                <Link href={`/modules/${mod.id}`} className="text-sm text-gray-800 hover:text-blue-700 truncate">
+                <span className="font-mono text-xs text-slate-400 whitespace-nowrap">{mod.tbo_code}</span>
+                <Link href={`/modules/${mod.id}`} className="text-sm text-slate-800 hover:text-indigo-700 truncate">
                   {mod.name}
                 </Link>
               </div>
               <div className="flex items-center gap-4 ml-4 flex-shrink-0">
                 {mod.is_available ? (
                   <>
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="text-sm font-semibold text-slate-900">
                       {mod.price_student ? formatIDR(mod.price_student) : '-'}
                     </span>
                     <button
                       onClick={() => onAddToCart(mod.id)}
-                      className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
                     >
                       Tambah
                     </button>
@@ -201,7 +201,7 @@ function SubjectCard({ subject, onAddToCart }: { subject: SubjectDTO; onAddToCar
       )}
 
       {expanded && modules.length === 0 && (
-        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 text-sm text-gray-400 italic">
+        <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 text-sm text-slate-400 italic">
           Belum ada data modul untuk mata kuliah ini
         </div>
       )}

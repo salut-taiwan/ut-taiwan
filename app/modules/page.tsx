@@ -44,12 +44,12 @@ export default function ModulesPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Semua Modul</h1>
-      <p className="text-gray-500 mb-6">Cari dan temukan bahan ajar Universitas Terbuka</p>
+      <h1 className="text-3xl font-bold text-slate-900 mb-2">Semua Modul</h1>
+      <p className="text-slate-500 mb-6">Cari dan temukan bahan ajar Universitas Terbuka</p>
 
       {/* Search */}
       <div className="relative mb-8">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <input
@@ -57,19 +57,19 @@ export default function ModulesPage() {
           value={searchQuery}
           onChange={e => handleSearch(e.target.value)}
           placeholder="Cari kode atau nama modul (contoh: ESPA4122 atau Matematika)"
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm text-slate-900 placeholder-slate-400"
         />
         {searching && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Mencari...</div>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Mencari...</div>
         )}
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-gray-400">Memuat modul...</div>
+        <div className="text-center py-16 text-slate-400">Memuat modul...</div>
       ) : (
         <>
           {searchResults !== null && (
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-slate-500 mb-4">
               {searchResults.length} hasil untuk &ldquo;{searchQuery}&rdquo;
             </p>
           )}
@@ -81,7 +81,7 @@ export default function ModulesPage() {
           </div>
 
           {displayModules.length === 0 && (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-16 text-slate-400">
               {searchQuery ? 'Modul tidak ditemukan' : 'Belum ada modul tersedia'}
             </div>
           )}
@@ -92,17 +92,17 @@ export default function ModulesPage() {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-40 hover:bg-gray-50"
+                className="px-4 py-2 border border-slate-200 rounded-lg text-sm disabled:opacity-40 hover:bg-slate-50 text-slate-700"
               >
                 Sebelumnya
               </button>
-              <span className="px-4 py-2 text-sm text-gray-600">
+              <span className="px-4 py-2 text-sm text-slate-600">
                 Halaman {page} dari {totalPages}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-40 hover:bg-gray-50"
+                className="px-4 py-2 border border-slate-200 rounded-lg text-sm disabled:opacity-40 hover:bg-slate-50 text-slate-700"
               >
                 Selanjutnya
               </button>

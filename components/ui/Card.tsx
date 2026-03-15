@@ -3,7 +3,7 @@ import { HTMLAttributes } from 'react';
 
 export function Card({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('bg-white rounded-xl border border-gray-200 shadow-sm', className)} {...props}>
+    <div className={cn('bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow', className)} {...props}>
       {children}
     </div>
   );
@@ -11,7 +11,7 @@ export function Card({ children, className, ...props }: HTMLAttributes<HTMLDivEl
 
 export function CardHeader({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('px-6 py-4 border-b border-gray-100', className)} {...props}>
+    <div className={cn('px-6 py-4 border-b border-slate-100', className)} {...props}>
       {children}
     </div>
   );

@@ -42,15 +42,15 @@ export default function PackagesPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Paket Semester</h1>
-      <p className="text-gray-500 mb-6">Paket modul lengkap per semester yang telah dikurasi</p>
+      <h1 className="text-3xl font-bold text-slate-900 mb-2">Paket Semester</h1>
+      <p className="text-slate-500 mb-6">Paket modul lengkap per semester yang telah dikurasi</p>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-8">
         <select
           value={selectedProgram}
           onChange={e => setSelectedProgram(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-700 shadow-sm"
         >
           <option value="">Semua Program Studi</option>
           {programs.map(p => (
@@ -60,7 +60,7 @@ export default function PackagesPage() {
         <select
           value={selectedSemester}
           onChange={e => setSelectedSemester(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-700 shadow-sm"
         >
           <option value="">Semua Semester</option>
           {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
@@ -68,28 +68,28 @@ export default function PackagesPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-gray-400">Memuat paket...</div>
+        <div className="text-center py-16 text-slate-400">Memuat paket...</div>
       ) : packages.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-16 text-slate-400">
           <p>Belum ada paket tersedia untuk filter yang dipilih.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {packages.map(pkg => (
-            <div key={pkg.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="bg-blue-600 px-5 py-4">
-                <p className="text-blue-100 text-xs font-medium mb-1">Semester {pkg.semester}</p>
+            <div key={pkg.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+              <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-5 py-4">
+                <p className="text-indigo-200 text-xs font-medium mb-1">Semester {pkg.semester}</p>
                 <h3 className="text-white font-bold leading-snug">{pkg.name}</h3>
-                {pkg.programs && <p className="text-blue-200 text-xs mt-1">{pkg.programs.name}</p>}
+                {pkg.programs && <p className="text-indigo-200 text-xs mt-1">{pkg.programs.name}</p>}
               </div>
               <div className="p-5">
-                {pkg.description && <p className="text-sm text-gray-600 mb-3">{pkg.description}</p>}
+                {pkg.description && <p className="text-sm text-slate-600 mb-3">{pkg.description}</p>}
                 <div className="mb-4">
-                  <p className="text-xs text-gray-400 mb-2">Modul dalam paket ({(pkg.package_modules || []).length} modul):</p>
+                  <p className="text-xs text-slate-400 mb-2">Modul dalam paket ({(pkg.package_modules || []).length} modul):</p>
                   <div className="space-y-1 max-h-32 overflow-y-auto">
                     {(pkg.package_modules || []).map(pm => (
-                      <div key={pm.modules.id} className="text-xs text-gray-600 flex items-center gap-1.5">
-                        <span className="font-mono text-gray-400">{pm.modules.tbo_code}</span>
+                      <div key={pm.modules.id} className="text-xs text-slate-600 flex items-center gap-1.5">
+                        <span className="font-mono text-slate-400">{pm.modules.tbo_code}</span>
                         <span className="truncate">{pm.modules.name}</span>
                         {!pm.modules.is_available && <span className="text-red-400 flex-shrink-0">(N/A)</span>}
                       </div>
@@ -98,13 +98,13 @@ export default function PackagesPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-gray-400">Total</p>
-                    <p className="text-lg font-bold text-gray-900">{formatIDR(pkg.totalPrice)}</p>
+                    <p className="text-xs text-slate-400">Total</p>
+                    <p className="text-lg font-bold text-indigo-700">{formatIDR(pkg.totalPrice)}</p>
                   </div>
                   <button
                     onClick={() => handleAddPackage(pkg.id)}
                     disabled={adding === pkg.id}
-                    className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold shadow-sm"
                   >
                     {adding === pkg.id ? 'Menambahkan...' : 'Tambah Paket'}
                   </button>
