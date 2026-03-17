@@ -37,7 +37,7 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold text-slate-900 mt-1">Admin Dashboard</h1>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
         <Link href="/admin/scraper" className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow group">
           <div className="text-3xl mb-2">🤖</div>
           <h3 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">Scraper</h3>
@@ -57,6 +57,11 @@ export default function AdminPage() {
           <div className="text-3xl mb-2">📦</div>
           <h3 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">Manajemen Paket</h3>
           <p className="text-sm text-slate-500 mt-1">Buat dan kelola paket semester</p>
+        </Link>
+        <Link href="/admin/orders" className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow group">
+          <div className="text-3xl mb-2">💳</div>
+          <h3 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">Pesanan & Pembayaran</h3>
+          <p className="text-sm text-slate-500 mt-1">Lihat pesanan dan konfirmasi pembayaran</p>
         </Link>
       </div>
     </div>

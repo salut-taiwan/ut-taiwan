@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import { formatIDR, formatDate, orderStatusLabel } from '@/lib/utils';
+import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-700',
@@ -58,7 +58,20 @@ export default function OrdersPage() {
             </div>
             <div className="flex items-center justify-between text-sm text-slate-600">
               <span>{order.order_items?.length || 0} modul</span>
-              <span className="font-semibold text-slate-900">{formatIDR(order.total_amount)}</span>
+              <div className="flex items-center gap-2">
+                {order.payments?.[0] && (
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                    order.payments[0].status === 'paid'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : order.payments[0].status === 'pending'
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}>
+                    {paymentStatusLabel(order.payments[0].status)}
+                  </span>
+                )}
+                <span className="font-semibold text-slate-900">{formatIDR(order.total_amount)}</span>
+              </div>
             </div>
           </Link>
         ))}

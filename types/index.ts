@@ -121,8 +121,7 @@ export interface OrderItemDTO {
 
 export interface PaymentDTO {
   id: string;
-  gateway: string;
-  gateway_billing_no: string | null;
+  gateway: 'manual';
   method: string;
   bank: string | null;
   amount: number;
@@ -171,6 +170,6 @@ export interface CheckoutRequestDTO {
   shippingCountry: string;
   shippingPhone: string;
   notes?: string;
-  paymentMethod: 'bank_transfer' | 'virtual_account' | 'ewallet';
+  paymentMethod: 'bank_transfer';
   paymentBank?: string;
 }

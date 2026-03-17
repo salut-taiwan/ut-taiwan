@@ -88,4 +88,9 @@ export const api = {
     getRuns: () => apiFetch('/scraper/runs'),
     getRun: (id: string) => apiFetch(`/scraper/runs/${id}`),
   },
+  admin: {
+    listOrders: () => apiFetch('/orders/admin/all'),
+    confirmPayment: (orderId: string) =>
+      apiFetch(`/payments/${orderId}/confirm`, { method: 'POST' }),
+  },
 };

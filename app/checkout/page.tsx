@@ -6,16 +6,9 @@ import { api } from '@/lib/api';
 import { CartDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 
-const BANKS = ['BCA', 'BRI', 'Mandiri', 'BNI'];
-const PAYMENT_METHODS = [
-  { value: 'virtual_account', label: 'Virtual Account Bank' },
-  { value: 'bank_transfer', label: 'Transfer Bank Manual' },
-];
-
 export default function CheckoutPage() {
   const router = useRouter();
   const [cart, setCart] = useState<CartDTO | null>(null);
-  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -28,7 +21,7 @@ export default function CheckoutPage() {
     shippingCountry: 'Taiwan',
     shippingPhone: '',
     notes: '',
-    paymentMethod: 'virtual_account',
+    paymentMethod: 'bank_transfer',
     paymentBank: 'BCA',
   });
 
@@ -38,8 +31,6 @@ export default function CheckoutPage() {
 
     Promise.all([api.cart.get(), api.auth.getMe()]).then(([cartData, profileData]: any[]) => {
       setCart(cartData);
-      setProfile(profileData);
-      // Pre-fill from profile
       setForm(f => ({
         ...f,
         shippingName: profileData.name || '',
@@ -139,35 +130,24 @@ export default function CheckoutPage() {
 
             {/* Payment */}
             <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-              <h2 className="font-semibold text-slate-900 mb-4">Metode Pembayaran</h2>
-              <div className="space-y-3 mb-4">
-                {PAYMENT_METHODS.map(pm => (
-                  <label key={pm.value}
-                    className={`flex items-center gap-3 cursor-pointer border rounded-xl p-4 transition-colors ${
-                      form.paymentMethod === pm.value
-                        ? 'border-indigo-500 bg-indigo-50'
-                        : 'border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <input type="radio" name="paymentMethod" value={pm.value}
-                      checked={form.paymentMethod === pm.value}
-                      onChange={handleChange}
-                      className="accent-indigo-600" />
-                    <span className="text-sm text-slate-800 font-medium">{pm.label}</span>
-                  </label>
-                ))}
+              <h2 className="font-semibold text-slate-900 mb-4">Pembayaran</h2>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-900 space-y-1">
+                <p className="font-semibold mb-2">Transfer ke rekening BCA:</p>
+                <div className="flex justify-between">
+                  <span className="text-blue-700">Atas nama</span>
+                  <span className="font-medium">Nathasya Vira Nerisa</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-700">No. Rekening</span>
+                  <span className="font-mono font-bold tracking-wider">2950211345</span>
+                </div>
+                <div className="flex justify-between border-t border-blue-200 pt-2 mt-2">
+                  <span className="text-blue-700">Jumlah transfer</span>
+                  <span className="font-bold text-blue-900 text-base">{formatIDR(cart.subtotal)}</span>
+                </div>
               </div>
-
-              <div>
-                <label className="block text-sm text-slate-700 mb-1 font-medium">Bank</label>
-                <select name="paymentBank" value={form.paymentBank} onChange={handleChange}
-                  className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-700">
-                  {BANKS.map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-              </div>
-
               <p className="text-xs text-slate-400 mt-3">
-                Pembayaran kadaluarsa dalam 3 hari. Instruksi pembayaran akan dikirim ke email Anda.
+                Transfer tepat sesuai jumlah di atas. Pembayaran kadaluarsa dalam 3 hari setelah pesanan dibuat.
               </p>
             </div>
           </div>
@@ -191,10 +171,10 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-slate-500 text-sm mb-3">
                   <span>Ongkos Kirim</span>
-                  <span className="text-slate-400 text-xs">Akan dikonfirmasi</span>
+                  <span>{formatIDR(0)}</span>
                 </div>
                 <div className="flex justify-between font-bold">
-                  <span className="text-slate-900">Total</span>
+                  <span className="text-slate-900">Total yang harus ditransfer</span>
                   <span className="text-2xl font-bold text-indigo-700">{formatIDR(cart.subtotal)}</span>
                 </div>
               </div>

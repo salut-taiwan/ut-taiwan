@@ -37,7 +37,8 @@ function OrderDetailContent() {
     setCancelling(true);
     try {
       await api.orders.cancel(orderId);
-      setOrder((o: any) => ({ ...o, status: 'cancelled' }));
+      const updated = await api.orders.get(orderId);
+      setOrder(updated);
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -107,16 +108,6 @@ function OrderDetailContent() {
                 <span className="font-medium">{paymentStatusLabel(payment.status)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Metode</span>
-                <span>{payment.method} {payment.bank ? `(${payment.bank})` : ''}</span>
-              </div>
-              {payment.gateway_billing_no && (
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Nomor Billing</span>
-                  <span className="font-mono font-bold text-indigo-700">{payment.gateway_billing_no}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
                 <span className="text-slate-500">Jumlah</span>
                 <span className="font-bold">{formatIDR(payment.amount)}</span>
               </div>
@@ -133,6 +124,30 @@ function OrderDetailContent() {
                 </div>
               )}
             </div>
+
+            {/* BCA transfer instructions for pending payments */}
+            {payment.status === 'pending' && (
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-900 space-y-1">
+                <p className="font-semibold mb-2">Harap transfer ke rekening BCA:</p>
+                <div className="flex justify-between">
+                  <span className="text-blue-700">Atas nama</span>
+                  <span className="font-medium">Nathasya Vira Nerisa</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-700">No. Rekening</span>
+                  <span className="font-mono font-bold tracking-wider">2950211345</span>
+                </div>
+                <div className="flex justify-between border-t border-blue-200 pt-2 mt-2">
+                  <span className="text-blue-700">Jumlah tepat</span>
+                  <span className="font-bold text-blue-900">{formatIDR(payment.amount)}</span>
+                </div>
+                {payment.expires_at && (
+                  <p className="text-xs text-red-600 mt-2">
+                    Batas pembayaran: {formatDate(payment.expires_at)}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -152,17 +167,26 @@ function OrderDetailContent() {
       {/* Order items */}
       <div className="mt-4 bg-white rounded-xl border border-slate-100 shadow-sm p-5">
         <h2 className="font-semibold text-slate-900 mb-3">Daftar Modul</h2>
-        <div className="space-y-3">
+        <div className="space-y-0">
+          <div className="flex items-center text-xs text-slate-400 pb-2 border-b border-slate-100">
+            <span className="flex-1">Modul</span>
+            <span className="w-24 text-right">Harga Satuan</span>
+            <span className="w-24 text-right ml-4">Subtotal</span>
+          </div>
           {order.order_items?.map((item: any) => (
-            <div key={item.id} className="flex items-center justify-between text-sm py-2 border-b border-slate-50 last:border-0">
+            <div key={item.id} className="flex items-center text-sm py-2 border-b border-slate-50 last:border-0">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span className="font-mono text-xs text-slate-400 whitespace-nowrap">{item.module_code}</span>
                 <span className="text-slate-900 truncate">{item.module_name}</span>
+                {item.quantity > 1 && (
+                  <span className="text-xs text-slate-400 whitespace-nowrap">×{item.quantity}</span>
+                )}
               </div>
-              <span className="font-medium text-slate-900 ml-4">{formatIDR(item.subtotal)}</span>
+              <span className="w-24 text-right text-slate-500">{formatIDR(item.unit_price)}</span>
+              <span className="w-24 text-right ml-4 font-medium text-slate-900">{formatIDR(item.subtotal)}</span>
             </div>
           ))}
-          <div className="pt-2 flex justify-between font-bold text-slate-900">
+          <div className="pt-3 flex justify-between font-bold text-slate-900">
             <span>Total</span>
             <span className="text-indigo-700">{formatIDR(order.total_amount)}</span>
           </div>
