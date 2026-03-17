@@ -1,11 +1,17 @@
 @import "tailwindcss";
 
+/* UT Brand Colors
+   Deep Blue:    #0A4595  (primary)
+   Lighter Blue: #647FE3  (accent / indigo-400)
+   Golden Yellow:#FADA02  (highlight / amber)
+*/
+
 :root {
   --background: #F8FAFC;
   --foreground: #0F172A;
-  --primary: #4F46E5;
-  --primary-hover: #4338CA;
-  --accent: #F59E0B;
+  --primary: #0A4595;
+  --primary-hover: #083A7E;
+  --accent: #FADA02;
   --success: #10B981;
   --surface: #ffffff;
   --border: #E2E8F0;
@@ -18,14 +24,44 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Override indigo scale → UT Deep Blue */
+  --color-indigo-50:  #EEF3FC;
+  --color-indigo-100: #D5E0F5;
+  --color-indigo-200: #ABBFF0;
+  --color-indigo-300: #7D9CE8;
+  --color-indigo-400: #647FE3;
+  --color-indigo-500: #3B62DB;
+  --color-indigo-600: #0A4595;
+  --color-indigo-700: #083A7E;
+  --color-indigo-800: #062E66;
+  --color-indigo-900: #04204A;
+  --color-indigo-950: #021430;
+
+  /* Override violet → same deep blue family (used in login gradient) */
+  --color-violet-600: #0A4595;
+  --color-violet-700: #083A7E;
+  --color-violet-800: #062E66;
+
+  /* Override amber scale → UT Golden Yellow */
+  --color-amber-50:  #FFFDE6;
+  --color-amber-100: #FEF9CC;
+  --color-amber-200: #FEF38A;
+  --color-amber-300: #FEED44;
+  --color-amber-400: #FADA02;
+  --color-amber-500: #FADA02;
+  --color-amber-600: #C4AB01;
+  --color-amber-700: #967F01;
+  --color-amber-800: #655601;
+  --color-amber-900: #3D3300;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0F172A;
     --foreground: #F1F5F9;
-    --primary: #6366F1;
-    --primary-hover: #4F46E5;
+    --primary: #647FE3;
+    --primary-hover: #0A4595;
     --surface: #1E293B;
     --border: #334155;
     --text-muted: #64748B;

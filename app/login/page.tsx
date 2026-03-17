@@ -32,7 +32,7 @@ function LoginForm() {
   return (
     <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 min-h-[calc(100vh-4rem)] flex bg-gradient-to-br from-slate-50 to-indigo-50">
       {/* Left decorative panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 flex-col items-center justify-center p-12 text-white">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-800 flex-col items-center justify-center p-12 text-white">
         <div className="max-w-sm text-center">
           <span className="text-4xl font-bold block mb-2">UT Taiwan</span>
           <span className="text-indigo-200 text-sm block mb-8">Toko Modul Kuliah</span>
