@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
+import { OrderDTO } from '@/types';
 
 const PAYMENT_STATUS_COLORS: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-700',
@@ -25,7 +26,7 @@ const ORDER_STATUS_COLORS: Record<string, string> = {
 export default function AdminOrdersPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState<string | null>(null);
 
@@ -44,10 +45,10 @@ export default function AdminOrdersPage() {
   async function fetchOrders() {
     setLoading(true);
     try {
-      const data: any = await api.admin.listOrders();
+      const data = await api.admin.listOrders();
       setOrders(data);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert((err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -59,8 +60,8 @@ export default function AdminOrdersPage() {
     try {
       await api.admin.confirmPayment(orderId);
       await fetchOrders();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert((err as Error).message);
     } finally {
       setConfirming(null);
     }

@@ -29,7 +29,7 @@ export default function CheckoutPage() {
     const token = localStorage.getItem('ut_token');
     if (!token) { router.push('/login'); return; }
 
-    Promise.all([api.cart.get(), api.auth.getMe()]).then(([cartData, profileData]: any[]) => {
+    Promise.all([api.cart.get(), api.auth.getMe()]).then(([cartData, profileData]) => {
       setCart(cartData);
       setForm(f => ({
         ...f,
@@ -51,10 +51,10 @@ export default function CheckoutPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const { order } = await api.orders.checkout(form) as any;
+      const { order } = await api.orders.checkout(form);
       router.push(`/orders/${order.id}?new=1`);
-    } catch (err: any) {
-      alert(err.message || 'Gagal membuat pesanan');
+    } catch (err) {
+      alert((err as Error).message || 'Gagal membuat pesanan');
     } finally {
       setSubmitting(false);
     }

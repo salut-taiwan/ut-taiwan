@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
+import { OrderDTO } from '@/types';
+
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-700',
@@ -17,13 +19,13 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function OrdersPage() {
   const router = useRouter();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('ut_token');
     if (!token) { router.push('/login'); return; }
-    api.orders.list().then((data: any) => setOrders(data)).finally(() => setLoading(false));
+    api.orders.list().then(data => setOrders(data)).finally(() => setLoading(false));
   }, [router]);
 
   if (loading) return <div className="text-center py-16 text-slate-400">Memuat pesanan...</div>;

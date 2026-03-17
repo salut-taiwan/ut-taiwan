@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const verified = searchParams.get('verified') === 'true';
@@ -22,8 +22,8 @@ export default function LoginPage() {
     try {
       await login(email, password);
       router.push('/program');
-    } catch (err: any) {
-      setError(err.message || 'Email atau password salah');
+    } catch (err) {
+      setError((err as Error).message || 'Email atau password salah');
     } finally {
       setLoading(false);
     }
@@ -118,5 +118,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

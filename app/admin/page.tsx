@@ -6,12 +6,12 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
+import { ScraperRunDTO } from '@/types';
 
 export default function AdminPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [stats, setStats] = useState<any>(null);
-  const [recentRun, setRecentRun] = useState<any>(null);
+  const [recentRun, setRecentRun] = useState<ScraperRunDTO | null>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'admin')) {
@@ -21,7 +21,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (user?.role === 'admin') {
-      api.scraper.getRuns().then((runs: any) => {
+      api.scraper.getRuns().then(runs => {
         if (runs.length > 0) setRecentRun(runs[0]);
       });
     }

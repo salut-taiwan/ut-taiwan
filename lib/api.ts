@@ -1,3 +1,5 @@
+import type { CartDTO, OrderDTO, ScraperRunDTO, UserProfileDTO } from '@/types';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 function getToken(): string | null {
@@ -33,7 +35,7 @@ export const api = {
         '/auth/login', { method: 'POST', body: JSON.stringify(body) }
       ),
     logout: () => apiFetch('/auth/logout', { method: 'POST' }),
-    getMe: () => apiFetch('/auth/me'),
+    getMe: () => apiFetch<UserProfileDTO>('/auth/me'),
     updateMe: (body: Record<string, unknown>) =>
       apiFetch('/auth/me', { method: 'PUT', body: JSON.stringify(body) }),
   },
@@ -62,7 +64,7 @@ export const api = {
     get: (id: string) => apiFetch(`/packages/${id}`),
   },
   cart: {
-    get: () => apiFetch('/cart'),
+    get: () => apiFetch<CartDTO>('/cart'),
     addItem: (moduleId: string, quantity = 1) =>
       apiFetch('/cart/items', { method: 'POST', body: JSON.stringify({ moduleId, quantity }) }),
     addPackage: (packageId: string) =>
@@ -75,9 +77,9 @@ export const api = {
   },
   orders: {
     checkout: (body: object) =>
-      apiFetch('/orders/checkout', { method: 'POST', body: JSON.stringify(body) }),
-    list: () => apiFetch('/orders'),
-    get: (id: string) => apiFetch(`/orders/${id}`),
+      apiFetch<{ order: OrderDTO }>('/orders/checkout', { method: 'POST', body: JSON.stringify(body) }),
+    list: () => apiFetch<OrderDTO[]>('/orders'),
+    get: (id: string) => apiFetch<OrderDTO>(`/orders/${id}`),
     cancel: (id: string) => apiFetch(`/orders/${id}/cancel`, { method: 'POST' }),
   },
   payments: {
@@ -85,11 +87,11 @@ export const api = {
   },
   scraper: {
     run: () => apiFetch('/scraper/run', { method: 'POST' }),
-    getRuns: () => apiFetch('/scraper/runs'),
+    getRuns: () => apiFetch<ScraperRunDTO[]>('/scraper/runs'),
     getRun: (id: string) => apiFetch(`/scraper/runs/${id}`),
   },
   admin: {
-    listOrders: () => apiFetch('/orders/admin/all'),
+    listOrders: () => apiFetch<OrderDTO[]>('/orders/admin/all'),
     confirmPayment: (orderId: string) =>
       apiFetch(`/payments/${orderId}/confirm`, { method: 'POST' }),
   },

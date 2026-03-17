@@ -5,6 +5,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
+import { OrderDTO, OrderItemDTO } from '@/types';
 
 const ORDER_STEPS = ['pending', 'paid', 'processing', 'shipped', 'delivered'];
 const STATUS_COLORS: Record<string, string> = {
@@ -22,7 +23,7 @@ function OrderDetailContent() {
   const router = useRouter();
   const isNew = searchParams.get('new') === '1';
 
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<OrderDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
 
@@ -39,8 +40,8 @@ function OrderDetailContent() {
       await api.orders.cancel(orderId);
       const updated = await api.orders.get(orderId);
       setOrder(updated);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert((err as Error).message);
     } finally {
       setCancelling(false);
     }
@@ -173,7 +174,7 @@ function OrderDetailContent() {
             <span className="w-24 text-right">Harga Satuan</span>
             <span className="w-24 text-right ml-4">Subtotal</span>
           </div>
-          {order.order_items?.map((item: any) => (
+          {order.order_items?.map((item: OrderItemDTO) => (
             <div key={item.id} className="flex items-center text-sm py-2 border-b border-slate-50 last:border-0">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span className="font-mono text-xs text-slate-400 whitespace-nowrap">{item.module_code}</span>
