@@ -7,6 +7,7 @@
 */
 
 :root {
+  --font-geist-sans: '';
   --background: #F8FAFC;
   --foreground: #0F172A;
   --primary: #0A4595;
@@ -23,7 +24,6 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 
   /* Override indigo scale → UT Deep Blue */
   --color-indigo-50:  #EEF3FC;
