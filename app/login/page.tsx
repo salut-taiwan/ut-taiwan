@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const verified = searchParams.get('verified') === 'true';
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -68,6 +70,12 @@ export default function LoginPage() {
             <p className="text-sm text-slate-500 mb-6">
               Belum punya akun? <Link href="/register" className="text-indigo-600 hover:underline font-medium">Daftar sekarang</Link>
             </p>
+
+            {verified && (
+              <div className="mb-4 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3">
+                Email berhasil diverifikasi. Silakan masuk.
+              </div>
+            )}
 
             {error && (
               <div className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-3">
