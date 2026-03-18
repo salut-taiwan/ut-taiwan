@@ -29,6 +29,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'admin')) {
@@ -51,6 +52,19 @@ export default function AdminOrdersPage() {
       alert((err as Error).message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleStatusUpdate(orderId: string, newStatus: string, label: string) {
+    if (!confirm(`${label} pesanan ini?`)) return;
+    setUpdatingStatus(orderId);
+    try {
+      await api.admin.updateOrderStatus(orderId, newStatus);
+      await fetchOrders();
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setUpdatingStatus(null);
     }
   }
 
@@ -131,15 +145,44 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-4 py-3 text-slate-500 text-xs">{formatDate(order.created_at)}</td>
                     <td className="px-4 py-3 text-center">
-                      {canConfirm && (
-                        <button
-                          onClick={() => handleConfirm(order.id)}
-                          disabled={confirming === order.id}
-                          className="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors font-semibold"
-                        >
-                          {confirming === order.id ? 'Memproses...' : 'Konfirmasi Bayar'}
-                        </button>
-                      )}
+                      <div className="flex flex-col gap-1 items-center">
+                        {canConfirm && (
+                          <button
+                            onClick={() => handleConfirm(order.id)}
+                            disabled={confirming === order.id || updatingStatus === order.id}
+                            className="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors font-semibold w-full"
+                          >
+                            {confirming === order.id ? 'Memproses...' : 'Konfirmasi Bayar'}
+                          </button>
+                        )}
+                        {order.status === 'paid' && (
+                          <button
+                            onClick={() => handleStatusUpdate(order.id, 'processing', 'Proses')}
+                            disabled={updatingStatus === order.id || confirming === order.id}
+                            className="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold w-full"
+                          >
+                            Proses
+                          </button>
+                        )}
+                        {(order.status === 'paid' || order.status === 'processing') && (
+                          <button
+                            onClick={() => handleStatusUpdate(order.id, 'shipped', 'Kirim')}
+                            disabled={updatingStatus === order.id || confirming === order.id}
+                            className="bg-purple-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors font-semibold w-full"
+                          >
+                            Kirim
+                          </button>
+                        )}
+                        {order.status === 'shipped' && (
+                          <button
+                            onClick={() => handleStatusUpdate(order.id, 'delivered', 'Terima')}
+                            disabled={updatingStatus === order.id}
+                            className="bg-slate-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors font-semibold w-full"
+                          >
+                            Terima
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

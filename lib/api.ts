@@ -7,6 +7,41 @@ function getToken(): string | null {
   return localStorage.getItem('ut_token');
 }
 
+function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('ut_refresh_token');
+}
+
+// Callback set by AuthContext to signal that the session is fully expired
+export let onSessionExpired: (() => void) | null = null;
+export function setOnSessionExpired(cb: (() => void) | null) {
+  onSessionExpired = cb;
+}
+
+let isRefreshing = false;
+
+async function attemptRefresh(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+  try {
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    localStorage.setItem('ut_token', data.token);
+    localStorage.setItem('ut_refresh_token', data.refreshToken);
+    localStorage.setItem('ut_expires_at', String(data.expiresAt));
+    // Notify auth context about the new expiresAt so it can reschedule timers
+    window.dispatchEvent(new CustomEvent('ut:token-refreshed', { detail: { expiresAt: data.expiresAt } }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers: HeadersInit = {
@@ -16,6 +51,29 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   };
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+  if (res.status === 401) {
+    if (!isRefreshing) {
+      isRefreshing = true;
+      const refreshed = await attemptRefresh();
+      isRefreshing = false;
+
+      if (refreshed) {
+        // Retry with the new token
+        const newToken = getToken();
+        const retryHeaders: HeadersInit = {
+          'Content-Type': 'application/json',
+          ...(newToken ? { Authorization: `Bearer ${newToken}` } : {}),
+          ...(options.headers || {}),
+        };
+        const retryRes = await fetch(`${API_BASE}${path}`, { ...options, headers: retryHeaders });
+        if (retryRes.ok) return retryRes.json();
+      }
+
+      onSessionExpired?.();
+    }
+    throw new Error('Sesi berakhir. Silakan login kembali.');
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
@@ -31,8 +89,12 @@ export const api = {
     register: (body: { email: string; password: string; name: string; nim?: string; phone?: string }) =>
       apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
     login: (body: { email: string; password: string }) =>
-      apiFetch<{ token: string; refreshToken: string; user: { id: string; email: string } }>(
+      apiFetch<{ token: string; refreshToken: string; expiresAt: number; user: { id: string; email: string } }>(
         '/auth/login', { method: 'POST', body: JSON.stringify(body) }
+      ),
+    refresh: (body: { refreshToken: string }) =>
+      apiFetch<{ token: string; refreshToken: string; expiresAt: number }>(
+        '/auth/refresh', { method: 'POST', body: JSON.stringify(body) }
       ),
     logout: () => apiFetch('/auth/logout', { method: 'POST' }),
     getMe: () => apiFetch<UserProfileDTO>('/auth/me'),
@@ -53,6 +115,7 @@ export const api = {
     list: (page = 1, limit = 20) => apiFetch(`/modules?page=${page}&limit=${limit}`),
     search: (q: string) => apiFetch(`/modules/search?q=${encodeURIComponent(q)}`),
     get: (id: string) => apiFetch(`/modules/${id}`),
+    create: (body: object) => apiFetch('/modules', { method: 'POST', body: JSON.stringify(body) }),
   },
   packages: {
     list: (programId?: string, semester?: number) => {
@@ -62,6 +125,7 @@ export const api = {
       return apiFetch(`/packages?${params}`);
     },
     get: (id: string) => apiFetch(`/packages/${id}`),
+    sync: () => apiFetch<{ linked: number; packages: number }>('/packages/sync', { method: 'POST' }),
   },
   cart: {
     get: () => apiFetch<CartDTO>('/cart'),
@@ -94,5 +158,7 @@ export const api = {
     listOrders: () => apiFetch<OrderDTO[]>('/orders/admin/all'),
     confirmPayment: (orderId: string) =>
       apiFetch(`/payments/${orderId}/confirm`, { method: 'POST' }),
+    updateOrderStatus: (orderId: string, status: string) =>
+      apiFetch(`/orders/admin/${orderId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   },
 };

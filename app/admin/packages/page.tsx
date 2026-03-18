@@ -12,6 +12,9 @@ export default function AdminPackagesPage() {
   const router = useRouter();
   const [packages, setPackages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ linked: number; packages: number } | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'admin')) router.push('/');
@@ -21,6 +24,23 @@ export default function AdminPackagesPage() {
     if (user?.role !== 'admin') return;
     api.packages.list().then((data: any) => setPackages(data)).finally(() => setLoading(false));
   }, [user]);
+
+  async function handleSync() {
+    setSyncing(true);
+    setSyncResult(null);
+    setSyncError(null);
+    try {
+      const result = await api.packages.sync();
+      setSyncResult(result);
+      // Reload package list
+      const data: any = await api.packages.list();
+      setPackages(data);
+    } catch (e: any) {
+      setSyncError(e.message || 'Gagal sinkronisasi');
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   if (isLoading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
@@ -32,11 +52,29 @@ export default function AdminPackagesPage() {
           <Link href="/admin" className="text-sm text-indigo-600 hover:underline">&larr; Admin</Link>
           <h1 className="text-2xl font-bold text-slate-900 mt-1">Manajemen Paket</h1>
         </div>
+        <button
+          onClick={handleSync}
+          disabled={syncing}
+          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {syncing ? 'Menyinkronkan...' : 'Sinkronisasi Paket'}
+        </button>
       </div>
 
+      {syncResult && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4 text-sm text-emerald-700">
+          Sinkronisasi selesai: {syncResult.linked} modul ditautkan ke {syncResult.packages} paket.
+        </div>
+      )}
+      {syncError && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 text-sm text-red-700">
+          {syncError}
+        </div>
+      )}
+
       <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6 text-sm text-indigo-700">
-        Paket dibuat manual oleh admin. Hubungkan program studi + semester + daftar modul untuk membuat paket baru.
-        Fitur CRUD paket akan tersedia di versi selanjutnya.
+        Paket dibuat manual oleh admin. Gunakan tombol &ldquo;Sinkronisasi Paket&rdquo; untuk menautkan modul ke paket
+        berdasarkan data mata kuliah dan modul terkini di database.
       </div>
 
       {loading ? (
