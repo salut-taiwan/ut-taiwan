@@ -26,12 +26,31 @@ function OrderDetailContent() {
   const [order, setOrder] = useState<OrderDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('ut_token');
     if (!token) { router.push('/login'); return; }
     api.orders.get(orderId).then(setOrder).catch(() => {}).finally(() => setLoading(false));
   }, [orderId, router]);
+
+  function getConfirmDeadline(shippedAt: string): Date {
+    return new Date(new Date(shippedAt).getTime() + 10.5 * 24 * 60 * 60 * 1000);
+  }
+
+  async function handleConfirmDelivery() {
+    if (!confirm('Konfirmasi penerimaan paket ini? Pastikan Anda telah menerima semua modul sebelum mengkonfirmasi.')) return;
+    setConfirming(true);
+    try {
+      await api.orders.confirmDelivery(orderId);
+      const updated = await api.orders.get(orderId);
+      setOrder(updated);
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setConfirming(false);
+    }
+  }
 
   async function handleCancel() {
     if (!confirm('Batalkan pesanan ini?')) return;
@@ -193,6 +212,32 @@ function OrderDetailContent() {
           </div>
         </div>
       </div>
+
+      {order.status === 'shipped' && order.shipped_at && (() => {
+        const deadline = getConfirmDeadline(order.shipped_at!);
+        const now = new Date();
+        const daysLeft = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+        const isUrgent = daysLeft < 2;
+        return (
+          <div className="mt-4 bg-purple-50 border border-purple-200 rounded-xl p-5">
+            <h2 className="font-semibold text-purple-900 text-base mb-1">Paket Sudah Sampai?</h2>
+            <p className={`text-sm mb-4 ${isUrgent ? 'text-amber-700 font-medium' : 'text-purple-700'}`}>
+              Konfirmasi penerimaan sebelum <strong>{formatDate(deadline.toISOString())}</strong>
+              {isUrgent && ' — segera konfirmasi!'}
+            </p>
+            <button
+              onClick={handleConfirmDelivery}
+              disabled={confirming}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors text-base"
+            >
+              {confirming ? 'Mengkonfirmasi...' : 'Sudah Diterima'}
+            </button>
+            <p className="text-xs text-purple-500 mt-2 text-center">
+              Klik tombol ini setelah Anda menerima semua modul yang dipesan.
+            </p>
+          </div>
+        );
+      })()}
 
       {order.status === 'pending' && (
         <div className="mt-4 text-right">

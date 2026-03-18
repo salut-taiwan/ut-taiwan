@@ -145,6 +145,7 @@ export const api = {
     list: () => apiFetch<OrderDTO[]>('/orders'),
     get: (id: string) => apiFetch<OrderDTO>(`/orders/${id}`),
     cancel: (id: string) => apiFetch(`/orders/${id}/cancel`, { method: 'POST' }),
+    confirmDelivery: (id: string) => apiFetch(`/orders/${id}/confirm-delivery`, { method: 'POST' }),
   },
   payments: {
     getStatus: (orderId: string) => apiFetch(`/payments/${orderId}`),

@@ -105,6 +105,7 @@ export interface OrderDTO {
   shipping_country: string;
   shipping_phone: string;
   notes: string | null;
+  shipped_at?: string;
   order_items: OrderItemDTO[];
   payments: PaymentDTO[];
   created_at: string;
