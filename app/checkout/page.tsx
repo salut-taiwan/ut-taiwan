@@ -43,11 +43,21 @@ export default function CheckoutPage() {
 
     Promise.all([api.cart.get(), api.auth.getMe()]).then(([cartData, profileData]) => {
       setCart(cartData);
-      const hasAddress = !!(profileData.shipping_address || profileData.city);
+      const hasAddress = !!(
+        profileData.shipping_address ||
+        profileData.city ||
+        profileData.address_zh_city
+      );
+      const zhAddress = [
+        profileData.address_zh_road,
+        profileData.address_zh_number ? profileData.address_zh_number + '號' : '',
+        profileData.address_zh_floor || '',
+      ].filter(Boolean).join('');
       const addr: ProfileAddress = {
         name: profileData.name || '',
-        shipping_address: profileData.shipping_address || '',
-        city: profileData.city || '',
+        shipping_address: profileData.shipping_address || zhAddress,
+        city: profileData.city ||
+          [profileData.address_zh_district, profileData.address_zh_city].filter(Boolean).join(' '),
         province: profileData.province || '',
         postal_code: profileData.postal_code || '',
         country: profileData.country || 'Taiwan',
