@@ -22,7 +22,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
         {toasts.map(t => (
           <div key={t.id}
-            className={`px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium
+            className={`px-4 py-3 rounded-lg shadow-[var(--shadow-modal)] border border-white/10 text-white text-sm font-medium animate-[slideInUp_180ms_ease-out]
               ${t.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
             {t.message}
           </div>

@@ -74,7 +74,19 @@ export default function ProgramDetailPage() {
     }
   }
 
-  if (loading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
+  if (loading) return (
+    <div className="space-y-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="bg-white rounded-xl border border-slate-100 overflow-hidden animate-pulse">
+          <div className="px-5 py-4 flex items-center gap-3">
+            <div className="h-4 w-20 bg-slate-100 rounded" />
+            <div className="h-4 w-48 bg-slate-100 rounded" />
+            <div className="h-4 w-12 bg-slate-100 rounded ml-auto" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
   if (!program) return <div className="text-center py-16 text-red-500">Program tidak ditemukan</div>;
 
   const displaySubjects = activeTab === 'semester' ? semesterSubjects : subjects;

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { api } from '@/lib/api';
 import { ModuleSummaryDTO } from '@/types';
-import ModuleCard from '@/components/catalog/ModuleCard';
+import ModuleCard, { ModuleCardSkeleton } from '@/components/catalog/ModuleCard';
 
 export default function ModulesPage() {
   const [modules, setModules] = useState<ModuleSummaryDTO[]>([]);
@@ -65,7 +65,9 @@ export default function ModulesPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-slate-400">Memuat modul...</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => <ModuleCardSkeleton key={i} />)}
+        </div>
       ) : (
         <>
           {searchResults !== null && (

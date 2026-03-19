@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import Button from '@/components/ui/Button';
 
 export default function SessionExpiryModal() {
   const { showExpiryWarning, isSessionExpired, stayLoggedIn, logout, dismissExpired } = useAuth();
@@ -52,8 +53,8 @@ export default function SessionExpiryModal() {
   if (!showExpiryWarning && !isSessionExpired) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-[var(--shadow-modal)] w-full max-w-sm mx-4 p-6 animate-[scaleIn_180ms_ease-out]">
         {isSessionExpired ? (
           <>
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
@@ -66,12 +67,9 @@ export default function SessionExpiryModal() {
             <p className="text-sm text-slate-500 text-center mb-6">
               Sesi Anda telah berakhir. Silakan masuk kembali untuk melanjutkan.
             </p>
-            <button
-              onClick={handleReLogin}
-              className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-            >
+            <Button onClick={handleReLogin} variant="primary" className="w-full">
               Masuk Kembali
-            </button>
+            </Button>
           </>
         ) : (
           <>
@@ -85,23 +83,21 @@ export default function SessionExpiryModal() {
             <p className="text-sm text-slate-500 text-center mb-2">
               Sesi Anda akan berakhir dalam 5 menit. Apakah Anda ingin tetap masuk?
             </p>
-            <p className="text-2xl font-mono font-bold text-center text-amber-600 mb-6">
+            <p className="text-2xl font-mono font-bold text-center text-amber-600 mb-6 tabular-nums">
               {formatTime(countdown)}
             </p>
             <div className="flex gap-3">
-              <button
-                onClick={handleLogout}
-                className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors"
-              >
+              <Button onClick={handleLogout} variant="secondary" className="flex-1">
                 Keluar
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleStayLoggedIn}
                 disabled={staying}
-                className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition-colors"
+                variant="primary"
+                className="flex-1"
               >
                 {staying ? 'Memproses...' : 'Tetap Masuk'}
-              </button>
+              </Button>
             </div>
           </>
         )}
