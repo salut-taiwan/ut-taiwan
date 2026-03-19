@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
@@ -62,7 +64,7 @@ export default function Navbar() {
                   </Link>
                 )}
                 <button
-                  onClick={logout}
+                  onClick={async () => { await logout(); router.push('/'); }}
                   className="text-sm text-slate-500 hover:text-red-600 transition-colors"
                 >
                   Keluar

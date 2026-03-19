@@ -58,7 +58,7 @@ export default function CheckoutPage() {
         shipping_address: profileData.shipping_address || zhAddress,
         city: profileData.city ||
           [profileData.address_zh_district, profileData.address_zh_city].filter(Boolean).join(' '),
-        province: profileData.province || '',
+        province: profileData.province || profileData.address_zh_city || '',
         postal_code: profileData.postal_code || '',
         country: profileData.country || 'Taiwan',
         phone: profileData.phone || '',
