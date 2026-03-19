@@ -87,7 +87,7 @@ function OrderDetailContent() {
 
       {isNew && (
         <div className="mt-4 bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-emerald-700 text-sm">
-          Pesanan berhasil dibuat! Silakan lakukan pembayaran sesuai instruksi di bawah.
+          Pesanan berhasil dibuat! Kami akan mengkonfirmasi stok dengan Karunika dan mengirimkan instruksi pembayaran melalui email.
         </div>
       )}
 
