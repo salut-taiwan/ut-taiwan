@@ -97,6 +97,7 @@ export const api = {
       program_id: string;
       address_zh_city: string; address_zh_district: string; address_zh_road: string;
       address_zh_number: string; address_zh_floor?: string;
+      postal_code?: string;
       bank_ntd_code?: string; bank_ntd_name?: string; bank_ntd_account?: string;
       bank_idr_name?: string; bank_idr_account?: string;
     }) =>
