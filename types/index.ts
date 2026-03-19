@@ -93,7 +93,7 @@ export interface CartDTO {
 export interface OrderDTO {
   id: string;
   order_number: string;
-  status: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'awaiting_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   subtotal: number;
   shipping_cost: number;
   total_amount: number;
@@ -144,6 +144,18 @@ export interface UserProfileDTO {
   province: string | null;
   postal_code: string | null;
   country: string;
+  bank_ntd_code?: string | null;
+  bank_ntd_name?: string | null;
+  bank_ntd_account?: string | null;
+  bank_idr_name?: string | null;
+  bank_idr_account?: string | null;
+  birth_place?: string | null;
+  birth_date?: string | null;
+  address_zh_city?: string | null;
+  address_zh_district?: string | null;
+  address_zh_road?: string | null;
+  address_zh_number?: string | null;
+  address_zh_floor?: string | null;
   role: 'student' | 'admin';
   is_verified: boolean;
   programs?: { code: string; name: string } | null;

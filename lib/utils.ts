@@ -20,7 +20,8 @@ export function formatDate(isoString: string): string {
 
 export function orderStatusLabel(status: string): string {
   const labels: Record<string, string> = {
-    pending: 'Menunggu Pembayaran',
+    pending: 'Menunggu Konfirmasi Karunika',
+    awaiting_payment: 'Menunggu Pembayaran',
     paid: 'Dibayar',
     processing: 'Diproses',
     shipped: 'Dikirim',

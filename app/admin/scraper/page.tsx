@@ -20,6 +20,7 @@ export default function AdminScraperPage() {
   const [runs, setRuns] = useState<ScraperRunDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [triggering, setTriggering] = useState(false);
+  const [triggeringPrefix, setTriggeringPrefix] = useState(false);
   const [triggerMessage, setTriggerMessage] = useState('');
 
   useEffect(() => {
@@ -49,6 +50,20 @@ export default function AdminScraperPage() {
     }
   }
 
+  async function handleTriggerPrefix() {
+    setTriggeringPrefix(true);
+    setTriggerMessage('');
+    try {
+      const result: any = await api.scraper.runPrefixes();
+      setTriggerMessage(`Scraper prefix dimulai! Run ID: ${result.runId}`);
+      setTimeout(loadRuns, 2000);
+    } catch (err: any) {
+      setTriggerMessage(`Error: ${err.message}`);
+    } finally {
+      setTriggeringPrefix(false);
+    }
+  }
+
   if (isLoading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
 
@@ -64,13 +79,22 @@ export default function AdminScraperPage() {
         <p className="text-sm text-slate-500 mb-4">
           Scraper otomatis berjalan setiap hari pukul 02:00 WIB. Klik di bawah untuk memulai sinkronisasi manual.
         </p>
-        <button
-          onClick={handleTrigger}
-          disabled={triggering}
-          className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm"
-        >
-          {triggering ? 'Memulai Scraper...' : 'Jalankan Sekarang'}
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleTrigger}
+            disabled={triggering || triggeringPrefix}
+            className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm"
+          >
+            {triggering ? 'Memulai Scraper...' : 'Jalankan Sekarang'}
+          </button>
+          <button
+            onClick={handleTriggerPrefix}
+            disabled={triggering || triggeringPrefix}
+            className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm"
+          >
+            {triggeringPrefix ? 'Memulai...' : 'Scrape by Prefix (106 kode)'}
+          </button>
+        </div>
         {triggerMessage && (
           <p className={`mt-3 text-sm ${triggerMessage.startsWith('Error') ? 'text-red-600' : 'text-emerald-600'}`}>
             {triggerMessage}

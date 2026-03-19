@@ -86,7 +86,15 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 // Auth
 export const api = {
   auth: {
-    register: (body: { email: string; password: string; name: string; nim?: string; phone?: string }) =>
+    register: (body: {
+      email: string; password: string; name: string; nim?: string; phone?: string;
+      birth_place?: string; birth_date?: string;
+      program_id: string;
+      address_zh_city: string; address_zh_district: string; address_zh_road: string;
+      address_zh_number: string; address_zh_floor?: string;
+      bank_ntd_code?: string; bank_ntd_name?: string; bank_ntd_account?: string;
+      bank_idr_name?: string; bank_idr_account?: string;
+    }) =>
       apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
     login: (body: { email: string; password: string }) =>
       apiFetch<{ token: string; refreshToken: string; expiresAt: number; user: { id: string; email: string } }>(
@@ -152,6 +160,7 @@ export const api = {
   },
   scraper: {
     run: () => apiFetch('/scraper/run', { method: 'POST' }),
+    runPrefixes: () => apiFetch('/scraper/run-prefixes', { method: 'POST' }),
     getRuns: () => apiFetch<ScraperRunDTO[]>('/scraper/runs'),
     getRun: (id: string) => apiFetch(`/scraper/runs/${id}`),
   },
@@ -161,5 +170,7 @@ export const api = {
       apiFetch(`/payments/${orderId}/confirm`, { method: 'POST' }),
     updateOrderStatus: (orderId: string, status: string) =>
       apiFetch(`/orders/admin/${orderId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+    confirmKarunika: (orderId: string) =>
+      apiFetch(`/orders/admin/${orderId}/confirm-karunika`, { method: 'POST' }),
   },
 };

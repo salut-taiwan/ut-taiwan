@@ -7,9 +7,18 @@ import { api } from '@/lib/api';
 import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
 import { OrderDTO, OrderItemDTO } from '@/types';
 
-const ORDER_STEPS = ['pending', 'paid', 'processing', 'shipped', 'delivered'];
+const ORDER_STEPS = ['pending', 'awaiting_payment', 'paid', 'processing', 'shipped', 'delivered'];
+const STEP_LABELS: Record<string, string> = {
+  pending: 'Menunggu Konfirmasi',
+  awaiting_payment: 'Stok Dikonfirmasi',
+  paid: 'Dibayar',
+  processing: 'Diproses',
+  shipped: 'Dikirim',
+  delivered: 'Terkirim',
+};
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-700',
+  pending: 'bg-slate-100 text-slate-600',
+  awaiting_payment: 'bg-amber-100 text-amber-700',
   paid: 'bg-emerald-100 text-emerald-700',
   processing: 'bg-indigo-100 text-indigo-700',
   shipped: 'bg-purple-100 text-purple-700',
@@ -109,7 +118,7 @@ function OrderDetailContent() {
                   {i < stepIndex ? '✓' : i + 1}
                 </div>
                 <span className="text-xs text-slate-500 mt-1 text-center leading-tight hidden sm:block">
-                  {orderStatusLabel(step)}
+                  {STEP_LABELS[step] || orderStatusLabel(step)}
                 </span>
               </div>
             ))}
@@ -145,8 +154,8 @@ function OrderDetailContent() {
               )}
             </div>
 
-            {/* BCA transfer instructions for pending payments */}
-            {payment.status === 'pending' && (
+            {/* Show payment instructions only after Karunika stock is confirmed */}
+            {payment.status === 'pending' && order.status === 'awaiting_payment' && (
               <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-900 space-y-1">
                 <p className="font-semibold mb-2">Harap transfer ke rekening BCA:</p>
                 <div className="flex justify-between">
@@ -166,6 +175,13 @@ function OrderDetailContent() {
                     Batas pembayaran: {formatDate(payment.expires_at)}
                   </p>
                 )}
+              </div>
+            )}
+            {/* Pending verification message — before Karunika confirms stock */}
+            {order.status === 'pending' && (
+              <div className="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
+                <p className="font-medium text-slate-700 mb-1">Menunggu verifikasi stok</p>
+                <p>Pesanan Anda sedang diverifikasi stok oleh admin. Instruksi pembayaran akan dikirim melalui email setelah stok dikonfirmasi.</p>
               </div>
             )}
           </div>

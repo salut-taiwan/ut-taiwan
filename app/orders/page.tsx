@@ -9,7 +9,8 @@ import { OrderDTO } from '@/types';
 
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-700',
+  pending: 'bg-slate-100 text-slate-600',
+  awaiting_payment: 'bg-amber-100 text-amber-700',
   paid: 'bg-emerald-100 text-emerald-700',
   processing: 'bg-indigo-100 text-indigo-700',
   shipped: 'bg-purple-100 text-purple-700',

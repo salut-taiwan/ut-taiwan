@@ -15,7 +15,8 @@ const PAYMENT_STATUS_COLORS: Record<string, string> = {
 };
 
 const ORDER_STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-700',
+  pending: 'bg-slate-100 text-slate-600',
+  awaiting_payment: 'bg-amber-100 text-amber-700',
   paid: 'bg-emerald-100 text-emerald-700',
   processing: 'bg-indigo-100 text-indigo-700',
   shipped: 'bg-purple-100 text-purple-700',
@@ -29,6 +30,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [confirmingKarunika, setConfirmingKarunika] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,6 +67,19 @@ export default function AdminOrdersPage() {
       alert((err as Error).message);
     } finally {
       setUpdatingStatus(null);
+    }
+  }
+
+  async function handleConfirmKarunika(orderId: string) {
+    if (!confirm('Konfirmasi stok Karunika tersedia? Email instruksi pembayaran akan dikirim ke pelanggan.')) return;
+    setConfirmingKarunika(orderId);
+    try {
+      await api.admin.confirmKarunika(orderId);
+      await fetchOrders();
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setConfirmingKarunika(null);
     }
   }
 
@@ -118,7 +133,9 @@ export default function AdminOrdersPage() {
             <tbody className="divide-y divide-slate-50">
               {orders.map(order => {
                 const payment = order.payments?.[0];
-                const canConfirm = order.status === 'pending' && payment?.status === 'pending';
+                const canConfirmKarunika = order.status === 'pending';
+                const canConfirmPayment = order.status === 'awaiting_payment' && payment?.status === 'pending';
+                const busy = confirming === order.id || confirmingKarunika === order.id || updatingStatus === order.id;
                 return (
                   <tr key={order.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 font-mono font-semibold text-slate-900">{order.order_number}</td>
@@ -146,10 +163,19 @@ export default function AdminOrdersPage() {
                     <td className="px-4 py-3 text-slate-500 text-xs">{formatDate(order.created_at)}</td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex flex-col gap-1 items-center">
-                        {canConfirm && (
+                        {canConfirmKarunika && (
+                          <button
+                            onClick={() => handleConfirmKarunika(order.id)}
+                            disabled={busy}
+                            className="bg-amber-500 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors font-semibold w-full"
+                          >
+                            {confirmingKarunika === order.id ? 'Memproses...' : 'Konfirmasi Karunika'}
+                          </button>
+                        )}
+                        {canConfirmPayment && (
                           <button
                             onClick={() => handleConfirm(order.id)}
-                            disabled={confirming === order.id || updatingStatus === order.id}
+                            disabled={busy}
                             className="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors font-semibold w-full"
                           >
                             {confirming === order.id ? 'Memproses...' : 'Konfirmasi Bayar'}
@@ -158,7 +184,7 @@ export default function AdminOrdersPage() {
                         {order.status === 'paid' && (
                           <button
                             onClick={() => handleStatusUpdate(order.id, 'processing', 'Proses')}
-                            disabled={updatingStatus === order.id || confirming === order.id}
+                            disabled={busy}
                             className="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold w-full"
                           >
                             Proses
@@ -167,7 +193,7 @@ export default function AdminOrdersPage() {
                         {(order.status === 'paid' || order.status === 'processing') && (
                           <button
                             onClick={() => handleStatusUpdate(order.id, 'shipped', 'Kirim')}
-                            disabled={updatingStatus === order.id || confirming === order.id}
+                            disabled={busy}
                             className="bg-purple-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors font-semibold w-full"
                           >
                             Kirim
@@ -176,7 +202,7 @@ export default function AdminOrdersPage() {
                         {order.status === 'shipped' && (
                           <button
                             onClick={() => handleStatusUpdate(order.id, 'delivered', 'Terima')}
-                            disabled={updatingStatus === order.id}
+                            disabled={busy}
                             className="bg-slate-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors font-semibold w-full"
                           >
                             Terima
