@@ -6,6 +6,8 @@ import { api } from '@/lib/api';
 import { ProgramDTO, SubjectDTO, ModuleSummaryDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/Toast';
+import { useCart } from '@/lib/cart';
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -18,6 +20,9 @@ export default function ProgramDetailPage() {
   const [loading, setLoading] = useState(true);
   const [semesterSubjects, setSemesterSubjects] = useState<SubjectDTO[]>([]);
   const [addingAll, setAddingAll] = useState(false);
+  const [addingModule, setAddingModule] = useState<string | null>(null);
+  const { showToast } = useToast();
+  const { incrementCart } = useCart();
 
   useEffect(() => {
     Promise.all([
@@ -45,9 +50,10 @@ export default function ProgramDetailPage() {
       );
       const unique = Array.from(new Map(modules.map(m => [m.id, m])).values());
       await Promise.all(unique.map(m => api.cart.addItem(m.id)));
-      alert(`${unique.length} modul ditambahkan ke keranjang!`);
+      incrementCart(unique.length);
+      showToast(`${unique.length} modul ditambahkan ke keranjang!`);
     } catch (err) {
-      console.error(err);
+      showToast('Gagal menambahkan modul', 'error');
     } finally {
       setAddingAll(false);
     }
@@ -56,7 +62,16 @@ export default function ProgramDetailPage() {
   async function handleAddModuleToCart(moduleId: string) {
     const token = localStorage.getItem('ut_token');
     if (!token) { window.location.href = '/login'; return; }
-    await api.cart.addItem(moduleId);
+    setAddingModule(moduleId);
+    try {
+      await api.cart.addItem(moduleId);
+      incrementCart(1);
+      showToast('Modul ditambahkan ke keranjang!');
+    } catch (err) {
+      showToast('Gagal menambahkan modul', 'error');
+    } finally {
+      setAddingModule(null);
+    }
   }
 
   if (loading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
@@ -139,7 +154,7 @@ export default function ProgramDetailPage() {
           <div className="text-center py-12 text-slate-400">Belum ada data mata kuliah untuk semester ini</div>
         ) : (
           displaySubjects.map(subject => (
-            <SubjectCard key={subject.id} subject={subject} onAddToCart={handleAddModuleToCart} />
+            <SubjectCard key={subject.id} subject={subject} onAddToCart={handleAddModuleToCart} addingModule={addingModule} />
           ))
         )}
       </div>
@@ -147,7 +162,7 @@ export default function ProgramDetailPage() {
   );
 }
 
-function SubjectCard({ subject, onAddToCart }: { subject: SubjectDTO; onAddToCart: (id: string) => void }) {
+function SubjectCard({ subject, onAddToCart, addingModule }: { subject: SubjectDTO; onAddToCart: (id: string) => void; addingModule: string | null }) {
   const [expanded, setExpanded] = useState(true);
   const modules = (subject.subject_modules || []).map(sm => sm.modules);
 
@@ -186,9 +201,10 @@ function SubjectCard({ subject, onAddToCart }: { subject: SubjectDTO; onAddToCar
                     </span>
                     <button
                       onClick={() => onAddToCart(mod.id)}
-                      className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+                      disabled={addingModule === mod.id}
+                      className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold"
                     >
-                      Tambah
+                      {addingModule === mod.id ? 'Menambahkan...' : 'Tambah'}
                     </button>
                   </>
                 ) : (

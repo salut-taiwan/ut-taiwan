@@ -3,21 +3,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { useCart } from '@/lib/cart';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [cartCount, setCartCount] = useState(0);
-
-  useEffect(() => {
-    if (user) {
-      api.cart.get().then((cart: any) => setCartCount(cart.itemCount || 0)).catch(() => {});
-    } else {
-      setCartCount(0);
-    }
-  }, [user]);
+  const { cartCount } = useCart();
 
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm sticky top-0 z-50">

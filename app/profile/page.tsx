@@ -26,11 +26,6 @@ export default function ProfilePage() {
         phone: p.phone || '',
         program_id: p.program_id || '',
         current_semester: p.current_semester || '',
-        shipping_address: p.shipping_address || '',
-        city: p.city || '',
-        province: p.province || '',
-        postal_code: p.postal_code || '',
-        country: p.country || 'Taiwan',
         birth_place: p.birth_place || '',
         birth_date: p.birth_date || '',
         address_zh_city: p.address_zh_city || '',
@@ -38,6 +33,7 @@ export default function ProfilePage() {
         address_zh_road: p.address_zh_road || '',
         address_zh_number: p.address_zh_number || '',
         address_zh_floor: p.address_zh_floor || '',
+        postal_code: p.postal_code || '',
         bank_ntd_code: p.bank_ntd_code || '',
         bank_ntd_name: p.bank_ntd_name || '',
         bank_ntd_account: p.bank_ntd_account || '',
@@ -172,31 +168,10 @@ export default function ProfilePage() {
               <input name="address_zh_floor" value={form.address_zh_floor} onChange={handleChange}
                 className={inputClass} placeholder="3樓" />
             </div>
-            <div className="sm:col-span-2 border-t border-slate-100 pt-4">
-              <label className="block text-sm text-slate-700 mb-1 font-medium">Alamat Lengkap</label>
-              <textarea name="shipping_address" value={form.shipping_address} onChange={handleChange} rows={3}
-                className={inputClass}
-                placeholder="Alamat lengkap di Taiwan" />
-            </div>
             <div>
-              <label className="block text-sm text-slate-700 mb-1 font-medium">Kota</label>
-              <input name="city" value={form.city} onChange={handleChange}
-                className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm text-slate-700 mb-1 font-medium">Provinsi/Kota</label>
-              <input name="province" value={form.province} onChange={handleChange}
-                className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm text-slate-700 mb-1 font-medium">Kode Pos</label>
-              <input name="postal_code" value={form.postal_code} onChange={handleChange}
-                className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm text-slate-700 mb-1 font-medium">Negara</label>
-              <input name="country" value={form.country} onChange={handleChange}
-                className={inputClass} />
+              <label className="block text-sm text-slate-700 mb-1 font-medium">郵遞區號 *</label>
+              <input name="postal_code" value={form.postal_code} onChange={handleChange} required
+                className={inputClass} placeholder="106" />
             </div>
           </div>
         </div>

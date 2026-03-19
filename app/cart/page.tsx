@@ -6,11 +6,13 @@ import Image from 'next/image';
 import { api } from '@/lib/api';
 import { CartDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
+import { useCart } from '@/lib/cart';
 
 export default function CartPage() {
   const [cart, setCart] = useState<CartDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<string | null>(null);
+  const { refreshCart } = useCart();
 
   async function loadCart() {
     api.cart.get().then((data: any) => setCart(data)).catch(() => {}).finally(() => setLoading(false));
@@ -26,6 +28,7 @@ export default function CartPage() {
     setRemoving(itemId);
     await api.cart.removeItem(itemId);
     await loadCart();
+    await refreshCart();
     setRemoving(null);
   }
 
@@ -33,6 +36,7 @@ export default function CartPage() {
     if (!confirm('Kosongkan semua isi keranjang?')) return;
     await api.cart.clear();
     await loadCart();
+    await refreshCart();
   }
 
   if (loading) return <div className="text-center py-16 text-slate-400">Memuat keranjang...</div>;

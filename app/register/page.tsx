@@ -13,7 +13,7 @@ export default function RegisterPage() {
     birth_place: '', birth_date: '',
     program_id: '',
     address_zh_city: '', address_zh_district: '', address_zh_road: '',
-    address_zh_number: '', address_zh_floor: '',
+    address_zh_number: '', address_zh_floor: '', postal_code: '',
     bank_ntd_code: '', bank_ntd_name: '', bank_ntd_account: '',
     bank_idr_name: '', bank_idr_account: '',
   });
@@ -69,6 +69,7 @@ export default function RegisterPage() {
         address_zh_road: form.address_zh_road,
         address_zh_number: form.address_zh_number,
         address_zh_floor: form.address_zh_floor || undefined,
+        postal_code: form.postal_code,
         bank_ntd_code: form.bank_ntd_code || undefined,
         bank_ntd_name: form.bank_ntd_name || undefined,
         bank_ntd_account: form.bank_ntd_account || undefined,
@@ -238,6 +239,12 @@ export default function RegisterPage() {
                         className={inputClass}
                         placeholder="3樓" />
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">郵遞區號 *</label>
+                    <input name="postal_code" value={form.postal_code} onChange={handleChange} required
+                      className={inputClass}
+                      placeholder="106" />
                   </div>
                 </div>
               </div>

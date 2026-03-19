@@ -6,6 +6,8 @@ import { ModuleSummaryDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useState } from 'react';
+import { useToast } from '@/components/ui/Toast';
+import { useCart } from '@/lib/cart';
 
 interface ModuleCardProps {
   module: ModuleSummaryDTO;
@@ -15,6 +17,8 @@ interface ModuleCardProps {
 export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const { showToast } = useToast();
+  const { incrementCart } = useCart();
 
   async function handleAdd() {
     const token = localStorage.getItem('ut_token');
@@ -26,6 +30,8 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
     try {
       await api.cart.addItem(module.id);
       setAdded(true);
+      incrementCart(1);
+      showToast('Modul ditambahkan ke keranjang!');
       onAddedToCart?.();
       setTimeout(() => setAdded(false), 2000);
     } catch (err) {

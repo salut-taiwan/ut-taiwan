@@ -5,6 +5,8 @@ import { api } from '@/lib/api';
 import { PackageDTO, FacultyDTO, ProgramDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/Toast';
+import { useCart } from '@/lib/cart';
 
 export default function PackagesPage() {
   const [packages, setPackages] = useState<PackageDTO[]>([]);
@@ -13,6 +15,8 @@ export default function PackagesPage() {
   const [selectedSemester, setSelectedSemester] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState<string | null>(null);
+  const { showToast } = useToast();
+  const { incrementCart } = useCart();
 
   useEffect(() => {
     api.catalog.getPrograms().then((data: any) => setPrograms(data));
@@ -26,15 +30,22 @@ export default function PackagesPage() {
     ).then((data: any) => setPackages(data)).finally(() => setLoading(false));
   }, [selectedProgram, selectedSemester]);
 
-  async function handleAddPackage(packageId: string) {
+  async function handleAddPackage(pkg: PackageDTO) {
     const token = localStorage.getItem('ut_token');
     if (!token) { window.location.href = '/login'; return; }
-    setAdding(packageId);
+    setAdding(pkg.id);
     try {
-      const result: any = await api.cart.addPackage(packageId);
-      alert(result.message);
+      await api.cart.addPackage(pkg.id);
+      const total = (pkg.package_modules || []).length;
+      const available = (pkg.package_modules || []).filter((pm: any) => pm.modules.is_available).length;
+      incrementCart(available);
+      if (available === total) {
+        showToast(`${available} modul ditambahkan ke keranjang!`);
+      } else {
+        showToast(`${available} dari ${total} modul ditambahkan (${total - available} tidak tersedia).`);
+      }
     } catch (err: any) {
-      alert(err.message);
+      showToast(err.message, 'error');
     } finally {
       setAdding(null);
     }
@@ -102,7 +113,7 @@ export default function PackagesPage() {
                     <p className="text-lg font-bold text-indigo-700">{formatIDR(pkg.totalPrice)}</p>
                   </div>
                   <button
-                    onClick={() => handleAddPackage(pkg.id)}
+                    onClick={() => handleAddPackage(pkg)}
                     disabled={adding === pkg.id}
                     className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold shadow-sm"
                   >

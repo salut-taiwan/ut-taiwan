@@ -8,12 +8,14 @@ import { formatIDR } from '@/lib/utils';
 
 interface ProfileAddress {
   name: string;
-  shipping_address: string;
-  city: string;
-  province: string;
+  phone: string;
+  zh_city: string;
+  zh_district: string;
+  zh_road: string;
+  zh_number: string;
+  zh_floor: string;
   postal_code: string;
   country: string;
-  phone: string;
 }
 
 export default function CheckoutPage() {
@@ -25,13 +27,14 @@ export default function CheckoutPage() {
   const [useProfileAddress, setUseProfileAddress] = useState(false);
 
   const [form, setForm] = useState({
-    shippingName: '',
-    shippingAddress: '',
-    shippingCity: '',
-    shippingProvince: '',
-    shippingPostal: '',
-    shippingCountry: 'Taiwan',
-    shippingPhone: '',
+    altName: '',
+    altPhone: '',
+    altZhCity: '',
+    altZhDistrict: '',
+    altZhRoad: '',
+    altZhNumber: '',
+    altZhFloor: '',
+    altPostal: '',
     notes: '',
     paymentMethod: 'bank_transfer',
     paymentBank: 'BCA',
@@ -43,26 +46,18 @@ export default function CheckoutPage() {
 
     Promise.all([api.cart.get(), api.auth.getMe()]).then(([cartData, profileData]) => {
       setCart(cartData);
-      const hasAddress = !!(
-        profileData.shipping_address ||
-        profileData.city ||
-        profileData.address_zh_city
-      );
-      const zhAddress = [
-        profileData.address_zh_road,
-        profileData.address_zh_number ? profileData.address_zh_number + '號' : '',
-        profileData.address_zh_floor || '',
-      ].filter(Boolean).join('');
       const addr: ProfileAddress = {
         name: profileData.name || '',
-        shipping_address: profileData.shipping_address || zhAddress,
-        city: profileData.city ||
-          [profileData.address_zh_district, profileData.address_zh_city].filter(Boolean).join(' '),
-        province: profileData.province || profileData.address_zh_city || '',
+        phone: profileData.phone || '',
+        zh_city: profileData.address_zh_city || '',
+        zh_district: profileData.address_zh_district || '',
+        zh_road: profileData.address_zh_road || '',
+        zh_number: profileData.address_zh_number || '',
+        zh_floor: profileData.address_zh_floor || '',
         postal_code: profileData.postal_code || '',
         country: profileData.country || 'Taiwan',
-        phone: profileData.phone || '',
       };
+      const hasAddress = !!(addr.zh_city || addr.zh_road);
       if (hasAddress) {
         setProfileAddress(addr);
         setUseProfileAddress(true);
@@ -81,21 +76,29 @@ export default function CheckoutPage() {
       const addressFields = useProfileAddress && profileAddress
         ? {
             shippingName: profileAddress.name,
-            shippingAddress: profileAddress.shipping_address,
-            shippingCity: profileAddress.city,
-            shippingProvince: profileAddress.province,
+            shippingAddress: [
+              profileAddress.zh_road,
+              profileAddress.zh_number ? profileAddress.zh_number + '號' : '',
+              profileAddress.zh_floor || '',
+            ].filter(Boolean).join(' '),
+            shippingCity: [profileAddress.zh_district, profileAddress.zh_city].filter(Boolean).join(''),
+            shippingProvince: profileAddress.zh_city,
             shippingPostal: profileAddress.postal_code,
             shippingCountry: profileAddress.country,
             shippingPhone: profileAddress.phone,
           }
         : {
-            shippingName: form.shippingName,
-            shippingAddress: form.shippingAddress,
-            shippingCity: form.shippingCity,
-            shippingProvince: form.shippingProvince,
-            shippingPostal: form.shippingPostal,
-            shippingCountry: form.shippingCountry,
-            shippingPhone: form.shippingPhone,
+            shippingName: form.altName,
+            shippingAddress: [
+              form.altZhRoad,
+              form.altZhNumber ? form.altZhNumber + '號' : '',
+              form.altZhFloor || '',
+            ].filter(Boolean).join(' '),
+            shippingCity: [form.altZhDistrict, form.altZhCity].filter(Boolean).join(''),
+            shippingProvince: form.altZhCity,
+            shippingPostal: form.altPostal,
+            shippingCountry: 'Taiwan',
+            shippingPhone: form.altPhone,
           };
       const { order } = await api.orders.checkout({
         ...addressFields,
@@ -158,47 +161,60 @@ export default function CheckoutPage() {
               {useProfileAddress && profileAddress ? (
                 <div className="bg-slate-50 rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-700 space-y-0.5">
                   <p className="font-semibold text-slate-900">{profileAddress.name}</p>
-                  <p>{profileAddress.shipping_address}</p>
-                  <p>{[profileAddress.city, profileAddress.province].filter(Boolean).join(', ')}{profileAddress.postal_code ? ` ${profileAddress.postal_code}` : ''}</p>
+                  <p>
+                    {[profileAddress.zh_road,
+                      profileAddress.zh_number ? profileAddress.zh_number + '號' : '',
+                      profileAddress.zh_floor || ''
+                    ].filter(Boolean).join(' ')}
+                  </p>
+                  <p>
+                    {[profileAddress.zh_district, profileAddress.zh_city].filter(Boolean).join('')}
+                    {profileAddress.postal_code ? ` ${profileAddress.postal_code}` : ''}
+                  </p>
                   <p>{profileAddress.country}</p>
                   <p>{profileAddress.phone}</p>
                 </div>
               ) : (
-                /* Editable form */
+                /* Editable form — Chinese address fields */
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
                     <label className="block text-sm text-slate-700 mb-1 font-medium">Nama Penerima *</label>
-                    <input name="shippingName" value={form.shippingName} onChange={handleChange} required
+                    <input name="altName" value={form.altName} onChange={handleChange} required
                       className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1 font-medium">縣市 *</label>
+                    <input name="altZhCity" value={form.altZhCity} onChange={handleChange} required
+                      className={inputClass} placeholder="台北市" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1 font-medium">區 *</label>
+                    <input name="altZhDistrict" value={form.altZhDistrict} onChange={handleChange} required
+                      className={inputClass} placeholder="信義區" />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">Alamat Lengkap *</label>
-                    <textarea name="shippingAddress" value={form.shippingAddress} onChange={handleChange} required rows={3}
+                    <label className="block text-sm text-slate-700 mb-1 font-medium">路/街 *</label>
+                    <input name="altZhRoad" value={form.altZhRoad} onChange={handleChange} required
+                      className={inputClass} placeholder="信義路五段" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1 font-medium">號 *</label>
+                    <input name="altZhNumber" value={form.altZhNumber} onChange={handleChange} required
+                      className={inputClass} placeholder="7號" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1 font-medium">樓/室 (選填)</label>
+                    <input name="altZhFloor" value={form.altZhFloor} onChange={handleChange}
+                      className={inputClass} placeholder="3樓" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1 font-medium">郵遞區號 *</label>
+                    <input name="altPostal" value={form.altPostal} onChange={handleChange} required
                       className={inputClass} />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">Kota *</label>
-                    <input name="shippingCity" value={form.shippingCity} onChange={handleChange} required
-                      className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">Provinsi/Negara Bagian</label>
-                    <input name="shippingProvince" value={form.shippingProvince} onChange={handleChange}
-                      className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">Kode Pos</label>
-                    <input name="shippingPostal" value={form.shippingPostal} onChange={handleChange}
-                      className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">Negara</label>
-                    <input name="shippingCountry" value={form.shippingCountry} onChange={handleChange}
-                      className={inputClass} />
-                  </div>
-                  <div className="sm:col-span-2">
                     <label className="block text-sm text-slate-700 mb-1 font-medium">Nomor Telepon *</label>
-                    <input name="shippingPhone" value={form.shippingPhone} onChange={handleChange} required
+                    <input name="altPhone" value={form.altPhone} onChange={handleChange} required
                       type="tel"
                       className={inputClass} />
                   </div>

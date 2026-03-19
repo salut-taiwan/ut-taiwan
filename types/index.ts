@@ -37,6 +37,14 @@ export interface ModuleDTO extends ModuleSummaryDTO {
   weight_grams: number | null;
   has_multimedia: boolean;
   tbo_url: string | null;
+  subject_modules?: Array<{
+    subjects: {
+      id: string;
+      code: string;
+      name: string;
+      programs?: { id: string; code: string; name: string };
+    };
+  }>;
 }
 
 export interface SubjectDTO {
@@ -170,7 +178,7 @@ export interface ScraperRunDTO {
   modules_updated: number;
   modules_removed: number;
   error_message: string | null;
-  triggered_by: 'cron' | 'manual';
+  triggered_by: 'cron' | 'manual' | 'prefix-manual' | 'scheduled';
 }
 
 // Request types
