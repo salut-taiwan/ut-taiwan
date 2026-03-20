@@ -190,7 +190,7 @@ export default function CartPage() {
               </div>
               <div>
                 <p className="font-semibold text-slate-900 mb-1">6. Pembayaran</p>
-                <p>Pembayaran dilakukan melalui metode yang tersedia di platform ini. Pesanan akan diproses setelah pembayaran dikonfirmasi. Batas waktu pembayaran adalah <span className="font-medium">3 × 24 jam</span> sejak pesanan dibuat.</p>
+                <p>Pembayaran dilakukan melalui metode yang tersedia di platform ini. Pesanan akan diproses setelah pembayaran dikonfirmasi. Batas waktu pembayaran adalah <span className="font-medium">5 × 24 jam</span> sejak pesanan dibuat.</p>
               </div>
               <div>
                 <p className="font-semibold text-slate-900 mb-1">7. Kebijakan Pengembalian Dana</p>
