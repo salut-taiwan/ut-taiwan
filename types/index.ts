@@ -88,6 +88,7 @@ export interface CartItemDTO {
   priceSnapshot: number;
   subtotal: number;
   isAvailable: boolean;
+  isRequest: boolean;
 }
 
 export interface CartDTO {
@@ -126,6 +127,8 @@ export interface OrderItemDTO {
   quantity: number;
   unit_price: number;
   subtotal: number;
+  is_request: boolean;
+  request_status: 'pending' | 'approved' | 'rejected' | null;
 }
 
 export interface PaymentDTO {

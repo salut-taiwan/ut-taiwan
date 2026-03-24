@@ -9,9 +9,9 @@ import { formatDate } from '@/lib/utils';
 import { ScraperRunDTO } from '@/types';
 
 const STATUS_COLORS: Record<string, string> = {
-  running: 'bg-indigo-100 text-indigo-700 animate-pulse',
-  success: 'bg-emerald-100 text-emerald-700',
-  failed: 'bg-red-100 text-red-700',
+  running: 'bg-indigo-50 border border-indigo-200 text-indigo-700 animate-pulse',
+  success: 'bg-emerald-50 border border-emerald-200 text-emerald-700',
+  failed:  'bg-red-50    border border-red-200    text-red-700',
 };
 
 export default function AdminScraperPage() {
@@ -126,7 +126,7 @@ export default function AdminScraperPage() {
                     <p className="text-xs text-red-500 mt-1 truncate">{run.error_message}</p>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-sm flex-shrink-0">
+                <div className="flex items-center gap-4 text-sm flex-shrink-0 tabular-nums">
                   <span className="text-emerald-600 font-medium">+{run.modules_added}</span>
                   <span className="text-indigo-600 font-medium">~{run.modules_updated}</span>
                   <span className="text-red-500 font-medium">-{run.modules_removed}</span>

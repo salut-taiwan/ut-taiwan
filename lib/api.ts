@@ -149,6 +149,8 @@ export const api = {
       apiFetch('/cart/packages', { method: 'POST', body: JSON.stringify({ packageId }) }),
     updateItem: (itemId: string, quantity: number) =>
       apiFetch(`/cart/items/${itemId}`, { method: 'PUT', body: JSON.stringify({ quantity }) }),
+    convertToRequest: (itemId: string) =>
+      apiFetch<CartDTO>(`/cart/items/${itemId}/convert-to-request`, { method: 'PATCH' }),
     removeItem: (itemId: string) =>
       apiFetch(`/cart/items/${itemId}`, { method: 'DELETE' }),
     clear: () => apiFetch('/cart', { method: 'DELETE' }),
@@ -178,5 +180,10 @@ export const api = {
       apiFetch(`/orders/admin/${orderId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     confirmKarunika: (orderId: string) =>
       apiFetch(`/orders/admin/${orderId}/confirm-karunika`, { method: 'POST' }),
+    updateRequestItemStatus: (orderId: string, itemId: string, status: 'approved' | 'rejected', unitPrice?: number) =>
+      apiFetch(`/orders/admin/${orderId}/items/${itemId}/request-status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, ...(unitPrice !== undefined ? { unit_price: unitPrice } : {}) }),
+      }),
   },
 };

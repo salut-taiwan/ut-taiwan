@@ -1,73 +1,112 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
+import { cn } from '@/lib/utils';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const { cartCount } = useCart();
 
+  const navLinks = [
+    { href: '/program', label: 'Program Studi' },
+    { href: '/modules', label: 'Semua Modul' },
+    { href: '/packages', label: 'Paket Semester' },
+  ];
+
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200/50 shadow-sm sticky top-0 z-50">
+    <nav className="bg-white/90 backdrop-blur-xl border-b border-[var(--border-subtle)] shadow-[var(--shadow-xs)] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" prefetch={true} className="flex items-center gap-2">
-            <span className="text-xl font-bold text-indigo-700">UT Taiwan</span>
+          <Link href="/" prefetch={true} className="flex items-center gap-2.5">
+            <span className="text-xl font-bold tracking-tight text-indigo-700">UT Taiwan</span>
             <span className="text-xs text-slate-400 hidden sm:block">Toko Modul Kuliah</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6 text-sm">
-            <Link href="/program" prefetch={true} className="text-slate-600 hover:text-indigo-600 font-medium transition-colors active:opacity-70 transition-opacity duration-[120ms]">
-              Program Studi
-            </Link>
-            <Link href="/modules" prefetch={true} className="text-slate-600 hover:text-indigo-600 font-medium transition-colors active:opacity-70 transition-opacity duration-[120ms]">
-              Semua Modul
-            </Link>
-            <Link href="/packages" prefetch={true} className="text-slate-600 hover:text-indigo-600 font-medium transition-colors active:opacity-70 transition-opacity duration-[120ms]">
-              Paket Semester
-            </Link>
+          <div className="hidden md:flex items-center gap-1 text-sm">
+            {navLinks.map(link => {
+              const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  prefetch={true}
+                  className={cn(
+                    'font-medium rounded-md px-2.5 py-1.5 transition-[color,background-color] duration-150',
+                    isActive
+                      ? 'text-indigo-700 font-semibold bg-indigo-50'
+                      : 'text-slate-600 hover:text-indigo-700 hover:bg-indigo-50'
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link href="/cart" prefetch={true} className="relative p-2.5 text-slate-600 hover:text-indigo-600 transition-colors active:opacity-70">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          <div className="flex items-center gap-2">
+            <Link href="/cart" prefetch={true} className="relative rounded-lg p-2 text-slate-600 hover:text-indigo-700 hover:bg-slate-100 transition-[color,background-color] duration-150">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round"
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                <span className="absolute -top-0.5 -right-0.5 bg-amber-400 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center leading-none px-1">
                   {cartCount}
                 </span>
               )}
             </Link>
 
             {user ? (
-              <div className="flex items-center gap-2">
-                <Link href="/orders" prefetch={true} className="text-sm text-slate-600 hover:text-indigo-600 font-medium transition-colors active:opacity-70 py-1.5 px-2">
+              <div className="flex items-center gap-1">
+                <Link href="/orders" prefetch={true}
+                  className={cn(
+                    'text-sm font-medium rounded-md px-2.5 py-1.5 transition-[color,background-color] duration-150',
+                    pathname.startsWith('/orders')
+                      ? 'text-indigo-700 font-semibold bg-indigo-50'
+                      : 'text-slate-600 hover:text-indigo-700 hover:bg-indigo-50'
+                  )}>
                   Pesanan
                 </Link>
                 {user.role === 'admin' && (
-                  <Link href="/admin" prefetch={true} className="text-sm text-orange-600 hover:text-orange-700 font-medium active:opacity-70 py-1.5 px-2">
+                  <Link href="/admin" prefetch={true}
+                    className={cn(
+                      'text-sm font-medium rounded-md px-2.5 py-1.5 transition-[color,background-color] duration-150',
+                      pathname.startsWith('/admin')
+                        ? 'text-orange-700 bg-orange-50'
+                        : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
+                    )}>
                     Admin
                   </Link>
                 )}
+                <Link href="/profile" prefetch={true}
+                  className={cn(
+                    'text-sm font-medium rounded-md px-2.5 py-1.5 transition-[color,background-color] duration-150',
+                    pathname === '/profile'
+                      ? 'text-indigo-700 font-semibold bg-indigo-50'
+                      : 'text-slate-600 hover:text-indigo-700 hover:bg-indigo-50'
+                  )}>
+                  Profil
+                </Link>
                 <button
                   onClick={async () => { await logout(); router.push('/'); }}
-                  className="text-sm text-slate-500 hover:text-red-600 transition-colors py-1.5 px-2"
+                  className="text-sm text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md px-2.5 py-1.5 transition-[color,background-color] duration-150 font-medium"
                 >
                   Keluar
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/login" prefetch={true} className="text-sm border border-indigo-300 text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors font-medium active:opacity-70">
+                <Link href="/login" prefetch={true}
+                  className="text-sm border border-indigo-300 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 px-3 py-1.5 rounded-lg transition-[color,background-color,border-color] duration-150 font-medium">
                   Masuk
                 </Link>
                 <Link href="/register" prefetch={true}
-                  className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 font-semibold transition-colors shadow-sm active:opacity-70">
+                  className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 hover:-translate-y-px font-semibold transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)]">
                   Daftar
                 </Link>
               </div>

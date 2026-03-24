@@ -8,6 +8,63 @@ import { api } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { ScraperRunDTO } from '@/types';
 
+const adminCards = [
+  {
+    href: '/admin/scraper',
+    title: 'Scraper',
+    desc: 'Kelola sinkronisasi data TBO Karunika',
+    iconColor: 'text-indigo-600',
+    iconBg: 'bg-indigo-50',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg>
+    ),
+  },
+  {
+    href: '/admin/modules',
+    title: 'Manajemen Modul',
+    desc: 'Lihat dan kelola data modul',
+    iconColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-50',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+      </svg>
+    ),
+  },
+  {
+    href: '/admin/packages',
+    title: 'Manajemen Paket',
+    desc: 'Buat dan kelola paket semester',
+    iconColor: 'text-amber-600',
+    iconBg: 'bg-amber-50',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+        <line x1="16.5" y1="9.4" x2="7.5" y2="4.21" />
+        <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+        <polyline points="3.27,6.96 12,12.01 20.73,6.96" />
+        <line x1="12" y1="22.08" x2="12" y2="12" />
+      </svg>
+    ),
+  },
+  {
+    href: '/admin/orders',
+    title: 'Pesanan & Pembayaran',
+    desc: 'Lihat pesanan dan konfirmasi pembayaran',
+    iconColor: 'text-purple-600',
+    iconBg: 'bg-purple-50',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+        <line x1="1" y1="10" x2="23" y2="10" />
+      </svg>
+    ),
+  },
+];
+
 export default function AdminPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -37,32 +94,22 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold text-slate-900 mt-1">Admin Dashboard</h1>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
-        <Link href="/admin/scraper" className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow group">
-          <div className="text-3xl mb-2">🤖</div>
-          <h3 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">Scraper</h3>
-          <p className="text-sm text-slate-500 mt-1">Kelola sinkronisasi data TBO Karunika</p>
-          {recentRun && (
-            <p className="text-xs text-slate-400 mt-2">
-              Terakhir: {formatDate(recentRun.started_at)} — {recentRun.status}
-            </p>
-          )}
-        </Link>
-        <Link href="/admin/modules" className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow group">
-          <div className="text-3xl mb-2">📚</div>
-          <h3 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">Manajemen Modul</h3>
-          <p className="text-sm text-slate-500 mt-1">Lihat dan kelola data modul</p>
-        </Link>
-        <Link href="/admin/packages" className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow group">
-          <div className="text-3xl mb-2">📦</div>
-          <h3 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">Manajemen Paket</h3>
-          <p className="text-sm text-slate-500 mt-1">Buat dan kelola paket semester</p>
-        </Link>
-        <Link href="/admin/orders" className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow group">
-          <div className="text-3xl mb-2">💳</div>
-          <h3 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">Pesanan & Pembayaran</h3>
-          <p className="text-sm text-slate-500 mt-1">Lihat pesanan dan konfirmasi pembayaran</p>
-        </Link>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {adminCards.map(card => (
+          <Link key={card.href} href={card.href}
+            className="group bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200 p-5">
+            <div className={`w-12 h-12 ${card.iconBg} ${card.iconColor} rounded-xl flex items-center justify-center mb-3`}>
+              <span className="w-6 h-6">{card.icon}</span>
+            </div>
+            <h3 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors duration-150">{card.title}</h3>
+            <p className="text-sm text-slate-500 mt-1">{card.desc}</p>
+            {card.href === '/admin/scraper' && recentRun && (
+              <p className="text-xs text-slate-400 mt-2">
+                Terakhir: {formatDate(recentRun.started_at)} — {recentRun.status}
+              </p>
+            )}
+          </Link>
+        ))}
       </div>
     </div>
   );

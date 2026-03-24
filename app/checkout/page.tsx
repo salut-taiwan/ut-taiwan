@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { CartDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 interface ProfileAddress {
   name: string;
@@ -17,6 +18,9 @@ interface ProfileAddress {
   postal_code: string;
   country: string;
 }
+
+const inputClass = "w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm text-slate-900 bg-white placeholder:text-slate-400 transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
+const labelClass = "block text-sm font-medium text-slate-700 mb-1.5";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -114,7 +118,18 @@ export default function CheckoutPage() {
     }
   }
 
-  if (loading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
+  if (loading) return (
+    <div className="max-w-4xl">
+      <div className="h-8 w-32 rounded skeleton mb-6" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="h-64 rounded-2xl skeleton" />
+          <div className="h-16 rounded-xl skeleton" />
+        </div>
+        <div className="h-64 rounded-2xl skeleton" />
+      </div>
+    </div>
+  );
   if (!cart || cart.items.length === 0) {
     return (
       <div className="text-center py-16">
@@ -123,8 +138,6 @@ export default function CheckoutPage() {
     );
   }
 
-  const inputClass = "w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 bg-white";
-
   return (
     <div className="max-w-4xl">
       <h1 className="text-2xl font-bold text-slate-900 mb-6">Checkout</h1>
@@ -132,25 +145,35 @@ export default function CheckoutPage() {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Form */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-5">
             {/* Shipping */}
-            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-6">
               <h2 className="font-semibold text-slate-900 mb-4">Alamat Pengiriman</h2>
 
-              {/* Toggle — only show if profile has an address */}
+              {/* Pill toggle — only show if profile has an address */}
               {profileAddress && (
-                <div className="flex rounded-lg border border-slate-200 overflow-hidden mb-5 text-sm font-medium">
+                <div className="flex gap-1 bg-slate-100 rounded-xl p-1 mb-5">
                   <button
                     type="button"
                     onClick={() => setUseProfileAddress(true)}
-                    className={`flex-1 py-2 px-4 transition-colors ${useProfileAddress ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                    className={cn(
+                      'flex-1 py-2 px-4 rounded-[10px] text-sm font-medium transition-[background-color,color,box-shadow] duration-150',
+                      useProfileAddress
+                        ? 'bg-white text-slate-900 shadow-[var(--shadow-xs)]'
+                        : 'text-slate-500 hover:text-slate-700'
+                    )}
                   >
                     Alamat Terdaftar
                   </button>
                   <button
                     type="button"
                     onClick={() => setUseProfileAddress(false)}
-                    className={`flex-1 py-2 px-4 transition-colors ${!useProfileAddress ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                    className={cn(
+                      'flex-1 py-2 px-4 rounded-[10px] text-sm font-medium transition-[background-color,color,box-shadow] duration-150',
+                      !useProfileAddress
+                        ? 'bg-white text-slate-900 shadow-[var(--shadow-xs)]'
+                        : 'text-slate-500 hover:text-slate-700'
+                    )}
                   >
                     Alamat Lain
                   </button>
@@ -159,7 +182,7 @@ export default function CheckoutPage() {
 
               {/* Read-only profile address card */}
               {useProfileAddress && profileAddress ? (
-                <div className="bg-slate-50 rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-700 space-y-0.5">
+                <div className="bg-slate-50/60 rounded-xl border border-[var(--border-subtle)] px-4 py-3 text-sm text-slate-700 space-y-0.5">
                   <p className="font-semibold text-slate-900">{profileAddress.name}</p>
                   <p>
                     {[profileAddress.zh_road,
@@ -178,52 +201,43 @@ export default function CheckoutPage() {
                 /* Editable form — Chinese address fields */
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">Nama Penerima *</label>
-                    <input name="altName" value={form.altName} onChange={handleChange} required
-                      className={inputClass} />
+                    <label className={labelClass}>Nama Penerima *</label>
+                    <input name="altName" value={form.altName} onChange={handleChange} required className={inputClass} />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">縣市 *</label>
-                    <input name="altZhCity" value={form.altZhCity} onChange={handleChange} required
-                      className={inputClass} placeholder="台北市" />
+                    <label className={labelClass}>縣市 *</label>
+                    <input name="altZhCity" value={form.altZhCity} onChange={handleChange} required className={inputClass} placeholder="台北市" />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">區 *</label>
-                    <input name="altZhDistrict" value={form.altZhDistrict} onChange={handleChange} required
-                      className={inputClass} placeholder="信義區" />
+                    <label className={labelClass}>區 *</label>
+                    <input name="altZhDistrict" value={form.altZhDistrict} onChange={handleChange} required className={inputClass} placeholder="信義區" />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">路/街 *</label>
-                    <input name="altZhRoad" value={form.altZhRoad} onChange={handleChange} required
-                      className={inputClass} placeholder="信義路五段" />
+                    <label className={labelClass}>路/街 *</label>
+                    <input name="altZhRoad" value={form.altZhRoad} onChange={handleChange} required className={inputClass} placeholder="信義路五段" />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">號 *</label>
-                    <input name="altZhNumber" value={form.altZhNumber} onChange={handleChange} required
-                      className={inputClass} placeholder="7號" />
+                    <label className={labelClass}>號 *</label>
+                    <input name="altZhNumber" value={form.altZhNumber} onChange={handleChange} required className={inputClass} placeholder="7號" />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">樓/室 (選填)</label>
-                    <input name="altZhFloor" value={form.altZhFloor} onChange={handleChange}
-                      className={inputClass} placeholder="3樓" />
+                    <label className={labelClass}>樓/室 (選填)</label>
+                    <input name="altZhFloor" value={form.altZhFloor} onChange={handleChange} className={inputClass} placeholder="3樓" />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">郵遞區號 *</label>
-                    <input name="altPostal" value={form.altPostal} onChange={handleChange} required
-                      className={inputClass} />
+                    <label className={labelClass}>郵遞區號 *</label>
+                    <input name="altPostal" value={form.altPostal} onChange={handleChange} required className={inputClass} />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-700 mb-1 font-medium">Nomor Telepon *</label>
-                    <input name="altPhone" value={form.altPhone} onChange={handleChange} required
-                      type="tel"
-                      className={inputClass} />
+                    <label className={labelClass}>Nomor Telepon *</label>
+                    <input name="altPhone" value={form.altPhone} onChange={handleChange} required type="tel" className={inputClass} />
                   </div>
                 </div>
               )}
 
               {/* Notes — always visible */}
               <div className="mt-4">
-                <label className="block text-sm text-slate-700 mb-1 font-medium">Catatan (opsional)</label>
+                <label className={labelClass}>Catatan (opsional)</label>
                 <textarea name="notes" value={form.notes} onChange={handleChange} rows={2}
                   placeholder="Instruksi khusus untuk pengiriman"
                   className={inputClass} />
@@ -231,44 +245,70 @@ export default function CheckoutPage() {
             </div>
 
             {/* Payment info */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
-              <p className="font-semibold mb-1">ℹ Instruksi pembayaran</p>
-              <p>Instruksi pembayaran akan dikirimkan melalui email setelah admin mengkonfirmasi ketersediaan stok. Anda tidak perlu melakukan transfer sekarang.</p>
+            <div className="flex items-start gap-3 bg-blue-50/60 border border-blue-100 rounded-2xl p-5 text-sm text-blue-800">
+              <svg className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="font-semibold mb-1">Instruksi pembayaran</p>
+                <p>Instruksi pembayaran akan dikirimkan melalui email setelah admin mengkonfirmasi ketersediaan stok. Anda tidak perlu melakukan transfer sekarang.</p>
+              </div>
             </div>
           </div>
 
           {/* Order summary */}
           <div className="lg:col-span-1">
-            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 sticky top-24">
+            <div className="bg-white border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-5 sticky top-24">
               <h2 className="font-semibold text-slate-900 mb-4">Ringkasan Pesanan</h2>
               <div className="space-y-2 text-sm mb-4 max-h-48 overflow-y-auto">
                 {cart.items.map(item => (
-                  <div key={item.id} className="flex justify-between gap-2">
-                    <span className="text-slate-600 truncate">{item.tboCode} {item.moduleName}</span>
-                    <span className="text-slate-900 font-medium whitespace-nowrap">{formatIDR(item.subtotal)}</span>
+                  <div key={item.id} className="flex justify-between gap-2 items-start">
+                    <span className="text-slate-600 truncate flex-1">
+                      {item.tboCode} {item.moduleName}
+                      {item.isRequest && (
+                        <span className="ml-1 text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">REQ</span>
+                      )}
+                      {item.quantity > 1 && (
+                        <span className="ml-1 text-slate-400 text-xs">×{item.quantity}</span>
+                      )}
+                    </span>
+                    <span className="text-slate-900 font-medium whitespace-nowrap tabular-nums">
+                      {item.isRequest && item.subtotal === 0 ? '—' : formatIDR(item.subtotal)}
+                    </span>
                   </div>
                 ))}
               </div>
-              <div className="border-t border-indigo-200 pt-3 mb-5">
+              {cart.items.some(i => i.isRequest) && (
+                <div className="mb-4 flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 text-xs text-amber-800">
+                  <svg className="w-3.5 h-3.5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </svg>
+                  <span>Item bertanda <strong>REQ</strong> adalah permintaan. Admin akan mengkonfirmasi ketersediaan sebelum meminta pembayaran.</span>
+                </div>
+              )}
+              <div className="border-t border-[var(--border-subtle)] pt-3 mb-5">
                 <div className="flex justify-between text-slate-500 text-sm mb-1">
                   <span>Subtotal</span>
-                  <span>{formatIDR(cart.subtotal)}</span>
+                  <span className="tabular-nums">{formatIDR(cart.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-slate-500 text-sm mb-3">
                   <span>Ongkos Kirim</span>
-                  <span>{formatIDR(0)}</span>
+                  <span className="tabular-nums">{formatIDR(0)}</span>
                 </div>
-                <div className="flex justify-between font-bold">
-                  <span className="text-slate-900">Total Pesanan</span>
-                  <span className="text-2xl font-bold text-indigo-700">{formatIDR(cart.subtotal)}</span>
+                <div className="flex justify-between font-bold items-end">
+                  <span className="text-slate-700">Total Pesanan</span>
+                  <span className="text-2xl font-extrabold text-indigo-700 tabular-nums">{formatIDR(cart.subtotal)}</span>
                 </div>
               </div>
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm"
+                className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]"
               >
-                {submitting ? 'Memproses...' : 'Pesan Sekarang'}
+                {submitting
+                  ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" /> Memproses...</>
+                  : 'Pesan Sekarang'
+                }
               </button>
             </div>
           </div>

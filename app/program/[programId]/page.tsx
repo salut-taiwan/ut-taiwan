@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
-import { ProgramDTO, SubjectDTO, ModuleSummaryDTO } from '@/types';
+import { ProgramDTO, SubjectDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
 import { useCart } from '@/lib/cart';
+import { cn } from '@/lib/utils';
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -75,15 +76,9 @@ export default function ProgramDetailPage() {
   }
 
   if (loading) return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="bg-white rounded-xl border border-slate-100 overflow-hidden animate-pulse">
-          <div className="px-5 py-4 flex items-center gap-3">
-            <div className="h-4 w-20 bg-slate-100 rounded" />
-            <div className="h-4 w-48 bg-slate-100 rounded" />
-            <div className="h-4 w-12 bg-slate-100 rounded ml-auto" />
-          </div>
-        </div>
+        <div key={i} className="h-14 rounded-2xl skeleton" />
       ))}
     </div>
   );
@@ -94,8 +89,13 @@ export default function ProgramDetailPage() {
   return (
     <div>
       <div className="mb-6">
-        <Link href="/program" className="text-sm text-indigo-600 hover:underline">&larr; Semua Program Studi</Link>
-        <h1 className="text-2xl font-bold text-slate-900 mt-2">{program.name}</h1>
+        <Link href="/program" className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 transition-colors duration-150 mb-3">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          Semua Program Studi
+        </Link>
+        <h1 className="text-2xl font-bold text-slate-900">{program.name}</h1>
         <p className="text-slate-500 text-sm mt-1">
           {program.faculties?.name} &bull; {program.level} &bull; {program.total_sks} SKS
         </p>
@@ -105,17 +105,19 @@ export default function ProgramDetailPage() {
       <div className="flex gap-2 mb-6 border-b border-slate-200">
         <button
           onClick={() => setActiveTab('semester')}
-          className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'semester' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
+          className={cn(
+            'pb-3 px-1 text-sm font-medium border-b-2 transition-[color,border-color] duration-150',
+            activeTab === 'semester' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+          )}
         >
           Per Semester
         </button>
         <button
           onClick={() => setActiveTab('all')}
-          className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'all' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
+          className={cn(
+            'pb-3 px-1 text-sm font-medium border-b-2 transition-[color,border-color] duration-150',
+            activeTab === 'all' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+          )}
         >
           Semua Mata Kuliah
         </button>
@@ -123,7 +125,7 @@ export default function ProgramDetailPage() {
 
       {activeTab === 'semester' && (
         <>
-          {/* Semester selector */}
+          {/* Semester pills */}
           <div className="flex flex-wrap gap-2 mb-6">
             {SEMESTERS.map(sem => {
               const count = subjects.filter(s => s.semester_hint === sem).length;
@@ -132,11 +134,12 @@ export default function ProgramDetailPage() {
                   key={sem}
                   onClick={() => setActiveSemester(sem)}
                   disabled={count === 0}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors disabled:opacity-30 ${
+                  className={cn(
+                    'px-4 py-2 rounded-full text-sm font-medium transition-[background-color,border-color,color,box-shadow] duration-150 disabled:opacity-30 disabled:cursor-not-allowed',
                     activeSemester === sem
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
+                      ? 'bg-indigo-600 text-white shadow-[var(--shadow-sm)]'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700'
+                  )}
                 >
                   Semester {sem}
                   {count > 0 && <span className="ml-1.5 text-xs opacity-70">({count})</span>}
@@ -151,8 +154,9 @@ export default function ProgramDetailPage() {
               <button
                 onClick={handleAddSemesterToCart}
                 disabled={addingAll}
-                className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold shadow-sm"
+                className="inline-flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 transition-[background-color,transform,box-shadow] duration-150 font-semibold shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)]"
               >
+                {addingAll && <span className="border-2 border-white border-t-transparent rounded-full animate-spin w-3.5 h-3.5" />}
                 {addingAll ? 'Menambahkan...' : 'Tambah Semua ke Keranjang'}
               </button>
             </div>
@@ -161,7 +165,7 @@ export default function ProgramDetailPage() {
       )}
 
       {/* Subject list */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {displaySubjects.length === 0 ? (
           <div className="text-center py-12 text-slate-400">Belum ada data mata kuliah untuk semester ini</div>
         ) : (
@@ -179,48 +183,58 @@ function SubjectCard({ subject, onAddToCart, addingModule }: { subject: SubjectD
   const modules = (subject.subject_modules || []).map(sm => sm.modules);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-xs)] overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50/80 transition-colors duration-100"
       >
-        <div className="flex items-center gap-3 text-left">
+        <div className="flex items-center gap-3 text-left flex-wrap">
           <span className="font-mono text-xs text-indigo-600 font-semibold whitespace-nowrap">{subject.code}</span>
           <span className="font-medium text-slate-900">{subject.name}</span>
           <span className="text-xs text-slate-400 whitespace-nowrap">{subject.sks} SKS</span>
-          {subject.notes && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{subject.notes}</span>}
+          {subject.notes && (
+            <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
+              {subject.notes}
+            </span>
+          )}
         </div>
-        <svg className={`w-4 h-4 text-slate-400 flex-shrink-0 ml-2 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        <svg
+          className={cn('w-4 h-4 text-slate-400 flex-shrink-0 ml-2 transition-transform duration-200 ease-out', expanded && 'rotate-180')}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       {expanded && modules.length > 0 && (
-        <div className="border-t border-slate-100 divide-y divide-slate-50">
+        <div className="border-t border-[var(--border-subtle)] divide-y divide-slate-50">
           {modules.map(mod => (
-            <div key={mod.id} className="flex items-center justify-between px-5 py-3 bg-slate-50">
+            <div key={mod.id} className="flex items-center justify-between px-5 py-3 bg-slate-50/60 hover:bg-white transition-colors duration-100">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <span className="font-mono text-xs text-slate-400 whitespace-nowrap">{mod.tbo_code}</span>
-                <Link href={`/modules/${mod.id}`} className="text-sm text-slate-800 hover:text-indigo-700 truncate">
+                <Link href={`/modules/${mod.id}`} className="text-sm text-slate-800 hover:text-indigo-700 transition-colors duration-150 truncate">
                   {mod.name}
                 </Link>
               </div>
               <div className="flex items-center gap-4 ml-4 flex-shrink-0">
                 {mod.is_available ? (
                   <>
-                    <span className="text-sm font-semibold text-slate-900">
+                    <span className="text-sm font-semibold text-slate-900 tabular-nums">
                       {mod.price_student ? formatIDR(mod.price_student) : '-'}
                     </span>
                     <button
                       onClick={() => onAddToCart(mod.id)}
                       disabled={addingModule === mod.id}
-                      className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold"
+                      className="inline-flex items-center gap-1 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-[background-color] duration-150 font-semibold"
                     >
-                      {addingModule === mod.id ? 'Menambahkan...' : 'Tambah'}
+                      {addingModule === mod.id
+                        ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-3 h-3" /> Menambahkan...</>
+                        : 'Tambah'
+                      }
                     </button>
                   </>
                 ) : (
-                  <span className="text-xs text-red-400">Tidak Tersedia</span>
+                  <span className="text-xs text-red-400 font-medium">Tidak Tersedia</span>
                 )}
               </div>
             </div>
@@ -229,7 +243,7 @@ function SubjectCard({ subject, onAddToCart, addingModule }: { subject: SubjectD
       )}
 
       {expanded && modules.length === 0 && (
-        <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 text-sm text-slate-400 italic">
+        <div className="px-5 py-3 bg-slate-50/60 border-t border-[var(--border-subtle)] text-sm text-slate-400 italic">
           Belum ada data modul untuk mata kuliah ini
         </div>
       )}

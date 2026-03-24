@@ -15,13 +15,36 @@
   --accent: #FADA02;
   --success: #10B981;
   --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #F1F5F9;
+  --surface-overlay: rgba(255,255,255,0.85);
   --border: #E2E8F0;
+  --border-subtle: rgba(15,23,42,0.06);
+  --border-default: #E2E8F0;
+  --border-strong: #CBD5E1;
   --text-muted: #94A3B8;
   --text-body: #475569;
-  --shadow-card: 0 1px 2px rgba(10,69,149,0.04), 0 4px 8px rgba(10,69,149,0.06);
-  --shadow-card-hover: 0 2px 4px rgba(10,69,149,0.06), 0 8px 20px rgba(10,69,149,0.10);
-  --shadow-modal: 0 4px 6px rgba(10,69,149,0.06), 0 12px 32px rgba(10,69,149,0.14), 0 24px 48px rgba(10,69,149,0.08);
-  --shadow-btn-primary: 0 1px 0 inset rgba(255,255,255,0.20), 0 -1px 0 inset rgba(0,0,0,0.12), 0 1px 2px rgba(10,69,149,0.20), 0 4px 8px rgba(10,69,149,0.18);
+  --ring-focus: rgba(10,69,149,0.25);
+
+  /* Shadow scale — all tinted with brand blue */
+  --shadow-xs:    0 1px 2px rgba(10,69,149,0.04);
+  --shadow-sm:    0 1px 3px rgba(10,69,149,0.06), 0 2px 6px rgba(10,69,149,0.04);
+  --shadow-md:    0 2px 6px rgba(10,69,149,0.06), 0 6px 18px rgba(10,69,149,0.08);
+  --shadow-lg:    0 4px 12px rgba(10,69,149,0.08), 0 16px 40px rgba(10,69,149,0.10);
+  --shadow-xl:    0 8px 24px rgba(10,69,149,0.10), 0 32px 64px rgba(10,69,149,0.12);
+  --shadow-modal: 0 4px 6px rgba(10,69,149,0.06), 0 16px 48px rgba(10,69,149,0.16);
+
+  /* Legacy aliases */
+  --shadow-card:         var(--shadow-sm);
+  --shadow-card-hover:   var(--shadow-md);
+  --shadow-btn-primary:  0 1px 0 inset rgba(255,255,255,0.20), 0 -1px 0 inset rgba(0,0,0,0.12), 0 1px 2px rgba(10,69,149,0.20), 0 4px 8px rgba(10,69,149,0.18);
+
+  /* Border radius scale */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   18px;
+  --radius-full: 9999px;
 }
 
 @theme inline {
@@ -67,7 +90,11 @@
     --primary: #647FE3;
     --primary-hover: #0A4595;
     --surface: #1E293B;
+    --surface-raised: #1E293B;
+    --surface-sunken: #0F172A;
     --border: #334155;
+    --border-subtle: rgba(255,255,255,0.06);
+    --border-default: #334155;
     --text-muted: #64748B;
     --text-body: #94A3B8;
   }
@@ -90,11 +117,42 @@ a { text-underline-offset: 3px; }
 .tabular-nums { font-variant-numeric: tabular-nums; }
 .tracking-caps { letter-spacing: 0.08em; }
 
+/* Shimmer skeleton — replaces animate-pulse */
+.skeleton {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+
 @keyframes slideInUp {
-  from { transform: translateY(12px); opacity: 0; }
+  from { transform: translateY(16px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
+
+@keyframes slideDown {
+  from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 @keyframes scaleIn {
   from { transform: scale(0.96); opacity: 0; }
   to   { transform: scale(1);    opacity: 1; }
 }
+
+@keyframes slideOutDown {
+  from { transform: translateY(0);    opacity: 1; }
+  to   { transform: translateY(16px); opacity: 0; }
+}
+
+/* View Transitions API — free cross-page fade (rule 4.9) */
+@view-transition { navigation: auto; }

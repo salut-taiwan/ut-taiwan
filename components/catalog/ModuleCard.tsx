@@ -31,20 +31,20 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
       await api.cart.addItem(module.id);
       setAdded(true);
       incrementCart(1);
-      showToast('Modul ditambahkan ke keranjang!');
+      showToast(module.is_available ? 'Modul ditambahkan ke keranjang!' : 'Modul ditambahkan sebagai permintaan!');
       onAddedToCart?.();
       setTimeout(() => setAdded(false), 2000);
     } catch (err) {
-      console.error(err);
+      showToast((err as any)?.message || 'Gagal menambahkan ke keranjang', 'error');
     } finally {
       setAdding(false);
     }
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] active:scale-[0.99] transition-[box-shadow,transform] duration-200 overflow-hidden flex flex-col border-t-4 border-t-indigo-500">
+    <div className={`bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1 active:scale-[0.99] transition-[box-shadow,transform] duration-200 overflow-hidden flex flex-col border-t-4 ${module.is_available && module.price_student ? 'border-t-indigo-500' : 'border-t-amber-400'}`}>
       <Link href={`/modules/${module.id}`} className="block">
-        <div className="bg-slate-50 h-48 flex items-center justify-center overflow-hidden rounded-t-[10px]">
+        <div className="bg-gradient-to-br from-indigo-50 to-slate-100 h-48 flex items-center justify-center overflow-hidden">
           {module.cover_image_url ? (
             <Image
               src={module.cover_image_url}
@@ -55,12 +55,12 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
               unoptimized
             />
           ) : (
-            <div className="text-slate-400 text-center px-4">
-              <svg className="w-12 h-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
+            <div className="flex flex-col items-center gap-1.5 text-indigo-200 px-4">
+              <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.25}>
+                <path strokeLinecap="round" strokeLinejoin="round"
                   d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
-              <span className="text-xs">No Cover</span>
+              <span className="text-xs text-slate-400">Tanpa Cover</span>
             </div>
           )}
         </div>
@@ -69,25 +69,39 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
       <div className="p-4 flex-1 flex flex-col">
         <span className="text-xs font-mono text-indigo-600 font-semibold mb-1 tracking-caps">{module.tbo_code}</span>
         <Link href={`/modules/${module.id}`}>
-          <h3 className="text-sm font-medium text-slate-900 line-clamp-2 hover:text-indigo-700 mb-2">{module.name}</h3>
+          <h3 className="text-sm font-medium text-slate-900 line-clamp-2 hover:text-indigo-700 transition-colors duration-150 mb-2">{module.name}</h3>
         </Link>
         <div className="mt-auto">
-          {module.is_available ? (
-            <>
-              <p className="text-base font-bold text-indigo-700 mb-3 tabular-nums">
-                {module.price_student ? formatIDR(module.price_student) : 'Hubungi Kami'}
-              </p>
-              <button
-                onClick={handleAdd}
-                disabled={adding}
-                className="w-full text-sm bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 active:scale-[0.98] transition-[background-color,transform] duration-[120ms] font-semibold shadow-sm"
-              >
-                {adding ? 'Menambahkan...' : added ? 'Ditambahkan!' : 'Tambah ke Keranjang'}
-              </button>
-            </>
-          ) : (
-            <p className="text-sm text-red-500 font-medium">Tidak Tersedia</p>
-          )}
+          <p className={`text-base font-bold mb-3 tabular-nums ${!module.price_student ? 'text-slate-400' : module.is_available ? 'text-indigo-700' : 'text-amber-600'}`}>
+            {module.price_student ? formatIDR(module.price_student) : 'Hubungi Kami'}
+          </p>
+          <button
+            onClick={handleAdd}
+            disabled={adding}
+            className={`w-full text-sm py-2.5 rounded-xl font-semibold transition-[background-color,transform,box-shadow] duration-150 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-1.5
+              ${added
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : module.is_available && module.price_student
+                  ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:-translate-y-px hover:shadow-[var(--shadow-sm)] shadow-[var(--shadow-btn-primary)]'
+                  : 'bg-amber-500 text-white hover:bg-amber-600 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-sm)]'
+              }`}
+          >
+            {adding ? (
+              <>
+                <span className="border-2 border-white border-t-transparent rounded-full animate-spin w-3.5 h-3.5" />
+                Menambahkan...
+              </>
+            ) : added ? (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                {module.is_available && module.price_student ? 'Ditambahkan!' : 'Diminta!'}
+              </>
+            ) : (
+              module.is_available && module.price_student ? 'Tambah ke Keranjang' : 'Minta Buku Ini'
+            )}
+          </button>
         </div>
       </div>
     </div>
@@ -96,15 +110,15 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
 
 export function ModuleCardSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-slate-100 overflow-hidden flex flex-col border-t-4 border-t-slate-200 animate-pulse">
-      <div className="h-48 bg-slate-100 rounded-t-[10px]" />
-      <div className="p-4 flex-1 flex flex-col gap-2">
-        <div className="h-3 w-16 bg-slate-100 rounded" />
-        <div className="h-3 w-full bg-slate-100 rounded" />
-        <div className="h-3 w-3/4 bg-slate-100 rounded" />
+    <div className="bg-white rounded-2xl border border-[var(--border-subtle)] overflow-hidden flex flex-col border-t-4 border-t-slate-200">
+      <div className="h-48 skeleton" />
+      <div className="p-4 flex-1 flex flex-col gap-2.5">
+        <div className="h-3 w-16 rounded skeleton" />
+        <div className="h-3.5 w-full rounded skeleton" />
+        <div className="h-3.5 w-3/4 rounded skeleton" />
         <div className="mt-auto pt-2 flex flex-col gap-2">
-          <div className="h-5 w-20 bg-slate-100 rounded" />
-          <div className="h-9 w-full bg-slate-100 rounded-lg" />
+          <div className="h-5 w-24 rounded skeleton" />
+          <div className="h-10 w-full rounded-xl skeleton" />
         </div>
       </div>
     </div>

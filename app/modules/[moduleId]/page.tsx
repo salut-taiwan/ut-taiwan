@@ -5,8 +5,9 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import { ModuleDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
+import { useCart } from '@/lib/cart';
+import { useToast } from '@/components/ui/Toast';
 
 export default function ModuleDetailPage() {
   const { moduleId } = useParams<{ moduleId: string }>();
@@ -14,10 +15,13 @@ export default function ModuleDetailPage() {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const { incrementCart } = useCart();
+  const { showToast } = useToast();
 
   useEffect(() => {
     api.modules.get(moduleId)
       .then(setModule)
+      .catch(() => setModule(null))
       .finally(() => setLoading(false));
   }, [moduleId]);
 
@@ -28,27 +32,50 @@ export default function ModuleDetailPage() {
     try {
       await api.cart.addItem(module.id);
       setAdded(true);
+      incrementCart(1);
+      showToast(module.is_available ? 'Modul ditambahkan ke keranjang!' : 'Modul ditambahkan sebagai permintaan!');
       setTimeout(() => setAdded(false), 3000);
     } catch (err: any) {
-      alert(err.message);
+      showToast(err.message || 'Gagal menambahkan ke keranjang', 'error');
     } finally {
       setAdding(false);
     }
   }
 
-  if (loading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
+  if (loading) return (
+    <div className="max-w-4xl">
+      <div className="h-4 w-32 rounded skeleton mb-6" />
+      <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] overflow-hidden">
+        <div className="flex flex-col sm:flex-row">
+          <div className="sm:w-72 min-h-64 skeleton" />
+          <div className="p-6 flex-1 flex flex-col gap-4">
+            <div className="h-4 w-24 rounded skeleton" />
+            <div className="h-7 w-full rounded skeleton" />
+            <div className="h-4 w-1/2 rounded skeleton" />
+            <div className="h-20 rounded-xl skeleton" />
+            <div className="h-12 w-40 rounded-xl skeleton" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   if (!module) return <div className="text-center py-16 text-red-500">Modul tidak ditemukan</div>;
 
   const usedInSubjects = (module.subject_modules || []).map((sm: any) => sm.subjects).filter(Boolean);
 
   return (
     <div className="max-w-4xl">
-      <Link href="/modules" className="text-sm text-indigo-600 hover:underline">&larr; Semua Modul</Link>
+      <Link href="/modules" className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 transition-colors duration-150 mb-6">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Semua Modul
+      </Link>
 
-      <div className="mt-6 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] overflow-hidden">
         <div className="flex flex-col sm:flex-row gap-0">
           {/* Cover */}
-          <div className="bg-slate-50 flex items-center justify-center sm:w-64 min-h-64 flex-shrink-0">
+          <div className="bg-gradient-to-br from-slate-50 to-indigo-50/30 flex items-center justify-center sm:w-72 min-h-64 flex-shrink-0">
             {module.cover_image_url ? (
               <Image
                 src={module.cover_image_url}
@@ -59,25 +86,25 @@ export default function ModuleDetailPage() {
                 unoptimized
               />
             ) : (
-              <div className="text-slate-400 text-center p-8">
-                <svg className="w-16 h-16 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
+              <div className="flex flex-col items-center gap-2 text-indigo-200 p-8">
+                <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.25}>
+                  <path strokeLinecap="round" strokeLinejoin="round"
                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
-                <span className="text-sm">Tidak ada cover</span>
+                <span className="text-sm text-slate-400">Tidak ada cover</span>
               </div>
             )}
           </div>
 
           {/* Info */}
           <div className="p-6 flex-1">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className="font-mono text-sm text-indigo-600 font-bold">{module.tbo_code}</span>
               {module.has_multimedia && (
-                <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium"># Multimedia</span>
+                <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium"># Multimedia</span>
               )}
               {!module.is_available && (
-                <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">Tidak Tersedia</span>
+                <span className="text-xs bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full font-medium">Tidak Tersedia</span>
               )}
             </div>
 
@@ -101,9 +128,9 @@ export default function ModuleDetailPage() {
               )}
             </dl>
 
-            <div className="mb-6 bg-indigo-50 rounded-xl p-4">
+            <div className="mb-6 bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-100 rounded-2xl p-5">
               <p className="text-xs text-indigo-500 font-semibold uppercase tracking-wide mb-1">Harga Mahasiswa</p>
-              <p className="text-3xl font-bold text-indigo-700">
+              <p className="text-3xl font-extrabold text-indigo-700 tabular-nums">
                 {module.price_student ? formatIDR(module.price_student) : 'Hubungi Kami'}
               </p>
               {module.price_general && (
@@ -111,22 +138,41 @@ export default function ModuleDetailPage() {
               )}
             </div>
 
-            {module.is_available ? (
-              <button
-                onClick={handleAddToCart}
-                disabled={adding}
-                className="w-full sm:w-auto bg-indigo-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm"
-              >
-                {adding ? 'Menambahkan...' : added ? 'Ditambahkan ke Keranjang!' : 'Tambah ke Keranjang'}
-              </button>
-            ) : (
-              <p className="text-red-500 font-medium">Modul ini sedang tidak tersedia di TBO Karunika</p>
+            <button
+              onClick={handleAddToCart}
+              disabled={adding}
+              className={`inline-flex items-center justify-center gap-1.5 w-full sm:w-auto px-8 py-3 rounded-xl font-semibold transition-[background-color,transform,box-shadow] duration-150 disabled:opacity-50 active:scale-[0.98]
+                ${added
+                  ? 'bg-emerald-600 text-white'
+                  : module.is_available && module.price_student
+                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]'
+                    : 'bg-amber-500 text-white hover:bg-amber-600 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]'
+                }`}
+            >
+              {adding ? (
+                <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" /> Menambahkan...</>
+              ) : added ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  {module.is_available && module.price_student ? 'Ditambahkan ke Keranjang!' : 'Ditambahkan sebagai Permintaan!'}
+                </>
+              ) : module.is_available && module.price_student ? 'Tambah ke Keranjang' : 'Tambahkan sebagai Permintaan'}
+            </button>
+            {(!module.is_available || !module.price_student) && !added && (
+              <p className="mt-2 text-xs text-amber-600">
+                {!module.price_student
+                  ? 'Harga modul ini belum tersedia. Admin akan mengkonfirmasi harga sebelum meminta pembayaran.'
+                  : 'Stok sedang tidak tersedia di TBO Karunika. Anda dapat mengajukan permintaan dan admin akan mengkonfirmasi ketersediaannya.'
+                }
+              </p>
             )}
 
             {module.tbo_url && (
               <a href={module.tbo_url} target="_blank" rel="noopener noreferrer"
-                className="block mt-3 text-sm text-indigo-500 hover:underline">
-                Lihat di TBO Karunika &rarr;
+                className="block mt-3 text-sm text-indigo-500 hover:text-indigo-700 hover:underline transition-colors duration-150">
+                Lihat di TBO Karunika →
               </a>
             )}
           </div>
@@ -134,18 +180,19 @@ export default function ModuleDetailPage() {
 
         {/* Used in subjects */}
         {usedInSubjects.length > 0 && (
-          <div className="border-t border-slate-100 px-6 py-5">
+          <div className="border-t border-[var(--border-subtle)] px-6 py-5">
             <h2 className="font-semibold text-slate-900 mb-3">Digunakan untuk Mata Kuliah</h2>
-            <div className="space-y-2">
+            <div className="space-y-0">
               {usedInSubjects.map((subject: any) => (
-                <div key={subject.id} className="flex items-center justify-between text-sm">
+                <div key={subject.id}
+                  className="flex items-center justify-between text-sm py-2.5 border-b border-slate-50 last:border-0 hover:bg-slate-50/60 rounded-lg px-2 -mx-2 transition-colors duration-100">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs text-slate-400">{subject.code}</span>
                     <span className="text-slate-700">{subject.name}</span>
                   </div>
                   {subject.programs && (
                     <Link href={`/program/${subject.programs.id}`}
-                      className="text-xs text-indigo-600 hover:underline">
+                      className="text-xs text-indigo-600 hover:text-indigo-700 hover:underline transition-colors duration-150">
                       {subject.programs.name}
                     </Link>
                   )}
