@@ -50,14 +50,18 @@ export default function ProgramDetailPage() {
         (s.subject_modules || []).map(sm => sm.modules).filter(Boolean)
       );
       const unique = Array.from(new Map(allModules.map(m => [m.id, m])).values());
-      await Promise.all(unique.map(m => api.cart.addItem(m.id)));
-      const requestCount = unique.filter(m => !m.is_available || !m.price_student).length;
-      const normalCount  = unique.length - requestCount;
+      const results = await Promise.allSettled(unique.map(m => api.cart.addItem(m.id)));
+      const added = results.filter(r => r.status === 'fulfilled').length;
+      if (added === 0) { showToast('Gagal menambahkan modul', 'error'); return; }
+      const requestCount = unique
+        .filter((m, i) => results[i].status === 'fulfilled' && (!m.is_available || !m.price_student))
+        .length;
+      const normalCount = added - requestCount;
       const msg = requestCount > 0
         ? `${normalCount} modul ditambahkan, ${requestCount} sebagai permintaan`
-        : `${unique.length} modul ditambahkan ke keranjang!`;
+        : `${added} modul ditambahkan ke keranjang!`;
       showToast(msg);
-      incrementCart(unique.length);
+      incrementCart(added);
     } catch (err) {
       showToast('Gagal menambahkan modul', 'error');
     } finally {
