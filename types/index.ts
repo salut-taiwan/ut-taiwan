@@ -89,6 +89,8 @@ export interface CartItemDTO {
   subtotal: number;
   isAvailable: boolean;
   isRequest: boolean;
+  isStale?: boolean;
+  isPricePending?: boolean;
 }
 
 export interface CartDTO {
@@ -97,6 +99,7 @@ export interface CartDTO {
   items: CartItemDTO[];
   subtotal: number;
   itemCount: number;
+  hasStaleItems?: boolean;
 }
 
 export interface OrderDTO {
@@ -118,6 +121,11 @@ export interface OrderDTO {
   order_items: OrderItemDTO[];
   payments: PaymentDTO[];
   created_at: string;
+  // Computed by backend
+  step_index?: number;
+  can_cancel?: boolean;
+  confirm_deadline?: string;
+  confirm_deadline_is_urgent?: boolean;
 }
 
 export interface OrderItemDTO {
@@ -129,6 +137,7 @@ export interface OrderItemDTO {
   subtotal: number;
   is_request: boolean;
   request_status: 'pending' | 'approved' | 'rejected' | null;
+  display_status?: 'normal' | 'rejected' | 'pending_request' | 'zero_price';
 }
 
 export interface PaymentDTO {
@@ -140,6 +149,11 @@ export interface PaymentDTO {
   status: 'pending' | 'paid' | 'expired' | 'failed' | 'refunded';
   paid_at: string | null;
   expires_at: string | null;
+  show_payment_instructions?: boolean;
+  show_payment_deadline?: boolean;
+  bank_name?: string;
+  bank_account?: string;
+  bank_holder?: string;
 }
 
 export interface UserProfileDTO {

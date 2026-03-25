@@ -18,7 +18,7 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
   const { showToast } = useToast();
-  const { incrementCart } = useCart();
+  const { syncCartCount } = useCart();
 
   async function handleAdd() {
     const token = localStorage.getItem('ut_token');
@@ -28,9 +28,9 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
     }
     setAdding(true);
     try {
-      await api.cart.addItem(module.id);
+      const cart = await api.cart.addItem(module.id) as any;
       setAdded(true);
-      incrementCart(1);
+      syncCartCount(cart.itemCount);
       showToast(module.is_available ? 'Modul ditambahkan ke keranjang!' : 'Modul ditambahkan sebagai permintaan!');
       onAddedToCart?.();
       setTimeout(() => setAdded(false), 2000);

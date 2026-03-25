@@ -89,9 +89,7 @@ export default function CartPage() {
     setTncAgreed(false);
   }
 
-  // Stale items: were added as regular but module became unavailable since (not request)
-  const staleItems = cart?.items.filter(i => !i.isAvailable && !i.isRequest) ?? [];
-  const hasStale = staleItems.length > 0;
+  const hasStale = cart?.hasStaleItems ?? false;
 
   if (loading) return (
     <div className="max-w-4xl">
@@ -145,7 +143,7 @@ export default function CartPage() {
           {/* Items */}
           <div className="lg:col-span-2 space-y-3">
             {cart.items.map(item => {
-              const isStale = !item.isAvailable && !item.isRequest;
+              const isStale = item.isStale ?? (!item.isAvailable && !item.isRequest);
               const busyItem = removing === item.id || updatingQty === item.id || converting === item.id;
               return (
                 <div key={item.id} className={`bg-white rounded-2xl border shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-shadow duration-150 p-4 flex items-start gap-4
@@ -169,7 +167,7 @@ export default function CartPage() {
                       )}
                     </div>
                     <p className="text-sm font-medium text-slate-900 truncate">{item.moduleName}</p>
-                    {item.isRequest && item.priceSnapshot === 0
+                    {item.isPricePending
                       ? <p className="text-xs text-slate-400 italic">Harga menyusul</p>
                       : <p className="text-sm text-slate-500 tabular-nums">{formatIDR(item.priceSnapshot)} / eks</p>
                     }
@@ -219,7 +217,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex flex-col items-end gap-2 flex-shrink-0">
                     <span className="text-sm font-semibold text-slate-900 tabular-nums">
-                      {item.isRequest && item.subtotal === 0 ? '—' : formatIDR(item.subtotal)}
+                      {item.isPricePending ? '—' : formatIDR(item.subtotal)}
                     </span>
                     <button
                       onClick={() => handleRemove(item.id)}

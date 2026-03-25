@@ -6,12 +6,14 @@ import { api } from '@/lib/api';
 interface CartContextValue {
   cartCount: number;
   incrementCart: (by?: number) => void;
+  syncCartCount: (count: number) => void;
   refreshCart: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextValue>({
   cartCount: 0,
   incrementCart: () => {},
+  syncCartCount: () => {},
   refreshCart: async () => {},
 });
 
@@ -29,10 +31,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCartCount(prev => prev + by);
   }, []);
 
+  const syncCartCount = useCallback((count: number) => {
+    setCartCount(count);
+  }, []);
+
   useEffect(() => { refreshCart(); }, [refreshCart]);
 
   return (
-    <CartContext.Provider value={{ cartCount, incrementCart, refreshCart }}>
+    <CartContext.Provider value={{ cartCount, incrementCart, syncCartCount, refreshCart }}>
       {children}
     </CartContext.Provider>
   );

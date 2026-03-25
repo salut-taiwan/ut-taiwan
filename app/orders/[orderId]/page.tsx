@@ -53,13 +53,11 @@ function OrderDetailContent() {
     api.orders.get(orderId).then(setOrder).catch(() => {}).finally(() => setLoading(false));
   }, [orderId, router]);
 
-  function getConfirmDeadline(shippedAt: string): Date {
-    return new Date(new Date(shippedAt).getTime() + 10.5 * 24 * 60 * 60 * 1000);
-  }
-
   async function handleCopyAccount() {
+    const payment = order?.payments?.[0];
+    if (!payment?.bank_account) return;
     try {
-      await navigator.clipboard.writeText('2950211345');
+      await navigator.clipboard.writeText(payment.bank_account);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {}
@@ -108,7 +106,7 @@ function OrderDetailContent() {
   if (!order) return <div className="text-center py-16 text-red-500">Pesanan tidak ditemukan</div>;
 
   const payment = order.payments?.[0];
-  const stepIndex = ORDER_STEPS.indexOf(order.status);
+  const stepIndex = order.step_index ?? ORDER_STEPS.indexOf(order.status);
 
   return (
     <div className="max-w-3xl">
@@ -187,7 +185,7 @@ function OrderDetailContent() {
                 <span className="text-slate-500">Jumlah</span>
                 <span className="font-bold tabular-nums">{formatIDR(payment.amount)}</span>
               </div>
-              {payment.expires_at && payment.status === 'pending' && order.status !== 'pending' && (
+              {payment.show_payment_deadline && (
                 <div className="flex justify-between">
                   <span className="text-slate-500">Batas Bayar</span>
                   <span className="text-red-500 font-medium">{formatDate(payment.expires_at)}</span>
@@ -202,17 +200,17 @@ function OrderDetailContent() {
             </div>
 
             {/* Payment instructions */}
-            {payment.status === 'pending' && order.status === 'awaiting_payment' && (
+            {payment.show_payment_instructions && (
               <div className="mt-4 bg-gradient-to-br from-blue-50 to-indigo-50/40 border border-blue-200 rounded-2xl p-5 text-sm text-blue-900 space-y-2">
-                <p className="font-semibold mb-3">Harap transfer ke rekening BCA:</p>
+                <p className="font-semibold mb-3">Harap transfer ke rekening {payment.bank_name}:</p>
                 <div className="flex justify-between">
                   <span className="text-blue-700">Atas nama</span>
-                  <span className="font-medium">Nathasya Vira Nerisa</span>
+                  <span className="font-medium">{payment.bank_holder}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-blue-700">No. Rekening</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-lg font-extrabold tracking-widest text-slate-900">2950211345</span>
+                    <span className="font-mono text-lg font-extrabold tracking-widest text-slate-900">{payment.bank_account}</span>
                     <button
                       onClick={handleCopyAccount}
                       title="Salin nomor rekening"
@@ -271,9 +269,9 @@ function OrderDetailContent() {
             <span className="w-24 text-right ml-4">Subtotal</span>
           </div>
           {order.order_items?.map((item: OrderItemDTO) => {
-            const isRejected = item.request_status === 'rejected';
-            const isPendingRequest = item.is_request && item.request_status === 'pending';
-            const isZeroPrice = item.unit_price === 0;
+            const isRejected = item.display_status === 'rejected';
+            const isPendingRequest = item.display_status === 'pending_request';
+            const hidePrice = item.display_status === 'rejected' || item.display_status === 'zero_price';
             return (
               <div key={item.id} className={`flex items-center text-sm py-2.5 border-b border-slate-50 last:border-0 ${isRejected ? 'opacity-60' : ''}`}>
                 <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
@@ -290,10 +288,10 @@ function OrderDetailContent() {
                   )}
                 </div>
                 <span className="w-24 text-right tabular-nums text-slate-500">
-                  {isRejected || isZeroPrice ? <span className="text-slate-300">—</span> : formatIDR(item.unit_price)}
+                  {hidePrice ? <span className="text-slate-300">—</span> : formatIDR(item.unit_price)}
                 </span>
                 <span className="w-24 text-right ml-4 font-medium tabular-nums">
-                  {isRejected || isZeroPrice ? <span className="text-slate-300">—</span> : <span className="text-slate-900">{formatIDR(item.subtotal)}</span>}
+                  {hidePrice ? <span className="text-slate-300">—</span> : <span className="text-slate-900">{formatIDR(item.subtotal)}</span>}
                 </span>
               </div>
             );
@@ -306,36 +304,30 @@ function OrderDetailContent() {
       </div>
 
       {/* Delivery confirmation */}
-      {order.status === 'shipped' && order.shipped_at && (() => {
-        const deadline = getConfirmDeadline(order.shipped_at!);
-        const now = new Date();
-        const daysLeft = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-        const isUrgent = daysLeft < 2;
-        return (
-          <div className="mb-4 bg-gradient-to-br from-purple-50 to-indigo-50/30 border border-purple-200 rounded-2xl p-6">
-            <h2 className="font-semibold text-purple-900 text-base mb-1">Paket Sudah Sampai?</h2>
-            <p className={`text-sm mb-5 ${isUrgent ? 'text-amber-700 font-medium' : 'text-purple-700'}`}>
-              Konfirmasi penerimaan sebelum <strong>{formatDate(deadline.toISOString())}</strong>
-              {isUrgent && ' — segera konfirmasi!'}
-            </p>
-            <button
-              onClick={handleConfirmDelivery}
-              disabled={confirming}
-              className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]"
-            >
-              {confirming
-                ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" /> Mengkonfirmasi...</>
-                : 'Sudah Diterima'
-              }
-            </button>
-            <p className="text-xs text-purple-500 mt-2 text-center">
-              Klik tombol ini setelah Anda menerima semua modul yang dipesan.
-            </p>
-          </div>
-        );
-      })()}
+      {order.confirm_deadline && (
+        <div className="mb-4 bg-gradient-to-br from-purple-50 to-indigo-50/30 border border-purple-200 rounded-2xl p-6">
+          <h2 className="font-semibold text-purple-900 text-base mb-1">Paket Sudah Sampai?</h2>
+          <p className={`text-sm mb-5 ${order.confirm_deadline_is_urgent ? 'text-amber-700 font-medium' : 'text-purple-700'}`}>
+            Konfirmasi penerimaan sebelum <strong>{formatDate(order.confirm_deadline)}</strong>
+            {order.confirm_deadline_is_urgent && ' — segera konfirmasi!'}
+          </p>
+          <button
+            onClick={handleConfirmDelivery}
+            disabled={confirming}
+            className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]"
+          >
+            {confirming
+              ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" /> Mengkonfirmasi...</>
+              : 'Sudah Diterima'
+            }
+          </button>
+          <p className="text-xs text-purple-500 mt-2 text-center">
+            Klik tombol ini setelah Anda menerima semua modul yang dipesan.
+          </p>
+        </div>
+      )}
 
-      {order.status === 'pending' && (
+      {order.can_cancel && (
         <div className="text-right">
           <button
             onClick={handleCancel}

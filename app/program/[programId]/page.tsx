@@ -23,7 +23,7 @@ export default function ProgramDetailPage() {
   const [addingAll, setAddingAll] = useState(false);
   const [addingModule, setAddingModule] = useState<string | null>(null);
   const { showToast } = useToast();
-  const { incrementCart } = useCart();
+  const { syncCartCount, refreshCart } = useCart();
 
   useEffect(() => {
     Promise.all([
@@ -61,7 +61,7 @@ export default function ProgramDetailPage() {
         ? `${normalCount} modul ditambahkan, ${requestCount} sebagai permintaan`
         : `${added} modul ditambahkan ke keranjang!`;
       showToast(msg);
-      incrementCart(added);
+      await refreshCart();
     } catch (err) {
       showToast('Gagal menambahkan modul', 'error');
     } finally {
@@ -74,8 +74,8 @@ export default function ProgramDetailPage() {
     if (!token) { window.location.href = '/login'; return; }
     setAddingModule(moduleId);
     try {
-      await api.cart.addItem(moduleId);
-      incrementCart(1);
+      const cart = await api.cart.addItem(moduleId) as any;
+      syncCartCount(cart.itemCount);
       showToast(isRequest ? 'Modul ditambahkan sebagai permintaan!' : 'Modul ditambahkan ke keranjang!');
     } catch (err) {
       showToast('Gagal menambahkan modul', 'error');
