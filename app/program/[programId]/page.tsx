@@ -46,13 +46,18 @@ export default function ProgramDetailPage() {
     if (!token) { window.location.href = '/login'; return; }
     setAddingAll(true);
     try {
-      const modules = semesterSubjects.flatMap(s =>
-        (s.subject_modules || []).map(sm => sm.modules).filter(m => m.is_available)
+      const allModules = semesterSubjects.flatMap(s =>
+        (s.subject_modules || []).map(sm => sm.modules).filter(Boolean)
       );
-      const unique = Array.from(new Map(modules.map(m => [m.id, m])).values());
+      const unique = Array.from(new Map(allModules.map(m => [m.id, m])).values());
       await Promise.all(unique.map(m => api.cart.addItem(m.id)));
+      const requestCount = unique.filter(m => !m.is_available || !m.price_student).length;
+      const normalCount  = unique.length - requestCount;
+      const msg = requestCount > 0
+        ? `${normalCount} modul ditambahkan, ${requestCount} sebagai permintaan`
+        : `${unique.length} modul ditambahkan ke keranjang!`;
+      showToast(msg);
       incrementCart(unique.length);
-      showToast(`${unique.length} modul ditambahkan ke keranjang!`);
     } catch (err) {
       showToast('Gagal menambahkan modul', 'error');
     } finally {
@@ -60,14 +65,14 @@ export default function ProgramDetailPage() {
     }
   }
 
-  async function handleAddModuleToCart(moduleId: string) {
+  async function handleAddModuleToCart(moduleId: string, isRequest: boolean) {
     const token = localStorage.getItem('ut_token');
     if (!token) { window.location.href = '/login'; return; }
     setAddingModule(moduleId);
     try {
       await api.cart.addItem(moduleId);
       incrementCart(1);
-      showToast('Modul ditambahkan ke keranjang!');
+      showToast(isRequest ? 'Modul ditambahkan sebagai permintaan!' : 'Modul ditambahkan ke keranjang!');
     } catch (err) {
       showToast('Gagal menambahkan modul', 'error');
     } finally {
@@ -154,7 +159,7 @@ export default function ProgramDetailPage() {
               <button
                 onClick={handleAddSemesterToCart}
                 disabled={addingAll}
-                className="inline-flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 transition-[background-color,transform,box-shadow] duration-150 font-semibold shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)]"
+                className="inline-flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 transition-[background-color,transform,box-shadow] duration-150 font-semibold shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] active:scale-[0.98]"
               >
                 {addingAll && <span className="border-2 border-white border-t-transparent rounded-full animate-spin w-3.5 h-3.5" />}
                 {addingAll ? 'Menambahkan...' : 'Tambah Semua ke Keranjang'}
@@ -178,7 +183,7 @@ export default function ProgramDetailPage() {
   );
 }
 
-function SubjectCard({ subject, onAddToCart, addingModule }: { subject: SubjectDTO; onAddToCart: (id: string) => void; addingModule: string | null }) {
+function SubjectCard({ subject, onAddToCart, addingModule }: { subject: SubjectDTO; onAddToCart: (id: string, isRequest: boolean) => void; addingModule: string | null }) {
   const [expanded, setExpanded] = useState(true);
   const modules = (subject.subject_modules || []).map(sm => sm.modules);
 
@@ -217,25 +222,28 @@ function SubjectCard({ subject, onAddToCart, addingModule }: { subject: SubjectD
                 </Link>
               </div>
               <div className="flex items-center gap-4 ml-4 flex-shrink-0">
-                {mod.is_available ? (
-                  <>
-                    <span className="text-sm font-semibold text-slate-900 tabular-nums">
-                      {mod.price_student ? formatIDR(mod.price_student) : '-'}
-                    </span>
-                    <button
-                      onClick={() => onAddToCart(mod.id)}
-                      disabled={addingModule === mod.id}
-                      className="inline-flex items-center gap-1 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-[background-color] duration-150 font-semibold"
-                    >
-                      {addingModule === mod.id
-                        ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-3 h-3" /> Menambahkan...</>
-                        : 'Tambah'
-                      }
-                    </button>
-                  </>
-                ) : (
-                  <span className="text-xs text-red-400 font-medium">Tidak Tersedia</span>
-                )}
+                <span className="text-sm font-semibold tabular-nums">
+                  {!mod.price_student
+                    ? <span className="text-slate-400">Hubungi Kami</span>
+                    : mod.is_available
+                      ? <span className="text-slate-900">{formatIDR(mod.price_student)}</span>
+                      : <span className="text-slate-400 line-through">{formatIDR(mod.price_student)}</span>
+                  }
+                </span>
+                <button
+                  onClick={() => onAddToCart(mod.id, !(mod.is_available && mod.price_student))}
+                  disabled={addingModule === mod.id}
+                  className={`inline-flex items-center gap-1 text-xs px-3 py-2 rounded-lg disabled:opacity-50 transition-[background-color,transform] duration-150 font-semibold active:scale-[0.98] min-h-[32px] ${
+                    mod.is_available && mod.price_student
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      : 'bg-amber-500 text-white hover:bg-amber-600'
+                  }`}
+                >
+                  {addingModule === mod.id
+                    ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-3 h-3" /> Menambahkan...</>
+                    : mod.is_available && mod.price_student ? 'Tambah' : 'Minta'
+                  }
+                </button>
               </div>
             </div>
           ))}
