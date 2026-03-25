@@ -202,7 +202,7 @@ function OrderDetailContent() {
                 <span className="text-slate-500">Jumlah</span>
                 <span className="font-bold tabular-nums">{formatIDR(payment.amount)}</span>
               </div>
-              {payment.show_payment_deadline && (
+              {payment.show_payment_deadline && payment.expires_at && (
                 <div className="flex justify-between">
                   <span className="text-slate-500">Batas Bayar</span>
                   <span className="text-red-500 font-medium">{formatDate(payment.expires_at)}</span>
