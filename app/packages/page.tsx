@@ -16,7 +16,7 @@ export default function PackagesPage() {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState<string | null>(null);
   const { showToast } = useToast();
-  const { incrementCart } = useCart();
+  const { refreshCart } = useCart();
 
   useEffect(() => {
     api.catalog.getPrograms().then((data: any) => setPrograms(data));
@@ -36,13 +36,16 @@ export default function PackagesPage() {
     setAdding(pkg.id);
     try {
       await api.cart.addPackage(pkg.id);
+      await refreshCart();
       const total = (pkg.package_modules || []).length;
       const available = (pkg.package_modules || []).filter((pm: any) => pm.modules.is_available).length;
-      incrementCart(available);
-      if (available === total) {
+      const requestCount = total - available;
+      if (requestCount === 0) {
         showToast(`${available} modul ditambahkan ke keranjang!`);
+      } else if (available === 0) {
+        showToast(`${total} modul ditambahkan sebagai permintaan!`);
       } else {
-        showToast(`${available} dari ${total} modul ditambahkan (${total - available} tidak tersedia).`);
+        showToast(`${available} modul ditambahkan, ${requestCount} sebagai permintaan!`);
       }
     } catch (err: any) {
       showToast(err.message, 'error');

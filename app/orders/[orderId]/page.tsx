@@ -46,6 +46,7 @@ function OrderDetailContent() {
   const [cancelling, setCancelling] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [uploadingProof, setUploadingProof] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('ut_token');
@@ -74,6 +75,22 @@ function OrderDetailContent() {
       alert((err as Error).message);
     } finally {
       setConfirming(false);
+    }
+  }
+
+  async function handleProofUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingProof(true);
+    try {
+      await api.payments.uploadProof(orderId, file);
+      const updated = await api.orders.get(orderId);
+      setOrder(updated);
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setUploadingProof(false);
+      e.target.value = '';
     }
   }
 
@@ -235,6 +252,35 @@ function OrderDetailContent() {
                     Batas pembayaran: {formatDate(payment.expires_at)}
                   </p>
                 )}
+
+                {/* Bukti Bayar upload */}
+                <div className="mt-4 pt-4 border-t border-blue-200">
+                  {payment.proof_url ? (
+                    <div className="flex items-center gap-2 text-sm">
+                      <CheckIcon className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span className="text-emerald-700 font-medium">Bukti transfer sudah dikirim</span>
+                      <a href={payment.proof_url} target="_blank" rel="noreferrer"
+                        className="text-blue-600 hover:underline text-xs ml-auto">Lihat</a>
+                    </div>
+                  ) : (
+                    <label className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-blue-200 rounded-xl py-3 px-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-[border-color,background-color] duration-150">
+                      {uploadingProof ? (
+                        <>
+                          <span className="border-2 border-blue-400 border-t-transparent rounded-full animate-spin w-4 h-4 shrink-0" />
+                          <span className="text-sm text-blue-700">Mengupload...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                          </svg>
+                          <span className="text-sm text-blue-700 font-medium">Upload Bukti Transfer</span>
+                        </>
+                      )}
+                      <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleProofUpload} disabled={uploadingProof} />
+                    </label>
+                  )}
+                </div>
               </div>
             )}
             {order.status === 'pending' && (

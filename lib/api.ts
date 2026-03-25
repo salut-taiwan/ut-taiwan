@@ -165,6 +165,19 @@ export const api = {
   },
   payments: {
     getStatus: (orderId: string) => apiFetch(`/payments/${orderId}`),
+    uploadProof: (orderId: string, file: File): Promise<{ proof_url: string }> => {
+      const token = getToken();
+      const fd = new FormData();
+      fd.append('file', file);
+      return fetch(`${API_BASE}/payments/${orderId}/proof`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      }).then(async r => {
+        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e as any).error || 'Upload gagal'); }
+        return r.json();
+      });
+    },
   },
   scraper: {
     run: () => apiFetch('/scraper/run', { method: 'POST' }),
@@ -185,5 +198,18 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify({ status, ...(unitPrice !== undefined ? { unit_price: unitPrice } : {}) }),
       }),
+    uploadInvoice: (orderId: string, file: File): Promise<{ invoice_url: string }> => {
+      const token = getToken();
+      const fd = new FormData();
+      fd.append('file', file);
+      return fetch(`${API_BASE}/payments/${orderId}/invoice`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      }).then(async r => {
+        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e as any).error || 'Upload gagal'); }
+        return r.json();
+      });
+    },
   },
 };

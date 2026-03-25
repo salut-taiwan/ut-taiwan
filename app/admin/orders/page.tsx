@@ -108,6 +108,19 @@ export default function AdminOrdersPage() {
     });
   }
 
+  async function handleInvoiceUpload(orderId: string, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await api.admin.uploadInvoice(orderId, file);
+      await fetchOrders();
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      e.target.value = '';
+    }
+  }
+
   async function handleRequestStatus(orderId: string, itemId: string, status: 'approved' | 'rejected', unitPrice?: number) {
     const label = status === 'approved' ? 'Setujui' : 'Tolak';
     if (!confirm(`${label} item permintaan ini?`)) return;
@@ -172,16 +185,23 @@ export default function AdminOrdersPage() {
                   <tr className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 font-mono font-semibold text-slate-900">
                       <div>{order.order_number}</div>
-                      {requestItems.length > 0 && (
+                      {(requestItems.length > 0 || order.status === 'awaiting_payment') && (
                         <button
                           onClick={() => toggleExpand(order.id)}
                           className={`mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full transition-colors ${
                             pendingRequests.length > 0
                               ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                              : order.status === 'awaiting_payment'
+                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                               : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                           }`}
                         >
-                          {pendingRequests.length > 0 ? `${pendingRequests.length} permintaan pending` : `${requestItems.length} permintaan`} {isExpanded ? '▲' : '▼'}
+                          {pendingRequests.length > 0
+                            ? `${pendingRequests.length} permintaan pending`
+                            : requestItems.length > 0
+                            ? `${requestItems.length} permintaan`
+                            : 'Dokumen'
+                          } {isExpanded ? '▲' : '▼'}
                         </button>
                       )}
                     </td>
@@ -258,6 +278,38 @@ export default function AdminOrdersPage() {
                       </div>
                     </td>
                   </tr>
+                  {isExpanded && order.status === 'awaiting_payment' && payment && (
+                    <tr>
+                      <td colSpan={7} className="px-4 pb-2 pt-0 bg-blue-50/40">
+                        <div className="flex gap-6 text-xs py-2 border border-blue-100 rounded-xl px-4">
+                          <div className="flex-1">
+                            <p className="font-semibold text-slate-600 mb-1">Bukti Bayar Pembeli</p>
+                            {payment.proof_url ? (
+                              <a href={payment.proof_url} target="_blank" rel="noreferrer" className="text-blue-600 underline">Lihat Bukti</a>
+                            ) : (
+                              <span className="text-slate-400 italic">Belum ada bukti</span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-slate-600 mb-1">Invoice Karunika</p>
+                            {payment.invoice_url ? (
+                              <div className="flex items-center gap-2">
+                                <a href={payment.invoice_url} target="_blank" rel="noreferrer" className="text-blue-600 underline">Lihat Invoice</a>
+                                <label className="text-slate-400 cursor-pointer hover:text-slate-600">[Ganti]
+                                  <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => handleInvoiceUpload(order.id, e)} />
+                                </label>
+                              </div>
+                            ) : (
+                              <label className="cursor-pointer text-indigo-600 hover:underline font-medium">
+                                Upload Invoice
+                                <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => handleInvoiceUpload(order.id, e)} />
+                              </label>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                   {isExpanded && requestItems.length > 0 && (
                     <tr>
                       <td colSpan={7} className="px-4 pb-3 bg-amber-50/40">
