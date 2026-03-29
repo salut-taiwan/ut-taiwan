@@ -255,12 +255,22 @@ function OrderDetailContent() {
 
                 {/* Bukti Bayar upload */}
                 <div className="mt-4 pt-4 border-t border-blue-200">
-                  {payment.proof_url ? (
+                  {payment.proof_path ? (
                     <div className="flex items-center gap-2 text-sm">
                       <CheckIcon className="w-4 h-4 text-emerald-500 shrink-0" />
                       <span className="text-emerald-700 font-medium">Bukti transfer sudah dikirim</span>
-                      <a href={payment.proof_url} target="_blank" rel="noreferrer"
-                        className="text-blue-600 hover:underline text-xs ml-auto">Lihat</a>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const url = await api.payments.viewProof(orderId);
+                            window.open(url, '_blank');
+                            setTimeout(() => URL.revokeObjectURL(url), 10000);
+                          } catch (err) { alert((err as Error).message); }
+                        }}
+                        className="text-blue-600 hover:underline text-xs ml-auto"
+                      >
+                        Lihat
+                      </button>
                     </div>
                   ) : (
                     <label className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-blue-200 rounded-xl py-3 px-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-[border-color,background-color] duration-150">

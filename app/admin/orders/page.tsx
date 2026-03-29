@@ -284,17 +284,39 @@ export default function AdminOrdersPage() {
                         <div className="flex gap-6 text-xs py-2 border border-blue-100 rounded-xl px-4">
                           <div className="flex-1">
                             <p className="font-semibold text-slate-600 mb-1">Bukti Bayar Pembeli</p>
-                            {payment.proof_url ? (
-                              <a href={payment.proof_url} target="_blank" rel="noreferrer" className="text-blue-600 underline">Lihat Bukti</a>
+                            {payment.proof_path ? (
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const url = await api.payments.viewProof(order.id);
+                                    window.open(url, '_blank');
+                                    setTimeout(() => URL.revokeObjectURL(url), 10000);
+                                  } catch (err) { alert((err as Error).message); }
+                                }}
+                                className="text-blue-600 underline"
+                              >
+                                Lihat Bukti
+                              </button>
                             ) : (
                               <span className="text-slate-400 italic">Belum ada bukti</span>
                             )}
                           </div>
                           <div className="flex-1">
                             <p className="font-semibold text-slate-600 mb-1">Invoice Karunika</p>
-                            {payment.invoice_url ? (
+                            {payment.invoice_path ? (
                               <div className="flex items-center gap-2">
-                                <a href={payment.invoice_url} target="_blank" rel="noreferrer" className="text-blue-600 underline">Lihat Invoice</a>
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const url = await api.admin.viewInvoice(order.id);
+                                      window.open(url, '_blank');
+                                      setTimeout(() => URL.revokeObjectURL(url), 10000);
+                                    } catch (err) { alert((err as Error).message); }
+                                  }}
+                                  className="text-blue-600 underline"
+                                >
+                                  Lihat Invoice
+                                </button>
                                 <label className="text-slate-400 cursor-pointer hover:text-slate-600">[Ganti]
                                   <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => handleInvoiceUpload(order.id, e)} />
                                 </label>

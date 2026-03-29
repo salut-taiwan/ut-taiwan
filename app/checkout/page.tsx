@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useCart } from '@/lib/cart';
 import { CartDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 import { cn } from '@/lib/utils';
@@ -24,6 +25,7 @@ const labelClass = "block text-sm font-medium text-slate-700 mb-1.5";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { syncCartCount } = useCart();
   const [cart, setCart] = useState<CartDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -110,6 +112,7 @@ export default function CheckoutPage() {
         paymentMethod: form.paymentMethod,
         paymentBank: form.paymentBank,
       });
+      syncCartCount(0);
       router.push(`/orders/${order.id}?new=1`);
     } catch (err) {
       alert((err as Error).message || 'Gagal membuat pesanan');

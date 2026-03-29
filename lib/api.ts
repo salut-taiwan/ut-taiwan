@@ -165,7 +165,7 @@ export const api = {
   },
   payments: {
     getStatus: (orderId: string) => apiFetch(`/payments/${orderId}`),
-    uploadProof: (orderId: string, file: File): Promise<{ proof_url: string }> => {
+    uploadProof: (orderId: string, file: File): Promise<void> => {
       const token = getToken();
       const fd = new FormData();
       fd.append('file', file);
@@ -175,8 +175,16 @@ export const api = {
         body: fd,
       }).then(async r => {
         if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e as any).error || 'Upload gagal'); }
-        return r.json();
       });
+    },
+    viewProof: async (orderId: string): Promise<string> => {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/payments/${orderId}/proof`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error('Gagal memuat file');
+      const blob = await res.blob();
+      return URL.createObjectURL(blob);
     },
   },
   scraper: {
@@ -198,7 +206,7 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify({ status, ...(unitPrice !== undefined ? { unit_price: unitPrice } : {}) }),
       }),
-    uploadInvoice: (orderId: string, file: File): Promise<{ invoice_url: string }> => {
+    uploadInvoice: (orderId: string, file: File): Promise<void> => {
       const token = getToken();
       const fd = new FormData();
       fd.append('file', file);
@@ -208,8 +216,16 @@ export const api = {
         body: fd,
       }).then(async r => {
         if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e as any).error || 'Upload gagal'); }
-        return r.json();
       });
+    },
+    viewInvoice: async (orderId: string): Promise<string> => {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/payments/${orderId}/invoice`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error('Gagal memuat file');
+      const blob = await res.blob();
+      return URL.createObjectURL(blob);
     },
   },
 };

@@ -154,8 +154,8 @@ export interface PaymentDTO {
   bank_name?: string;
   bank_account?: string;
   bank_holder?: string;
-  proof_url?: string | null;
-  invoice_url?: string | null;
+  proof_path?: string | null;
+  invoice_path?: string | null;
   proof_uploaded_at?: string | null;
 }
 
