@@ -157,6 +157,7 @@ export interface PaymentDTO {
   proof_path?: string | null;
   invoice_path?: string | null;
   proof_uploaded_at?: string | null;
+  unique_code?: number;
 }
 
 export interface UserProfileDTO {

@@ -247,11 +247,41 @@ function OrderDetailContent() {
                   <span className="text-blue-700">Jumlah tepat</span>
                   <span className="font-bold text-blue-900 tabular-nums">{formatIDR(payment.amount)}</span>
                 </div>
+                {payment.unique_code != null && payment.unique_code > 0 && (
+                  <div className="flex justify-between text-xs text-blue-500 mt-0.5">
+                    <span>Kode unik (sudah termasuk)</span>
+                    <span className="font-mono font-semibold">+{formatIDR(payment.unique_code)}</span>
+                  </div>
+                )}
                 {payment.expires_at && (
                   <p className="text-xs text-red-600 mt-1">
                     Batas pembayaran: {formatDate(payment.expires_at)}
                   </p>
                 )}
+
+                {/* QRIS */}
+                <div className="mt-3 pt-3 border-t border-blue-200">
+                  <p className="text-xs font-semibold text-blue-800 mb-2">Atau bayar via QRIS:</p>
+                  <div className="rounded-xl overflow-hidden border border-blue-200 bg-white">
+                    <iframe
+                      src="/SALUT%20TAIWAN%20-%20QRIS-MPM-RINGKAS%202026-03-31%200216.pdf"
+                      className="w-full"
+                      style={{ height: '340px', border: 'none' }}
+                      title="QRIS UT Taiwan"
+                    />
+                  </div>
+                  <a
+                    href="/SALUT%20TAIWAN%20-%20QRIS-MPM-RINGKAS%202026-03-31%200216.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-center text-xs text-blue-500 hover:underline mt-1"
+                  >
+                    Buka QR di tab baru
+                  </a>
+                  <p className="text-xs text-slate-500 mt-1 text-center">
+                    Scan dengan aplikasi bank atau e-wallet. Masukkan jumlah tepat termasuk kode unik.
+                  </p>
+                </div>
 
                 {/* Bukti Bayar upload */}
                 <div className="mt-4 pt-4 border-t border-blue-200">
