@@ -163,9 +163,10 @@ export default function RegisterPage() {
                   className={inputClass} placeholder="Nomor Induk Mahasiswa UT" />
               </div>
               <div>
-                <label className={labelClass}>Nomor WhatsApp *</label>
+                <label className={labelClass}>Nomor WhatsApp Aktif *</label>
                 <input name="phone" type="tel" value={form.phone} onChange={handleChange} required
                   className={inputClass} placeholder="+886 xxx xxx xxx" />
+                <p className="text-xs text-slate-400 mt-1">Gunakan nomor yang aktif di WhatsApp</p>
               </div>
               <div>
                 <label className={labelClass}>Password *</label>

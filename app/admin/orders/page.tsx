@@ -61,12 +61,19 @@ export default function AdminOrdersPage() {
     }
   }
 
+  function updateOrderInState(orderId: string, patch: Partial<OrderDTO> | ((order: OrderDTO) => OrderDTO)) {
+    setOrders(prev => prev.map(o => {
+      if (o.id !== orderId) return o;
+      return typeof patch === 'function' ? patch(o) : { ...o, ...patch };
+    }));
+  }
+
   async function handleStatusUpdate(orderId: string, newStatus: string, label: string) {
     if (!confirm(`${label} pesanan ini?`)) return;
     setUpdatingStatus(orderId);
     try {
       await api.admin.updateOrderStatus(orderId, newStatus);
-      await fetchOrders();
+      updateOrderInState(orderId, { status: newStatus as OrderDTO['status'] });
     } catch (err) {
       alert((err as Error).message);
     } finally {
@@ -79,7 +86,7 @@ export default function AdminOrdersPage() {
     setConfirmingKarunika(orderId);
     try {
       await api.admin.confirmKarunika(orderId);
-      await fetchOrders();
+      updateOrderInState(orderId, { status: 'awaiting_payment' });
     } catch (err) {
       alert((err as Error).message);
     } finally {
@@ -92,7 +99,13 @@ export default function AdminOrdersPage() {
     setConfirming(orderId);
     try {
       await api.admin.confirmPayment(orderId);
-      await fetchOrders();
+      updateOrderInState(orderId, (order) => ({
+        ...order,
+        status: 'paid',
+        payments: (order.payments ?? []).map((p, i) =>
+          i === 0 ? { ...p, status: 'paid' as const } : p
+        ),
+      }));
     } catch (err) {
       alert((err as Error).message);
     } finally {
@@ -113,7 +126,12 @@ export default function AdminOrdersPage() {
     if (!file) return;
     try {
       await api.admin.uploadInvoice(orderId, file);
-      await fetchOrders();
+      updateOrderInState(orderId, (order) => ({
+        ...order,
+        payments: (order.payments ?? []).map((p, i) =>
+          i === 0 ? { ...p, invoice_path: p.invoice_path ?? '__uploaded__' } : p
+        ),
+      }));
     } catch (err) {
       alert((err as Error).message);
     } finally {
@@ -129,7 +147,14 @@ export default function AdminOrdersPage() {
       await api.admin.updateRequestItemStatus(orderId, itemId, status, unitPrice);
       setPricingItem(null);
       setPriceInput('');
-      await fetchOrders();
+      updateOrderInState(orderId, (order) => ({
+        ...order,
+        order_items: (order.order_items ?? []).map(item => {
+          if (item.id !== itemId) return item;
+          const newUnitPrice = unitPrice ?? item.unit_price;
+          return { ...item, request_status: status, unit_price: newUnitPrice, subtotal: newUnitPrice * item.quantity };
+        }),
+      }));
     } catch (err) {
       alert((err as Error).message);
     } finally {
