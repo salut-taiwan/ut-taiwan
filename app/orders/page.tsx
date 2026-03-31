@@ -95,7 +95,7 @@ export default function OrdersPage() {
                     {paymentStatusLabel(order.payments[0].status)}
                   </span>
                 )}
-                <span className="font-semibold text-slate-900 tabular-nums">{formatIDR(order.total_amount)}</span>
+                <span className="font-semibold text-slate-900 tabular-nums">{formatIDR(order.payments?.[0]?.amount ?? order.total_amount)}</span>
               </div>
             </div>
           </Link>

@@ -262,23 +262,8 @@ function OrderDetailContent() {
                 {/* QRIS */}
                 <div className="mt-3 pt-3 border-t border-blue-200">
                   <p className="text-xs font-semibold text-blue-800 mb-2">Atau bayar via QRIS:</p>
-                  <div className="rounded-xl overflow-hidden border border-blue-200 bg-white">
-                    <iframe
-                      src="/SALUT%20TAIWAN%20-%20QRIS-MPM-RINGKAS%202026-03-31%200216.pdf"
-                      className="w-full"
-                      style={{ height: '340px', border: 'none' }}
-                      title="QRIS UT Taiwan"
-                    />
-                  </div>
-                  <a
-                    href="/SALUT%20TAIWAN%20-%20QRIS-MPM-RINGKAS%202026-03-31%200216.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-center text-xs text-blue-500 hover:underline mt-1"
-                  >
-                    Buka QR di tab baru
-                  </a>
-                  <p className="text-xs text-slate-500 mt-1 text-center">
+                  <img src="/qris.png" alt="QRIS UT Taiwan" className="w-full rounded-xl border border-blue-200" />
+                  <p className="text-xs text-slate-500 mt-1.5 text-center">
                     Scan dengan aplikasi bank atau e-wallet. Masukkan jumlah tepat termasuk kode unik.
                   </p>
                 </div>
@@ -384,7 +369,7 @@ function OrderDetailContent() {
           })}
           <div className="pt-3 flex justify-between font-bold text-slate-900">
             <span>Total</span>
-            <span className="text-indigo-700 tabular-nums">{formatIDR(order.total_amount)}</span>
+            <span className="text-indigo-700 tabular-nums">{formatIDR(payment?.amount ?? order.total_amount)}</span>
           </div>
         </div>
       </div>

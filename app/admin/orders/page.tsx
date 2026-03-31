@@ -235,7 +235,7 @@ export default function AdminOrdersPage() {
                       <p className="text-slate-400 text-xs">{order.shipping_phone}</p>
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-slate-900 tabular-nums">
-                      {formatIDR(order.total_amount)}
+                      {formatIDR(payment?.amount ?? order.total_amount)}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className={`text-xs font-medium px-2 py-1 ${ORDER_STATUS_COLORS[order.status] || 'bg-slate-100 text-slate-700 rounded-r-sm'}`}>
