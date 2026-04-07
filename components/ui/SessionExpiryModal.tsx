@@ -54,7 +54,7 @@ export default function SessionExpiryModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-[var(--shadow-modal)] w-full max-w-sm mx-4 p-6 animate-[scaleIn_180ms_ease-out]">
+      <div className="bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-modal)] w-full max-w-sm mx-4 p-6 animate-[scaleIn_180ms_ease-out]">
         {isSessionExpired ? (
           <>
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
@@ -63,8 +63,8 @@ export default function SessionExpiryModal() {
                   d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold text-slate-800 text-center mb-2">Sesi Berakhir</h2>
-            <p className="text-sm text-slate-500 text-center mb-6">
+            <h2 className="text-lg font-semibold text-[var(--foreground)] text-center mb-2">Sesi Berakhir</h2>
+            <p className="text-sm text-[var(--text-body)] text-center mb-6">
               Sesi Anda telah berakhir. Silakan masuk kembali untuk melanjutkan.
             </p>
             <Button onClick={handleReLogin} variant="primary" className="w-full">
@@ -79,8 +79,8 @@ export default function SessionExpiryModal() {
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold text-slate-800 text-center mb-2">Sesi Anda akan habis</h2>
-            <p className="text-sm text-slate-500 text-center mb-2">
+            <h2 className="text-lg font-semibold text-[var(--foreground)] text-center mb-2">Sesi Anda akan habis</h2>
+            <p className="text-sm text-[var(--text-body)] text-center mb-2">
               Sesi Anda akan berakhir dalam 5 menit. Apakah Anda ingin tetap masuk?
             </p>
             <p className="text-2xl font-mono font-bold text-center text-amber-600 mb-6 tabular-nums">

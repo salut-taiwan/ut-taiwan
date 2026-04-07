@@ -44,12 +44,12 @@ export default function ModulesPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-slate-900 mb-2">Semua Modul</h1>
-      <p className="text-slate-500 mb-6">Cari dan temukan bahan ajar Universitas Terbuka</p>
+      <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">Semua Modul</h1>
+      <p className="text-[var(--text-body)] mb-6">Cari dan temukan bahan ajar Universitas Terbuka</p>
 
       {/* Search */}
       <div className="relative mb-8">
-        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <input
@@ -57,10 +57,10 @@ export default function ModulesPage() {
           value={searchQuery}
           onChange={e => handleSearch(e.target.value)}
           placeholder="Cari kode atau nama modul (contoh: ESPA4122 atau Matematika)"
-          className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-[12px] focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)] bg-white shadow-[var(--shadow-xs)] text-slate-900 placeholder:text-slate-400 transition-[border-color,box-shadow] duration-150"
+          className="w-full pl-12 pr-4 py-3.5 border border-[var(--border-default)] rounded-[12px] focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)] bg-[var(--surface)] shadow-[var(--shadow-xs)] text-[var(--foreground)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150"
         />
         {searching && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Mencari...</div>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-sm">Mencari...</div>
         )}
       </div>
 
@@ -71,7 +71,7 @@ export default function ModulesPage() {
       ) : (
         <>
           {searchResults !== null && (
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-sm text-[var(--text-body)] mb-4">
               {searchResults.length} hasil untuk &ldquo;{searchQuery}&rdquo;
             </p>
           )}
@@ -84,13 +84,13 @@ export default function ModulesPage() {
 
           {displayModules.length === 0 && (
             <div className="flex flex-col items-center gap-3 text-center py-20 max-w-xs mx-auto">
-              <svg className="w-16 h-16 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.25}>
+              <svg className="w-16 h-16 text-[var(--border)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.25}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <h2 className="text-lg font-semibold text-slate-700">
+              <h2 className="text-lg font-semibold text-[var(--foreground)]">
                 {searchQuery ? 'Modul tidak ditemukan' : 'Belum ada modul tersedia'}
               </h2>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-[var(--text-muted)]">
                 {searchQuery ? 'Coba kata kunci lain atau cari berdasarkan kode modul' : 'Coba lagi nanti'}
               </p>
             </div>
@@ -102,17 +102,17 @@ export default function ModulesPage() {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-[background-color,border-color,color] duration-150"
+                className="px-4 py-2 border border-[var(--border-default)] rounded-lg text-sm font-medium text-[var(--text-body)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-[background-color,border-color,color] duration-150"
               >
                 Sebelumnya
               </button>
-              <span className="px-4 py-2 text-sm text-slate-600">
+              <span className="px-4 py-2 text-sm text-[var(--text-body)]">
                 Halaman {page} dari {totalPages}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-[background-color,border-color,color] duration-150"
+                className="px-4 py-2 border border-[var(--border-default)] rounded-lg text-sm font-medium text-[var(--text-body)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-[background-color,border-color,color] duration-150"
               >
                 Selanjutnya
               </button>

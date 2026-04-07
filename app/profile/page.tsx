@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { NTD_BANKS, IDR_BANKS } from '@/lib/banks';
 
-const inputClass = "w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm text-slate-900 bg-white placeholder:text-slate-400 transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
-const labelClass = "block text-sm font-medium text-slate-700 mb-1.5";
+const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
+const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="font-semibold text-slate-900 border-l-[3px] border-l-indigo-500 pl-3 mb-4">
+    <h2 className="font-semibold text-[var(--foreground)] border-l-[3px] border-l-indigo-500 pl-3 mb-4">
       {children}
     </h2>
   );
@@ -89,7 +89,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Profil Saya</h1>
+      <h1 className="text-2xl font-bold text-[var(--foreground)] mb-6">Profil Saya</h1>
 
       {saved && (
         <div className="mb-4 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl px-4 py-3 animate-[slideDown_200ms_ease-out]">
@@ -102,7 +102,7 @@ export default function ProfilePage() {
 
       <form onSubmit={handleSubmit}>
         {/* Personal Info */}
-        <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-6 mb-4">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-6 mb-4">
           <SectionHeading>Informasi Pribadi</SectionHeading>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -112,7 +112,7 @@ export default function ProfilePage() {
             <div>
               <label className={labelClass}>Email</label>
               <input value={profile?.email} disabled
-                className="w-full border border-slate-100 bg-slate-50 rounded-[10px] px-3.5 py-2.5 text-sm text-slate-400 cursor-not-allowed" />
+                className="w-full border border-[var(--border)] bg-[var(--surface-sunken)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--text-muted)] cursor-not-allowed" />
             </div>
             <div>
               <label className={labelClass}>NIM</label>
@@ -123,7 +123,7 @@ export default function ProfilePage() {
               <label className={labelClass}>Nomor WhatsApp Aktif</label>
               <input name="phone" type="tel" value={form.phone} onChange={handleChange}
                 className={inputClass} placeholder="+886 xxx xxx xxx" />
-              <p className="text-xs text-slate-400 mt-1">Gunakan nomor yang aktif di WhatsApp</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">Gunakan nomor yang aktif di WhatsApp</p>
             </div>
             <div>
               <label className={labelClass}>Tempat Lahir</label>
@@ -137,7 +137,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <label className={labelClass}>Program Studi</label>
-              <select name="program_id" value={form.program_id} onChange={handleChange} className={inputClass + ' bg-white'}>
+              <select name="program_id" value={form.program_id} onChange={handleChange} className={inputClass}>
                 <option value="">Pilih Program Studi</option>
                 {programs.map((p: any) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
@@ -146,7 +146,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <label className={labelClass}>Semester Sekarang</label>
-              <select name="current_semester" value={form.current_semester} onChange={handleChange} className={inputClass + ' bg-white'}>
+              <select name="current_semester" value={form.current_semester} onChange={handleChange} className={inputClass}>
                 <option value="">Pilih Semester</option>
                 {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
               </select>
@@ -155,9 +155,9 @@ export default function ProfilePage() {
         </div>
 
         {/* Shipping Address */}
-        <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-6 mb-4">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-6 mb-4">
           <SectionHeading>Alamat Pengiriman Default</SectionHeading>
-          <p className="text-xs text-slate-500 mb-4">Harap isi dalam bahasa Mandarin (請用中文填寫)</p>
+          <p className="text-xs text-[var(--text-muted)] mb-4">Harap isi dalam bahasa Mandarin (請用中文填寫)</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>縣市 *</label>
@@ -193,17 +193,17 @@ export default function ProfilePage() {
         </div>
 
         {/* Bank Accounts */}
-        <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-6 mb-6">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-6 mb-6">
           <SectionHeading>Rekening Bank</SectionHeading>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* NTD Bank */}
-            <div className="rounded-2xl bg-slate-50/40 border border-[var(--border-subtle)] p-4">
-              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">Rekening NTD (Taiwan)</p>
+            <div className="rounded-2xl bg-[var(--surface-sunken)] border border-[var(--border-subtle)] p-4">
+              <p className="text-xs font-semibold text-[var(--text-body)] uppercase tracking-wide mb-3">Rekening NTD (Taiwan)</p>
               <div className="space-y-3">
                 <div>
                   <label className={labelClass}>Bank</label>
                   <select value={form.bank_ntd_code} onChange={handleNtdBankChange}
-                    className={inputClass + ' bg-white'}>
+                    className={inputClass}>
                     <option value="">Pilih Bank NTD</option>
                     {NTD_BANKS.map((b: any) => (
                       <option key={b.code} value={b.code}>{b.code} - {b.name}</option>
@@ -219,13 +219,13 @@ export default function ProfilePage() {
             </div>
 
             {/* IDR Bank */}
-            <div className="rounded-2xl bg-slate-50/40 border border-[var(--border-subtle)] p-4">
-              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">Rekening IDR (Indonesia)</p>
+            <div className="rounded-2xl bg-[var(--surface-sunken)] border border-[var(--border-subtle)] p-4">
+              <p className="text-xs font-semibold text-[var(--text-body)] uppercase tracking-wide mb-3">Rekening IDR (Indonesia)</p>
               <div className="space-y-3">
                 <div>
                   <label className={labelClass}>Bank</label>
                   <select name="bank_idr_name" value={form.bank_idr_name} onChange={handleChange}
-                    className={inputClass + ' bg-white'}>
+                    className={inputClass}>
                     <option value="">Pilih Bank IDR</option>
                     {IDR_BANKS.map((b: any) => (
                       <option key={b} value={b}>{b}</option>

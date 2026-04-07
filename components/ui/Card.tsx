@@ -4,7 +4,7 @@ import { HTMLAttributes } from 'react';
 export function Card({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={cn(
-      'bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)]',
+      'bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)]',
       'hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5',
       'transition-[box-shadow,transform] duration-200 ease-out',
       className

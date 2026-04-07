@@ -84,27 +84,27 @@ export default function AdminPage() {
     }
   }, [user]);
 
-  if (isLoading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
+  if (isLoading) return <div className="text-center py-16 text-[var(--text-muted)]">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
 
   return (
     <div>
       <div className="mb-8">
         <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Panel Admin</span>
-        <h1 className="text-2xl font-bold text-slate-900 mt-1">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold text-[var(--foreground)] mt-1">Admin Dashboard</h1>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {adminCards.map(card => (
           <Link key={card.href} href={card.href}
-            className="group bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200 p-5">
+            className="group bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200 p-5">
             <div className={`w-12 h-12 ${card.iconBg} ${card.iconColor} rounded-xl flex items-center justify-center mb-3`}>
               <span className="w-6 h-6">{card.icon}</span>
             </div>
-            <h3 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors duration-150">{card.title}</h3>
-            <p className="text-sm text-slate-500 mt-1">{card.desc}</p>
+            <h3 className="font-semibold text-[var(--foreground)] group-hover:text-indigo-700 transition-colors duration-150">{card.title}</h3>
+            <p className="text-sm text-[var(--text-body)] mt-1">{card.desc}</p>
             {card.href === '/admin/scraper' && recentRun && (
-              <p className="text-xs text-slate-400 mt-2">
+              <p className="text-xs text-[var(--text-muted)] mt-2">
                 Terakhir: {formatDate(recentRun.started_at)} — {recentRun.status}
               </p>
             )}

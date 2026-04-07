@@ -32,14 +32,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
         {toasts.map(t => (
           <div key={t.id}
-            className={`flex items-center gap-3 bg-white rounded-xl px-4 py-3 text-sm font-medium shadow-[var(--shadow-lg)] border border-l-[3px]
+            className={`flex items-center gap-3 bg-[var(--surface)] rounded-xl px-4 py-3 text-sm font-medium shadow-[var(--shadow-lg)] border border-l-[3px]
               ${exiting.has(t.id)
                 ? 'animate-[slideOutDown_150ms_ease-in_forwards]'
                 : 'animate-[slideInUp_200ms_ease-out]'
               }
               ${t.type === 'success'
-                ? 'border-slate-100 border-l-emerald-500 text-emerald-800'
-                : 'border-slate-100 border-l-red-500 text-red-800'
+                ? 'border-[var(--border)] border-l-emerald-500 text-emerald-700'
+                : 'border-[var(--border)] border-l-red-500 text-red-700'
               }`}>
             {t.type === 'success' ? (
               <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

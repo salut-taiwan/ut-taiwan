@@ -45,7 +45,7 @@ export default function ModuleDetailPage() {
   if (loading) return (
     <div className="max-w-4xl">
       <div className="h-4 w-32 rounded skeleton mb-6" />
-      <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] overflow-hidden">
         <div className="flex flex-col sm:flex-row">
           <div className="sm:w-72 min-h-64 skeleton" />
           <div className="p-6 flex-1 flex flex-col gap-4">
@@ -72,10 +72,10 @@ export default function ModuleDetailPage() {
         Semua Modul
       </Link>
 
-      <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] overflow-hidden">
         <div className="flex flex-col sm:flex-row gap-0">
           {/* Cover */}
-          <div className="bg-gradient-to-br from-slate-50 to-indigo-50/30 flex items-center justify-center sm:w-72 min-h-64 flex-shrink-0">
+          <div className="bg-[var(--surface-sunken)] flex items-center justify-center sm:w-72 min-h-64 flex-shrink-0">
             {module.cover_image_url ? (
               <Image
                 src={module.cover_image_url}
@@ -91,7 +91,7 @@ export default function ModuleDetailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round"
                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
-                <span className="text-sm text-slate-400">Tidak ada cover</span>
+                <span className="text-sm text-[var(--text-muted)]">Tidak ada cover</span>
               </div>
             )}
           </div>
@@ -108,22 +108,22 @@ export default function ModuleDetailPage() {
               )}
             </div>
 
-            <h1 className="text-2xl font-bold text-slate-900 mb-1">{module.name}</h1>
-            {module.edition && <p className="text-sm text-slate-500 mb-4">{module.edition}</p>}
+            <h1 className="text-2xl font-bold text-[var(--foreground)] mb-1">{module.name}</h1>
+            {module.edition && <p className="text-sm text-[var(--text-body)] mb-4">{module.edition}</p>}
 
             <dl className="grid grid-cols-2 gap-3 mb-6 text-sm">
               {module.author && (
                 <>
-                  <dt className="text-slate-500">Penulis</dt>
-                  <dd className="text-slate-900">{module.author}</dd>
+                  <dt className="text-[var(--text-body)]">Penulis</dt>
+                  <dd className="text-[var(--foreground)]">{module.author}</dd>
                 </>
               )}
-              <dt className="text-slate-500">Penerbit</dt>
-              <dd className="text-slate-900">{module.publisher || 'Universitas Terbuka'}</dd>
+              <dt className="text-[var(--text-body)]">Penerbit</dt>
+              <dd className="text-[var(--foreground)]">{module.publisher || 'Universitas Terbuka'}</dd>
               {module.weight_grams && (
                 <>
-                  <dt className="text-slate-500">Berat</dt>
-                  <dd className="text-slate-900">{module.weight_grams} gram</dd>
+                  <dt className="text-[var(--text-body)]">Berat</dt>
+                  <dd className="text-[var(--foreground)]">{module.weight_grams} gram</dd>
                 </>
               )}
             </dl>
@@ -134,7 +134,7 @@ export default function ModuleDetailPage() {
                 {module.price_student ? formatIDR(module.price_student) : 'Hubungi Kami'}
               </p>
               {module.price_general && (
-                <p className="text-sm text-slate-400 mt-1">Harga Umum: {formatIDR(module.price_general)}</p>
+                <p className="text-sm text-[var(--text-muted)] mt-1">Harga Umum: {formatIDR(module.price_general)}</p>
               )}
             </div>
 
@@ -181,14 +181,14 @@ export default function ModuleDetailPage() {
         {/* Used in subjects */}
         {usedInSubjects.length > 0 && (
           <div className="border-t border-[var(--border-subtle)] px-6 py-5">
-            <h2 className="font-semibold text-slate-900 mb-3">Digunakan untuk Mata Kuliah</h2>
+            <h2 className="font-semibold text-[var(--foreground)] mb-3">Digunakan untuk Mata Kuliah</h2>
             <div className="space-y-0">
               {usedInSubjects.map((subject: any) => (
                 <div key={subject.id}
-                  className="flex items-center justify-between text-sm py-2.5 border-b border-slate-50 last:border-0 hover:bg-slate-50/60 rounded-lg px-2 -mx-2 transition-colors duration-100">
+                  className="flex items-center justify-between text-sm py-2.5 border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--surface-sunken)] rounded-lg px-2 -mx-2 transition-colors duration-100">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-slate-400">{subject.code}</span>
-                    <span className="text-slate-700">{subject.name}</span>
+                    <span className="font-mono text-xs text-[var(--text-muted)]">{subject.code}</span>
+                    <span className="text-[var(--text-body)]">{subject.name}</span>
                   </div>
                   {subject.programs && (
                     <Link href={`/program/${subject.programs.id}`}

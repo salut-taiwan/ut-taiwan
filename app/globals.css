@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* UT Brand Colors
    Deep Blue:    #0A4595  (primary)
    Lighter Blue: #647FE3  (accent / indigo-400)
@@ -83,21 +85,28 @@
   --color-amber-900: #3D3300;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0F172A;
-    --foreground: #F1F5F9;
-    --primary: #647FE3;
-    --primary-hover: #0A4595;
-    --surface: #1E293B;
-    --surface-raised: #1E293B;
-    --surface-sunken: #0F172A;
-    --border: #334155;
-    --border-subtle: rgba(255,255,255,0.06);
-    --border-default: #334155;
-    --text-muted: #64748B;
-    --text-body: #94A3B8;
-  }
+.dark {
+  --background: #0F172A;
+  --foreground: #F1F5F9;
+  --primary: #647FE3;
+  --primary-hover: #0A4595;
+  --surface: #1E293B;
+  --surface-raised: #1E293B;
+  --surface-sunken: #0F172A;
+  --surface-overlay: rgba(30,41,59,0.85);
+  --border: #334155;
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-default: #334155;
+  --border-strong: #475569;
+  --text-muted: #64748B;
+  --text-body: #94A3B8;
+  --ring-focus: rgba(100,127,227,0.30);
+  --shadow-xs:    0 1px 2px rgba(0,0,0,0.20);
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.25), 0 2px 6px rgba(0,0,0,0.15);
+  --shadow-md:    0 2px 6px rgba(0,0,0,0.30), 0 6px 18px rgba(0,0,0,0.25);
+  --shadow-lg:    0 4px 12px rgba(0,0,0,0.30), 0 16px 40px rgba(0,0,0,0.30);
+  --shadow-xl:    0 8px 24px rgba(0,0,0,0.35), 0 32px 64px rgba(0,0,0,0.35);
+  --shadow-modal: 0 4px 6px rgba(0,0,0,0.25), 0 16px 48px rgba(0,0,0,0.50);
 }
 
 body {
@@ -119,7 +128,7 @@ a { text-underline-offset: 3px; }
 
 /* Shimmer skeleton — replaces animate-pulse */
 .skeleton {
-  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background: linear-gradient(90deg, var(--surface-sunken) 25%, var(--border) 50%, var(--surface-sunken) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.6s ease-in-out infinite;
 }

@@ -18,12 +18,12 @@ const STEP_LABELS: Record<string, string> = {
   delivered: 'Terkirim',
 };
 const STATUS_COLORS: Record<string, string> = {
-  pending:          'bg-slate-50  border border-slate-200  text-slate-600',
+  pending:          'bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text-body)]',
   awaiting_payment: 'bg-amber-50  border border-amber-200  text-amber-700',
   paid:             'bg-emerald-50 border border-emerald-200 text-emerald-700',
   processing:       'bg-indigo-50  border border-indigo-200  text-indigo-700',
   shipped:          'bg-purple-50  border border-purple-200  text-purple-700',
-  delivered:        'bg-slate-50  border border-slate-200  text-slate-700',
+  delivered:        'bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text-body)]',
   cancelled:        'bg-red-50    border border-red-200    text-red-700',
 };
 
@@ -143,17 +143,17 @@ function OrderDetailContent() {
 
       <div className="flex items-start justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{order.order_number}</h1>
-          <p className="text-sm text-slate-400 mt-1">{formatDate(order.created_at)}</p>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">{order.order_number}</h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">{formatDate(order.created_at)}</p>
         </div>
-        <span className={`text-sm font-semibold px-3 py-1.5 rounded-full ${STATUS_COLORS[order.status] || 'bg-slate-50 border border-slate-200 text-slate-700'}`}>
+        <span className={`text-sm font-semibold px-3 py-1.5 rounded-full ${STATUS_COLORS[order.status] || 'bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text-body)]'}`}>
           {orderStatusLabel(order.status)}
         </span>
       </div>
 
       {/* Progress */}
       {order.status !== 'cancelled' && (
-        <div className="mb-5 bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
+        <div className="mb-5 bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
           <div className="flex items-center justify-between relative">
             {/* Gradient connector */}
             <div
@@ -174,11 +174,11 @@ function OrderDetailContent() {
                   'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold z-10',
                   isCompleted ? 'bg-indigo-600 text-white'
                   : isCurrent ? 'bg-amber-500 text-white ring-4 ring-amber-100'
-                  : 'bg-slate-200 text-slate-400'
+                  : 'bg-[var(--border)] text-[var(--text-muted)]'
                 )}>
                   {isCompleted ? <CheckIcon className="w-3.5 h-3.5" /> : i + 1}
                 </div>
-                <span className="text-xs text-slate-500 mt-1.5 text-center leading-tight hidden sm:block">
+                <span className="text-xs text-[var(--text-body)] mt-1.5 text-center leading-tight hidden sm:block">
                   {STEP_LABELS[step] || orderStatusLabel(step)}
                 </span>
               </div>
@@ -191,26 +191,26 @@ function OrderDetailContent() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         {/* Payment info */}
         {payment && (
-          <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
-            <h2 className="font-semibold text-slate-900 mb-3">Informasi Pembayaran</h2>
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
+            <h2 className="font-semibold text-[var(--foreground)] mb-3">Informasi Pembayaran</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-500">Status</span>
+                <span className="text-[var(--text-body)]">Status</span>
                 <span className="font-medium">{paymentStatusLabel(payment.status)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Jumlah</span>
+                <span className="text-[var(--text-body)]">Jumlah</span>
                 <span className="font-bold tabular-nums">{formatIDR(payment.amount)}</span>
               </div>
               {payment.show_payment_deadline && payment.expires_at && (
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Batas Bayar</span>
+                  <span className="text-[var(--text-body)]">Batas Bayar</span>
                   <span className="text-red-500 font-medium">{formatDate(payment.expires_at)}</span>
                 </div>
               )}
               {payment.paid_at && (
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Dibayar</span>
+                  <span className="text-[var(--text-body)]">Dibayar</span>
                   <span>{formatDate(payment.paid_at)}</span>
                 </div>
               )}
@@ -227,7 +227,7 @@ function OrderDetailContent() {
                 <div className="flex justify-between items-center">
                   <span className="text-blue-700">No. Rekening</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-lg font-extrabold tracking-widest text-slate-900">{payment.bank_account}</span>
+                    <span className="font-mono text-lg font-extrabold tracking-widest text-[var(--foreground)]">{payment.bank_account}</span>
                     <button
                       onClick={handleCopyAccount}
                       title="Salin nomor rekening"
@@ -263,7 +263,7 @@ function OrderDetailContent() {
                 <div className="mt-3 pt-3 border-t border-blue-200">
                   <p className="text-xs font-semibold text-blue-800 mb-2">Atau bayar via QRIS:</p>
                   <img src="/qris.png" alt="QRIS UT Taiwan" className="w-full rounded-xl border border-blue-200" />
-                  <p className="text-xs text-slate-500 mt-1.5 text-center">
+                  <p className="text-xs text-[var(--text-body)] mt-1.5 text-center">
                     Scan dengan aplikasi bank atau e-wallet. Masukkan jumlah tepat termasuk kode unik.
                   </p>
                 </div>
@@ -309,8 +309,8 @@ function OrderDetailContent() {
               </div>
             )}
             {order.status === 'pending' && (
-              <div className="mt-4 bg-slate-50 border border-[var(--border-subtle)] rounded-xl p-4 text-sm text-slate-600">
-                <p className="font-medium text-slate-700 mb-1">Menunggu verifikasi stok</p>
+              <div className="mt-4 bg-[var(--surface-sunken)] border border-[var(--border-subtle)] rounded-xl p-4 text-sm text-[var(--text-body)]">
+                <p className="font-medium text-[var(--foreground)] mb-1">Menunggu verifikasi stok</p>
                 <p>Pesanan Anda sedang diverifikasi stok oleh admin. Instruksi pembayaran akan dikirim melalui email setelah stok dikonfirmasi.</p>
               </div>
             )}
@@ -318,10 +318,10 @@ function OrderDetailContent() {
         )}
 
         {/* Shipping info */}
-        <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
-          <h2 className="font-semibold text-slate-900 mb-3">Alamat Pengiriman</h2>
-          <div className="text-sm text-slate-600 space-y-1">
-            <p className="font-medium text-slate-900">{order.shipping_name}</p>
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
+          <h2 className="font-semibold text-[var(--foreground)] mb-3">Alamat Pengiriman</h2>
+          <div className="text-sm text-[var(--text-body)] space-y-1">
+            <p className="font-medium text-[var(--foreground)]">{order.shipping_name}</p>
             <p>{order.shipping_address}</p>
             <p>{order.shipping_city}{order.shipping_province ? `, ${order.shipping_province}` : ''}</p>
             <p>{order.shipping_postal} {order.shipping_country}</p>
@@ -331,10 +331,10 @@ function OrderDetailContent() {
       </div>
 
       {/* Order items */}
-      <div className="mb-4 bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
-        <h2 className="font-semibold text-slate-900 mb-3">Daftar Modul</h2>
+      <div className="mb-4 bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
+        <h2 className="font-semibold text-[var(--foreground)] mb-3">Daftar Modul</h2>
         <div className="space-y-0">
-          <div className="flex items-center text-xs text-slate-400 pb-2 border-b border-[var(--border-subtle)]">
+          <div className="flex items-center text-xs text-[var(--text-muted)] pb-2 border-b border-[var(--border-subtle)]">
             <span className="flex-1">Modul</span>
             <span className="w-24 text-right">Harga Satuan</span>
             <span className="w-24 text-right ml-4">Subtotal</span>
@@ -344,12 +344,12 @@ function OrderDetailContent() {
             const isPendingRequest = item.display_status === 'pending_request';
             const hidePrice = item.display_status === 'rejected' || item.display_status === 'zero_price';
             return (
-              <div key={item.id} className={`flex items-center text-sm py-2.5 border-b border-slate-50 last:border-0 ${isRejected ? 'opacity-60' : ''}`}>
+              <div key={item.id} className={`flex items-center text-sm py-2.5 border-b border-[var(--border-subtle)] last:border-0 ${isRejected ? 'opacity-60' : ''}`}>
                 <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
-                  <span className="font-mono text-xs text-slate-400 whitespace-nowrap">{item.module_code}</span>
-                  <span className={`truncate ${isRejected ? 'line-through text-slate-400' : 'text-slate-900'}`}>{item.module_name}</span>
+                  <span className="font-mono text-xs text-[var(--text-muted)] whitespace-nowrap">{item.module_code}</span>
+                  <span className={`truncate ${isRejected ? 'line-through text-[var(--text-muted)]' : 'text-[var(--foreground)]'}`}>{item.module_name}</span>
                   {item.quantity > 1 && (
-                    <span className="text-xs text-slate-400 whitespace-nowrap">×{item.quantity}</span>
+                    <span className="text-xs text-[var(--text-muted)] whitespace-nowrap">×{item.quantity}</span>
                   )}
                   {isRejected && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200 whitespace-nowrap">Tidak Tersedia</span>
@@ -358,16 +358,16 @@ function OrderDetailContent() {
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">Menunggu</span>
                   )}
                 </div>
-                <span className="w-24 text-right tabular-nums text-slate-500">
-                  {hidePrice ? <span className="text-slate-300">—</span> : formatIDR(item.unit_price)}
+                <span className="w-24 text-right tabular-nums text-[var(--text-body)]">
+                  {hidePrice ? <span className="text-[var(--text-muted)]">—</span> : formatIDR(item.unit_price)}
                 </span>
                 <span className="w-24 text-right ml-4 font-medium tabular-nums">
-                  {hidePrice ? <span className="text-slate-300">—</span> : <span className="text-slate-900">{formatIDR(item.subtotal)}</span>}
+                  {hidePrice ? <span className="text-[var(--text-muted)]">—</span> : <span className="text-[var(--foreground)]">{formatIDR(item.subtotal)}</span>}
                 </span>
               </div>
             );
           })}
-          <div className="pt-3 flex justify-between font-bold text-slate-900">
+          <div className="pt-3 flex justify-between font-bold text-[var(--foreground)]">
             <span>Total</span>
             <span className="text-indigo-700 tabular-nums">{formatIDR(payment?.amount ?? order.total_amount)}</span>
           </div>
@@ -415,7 +415,7 @@ function OrderDetailContent() {
 
 export default function OrderDetailPage() {
   return (
-    <Suspense fallback={<div className="text-center py-16 text-slate-400">Memuat...</div>}>
+    <Suspense fallback={<div className="text-center py-16 text-[var(--text-muted)]">Memuat...</div>}>
       <OrderDetailContent />
     </Suspense>
   );

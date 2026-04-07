@@ -20,8 +20,8 @@ interface ProfileAddress {
   country: string;
 }
 
-const inputClass = "w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm text-slate-900 bg-white placeholder:text-slate-400 transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
-const labelClass = "block text-sm font-medium text-slate-700 mb-1.5";
+const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
+const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -136,34 +136,34 @@ export default function CheckoutPage() {
   if (!cart || cart.items.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="text-slate-500">Keranjang Anda kosong.</p>
+        <p className="text-[var(--text-body)]">Keranjang Anda kosong.</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Checkout</h1>
+      <h1 className="text-2xl font-bold text-[var(--foreground)] mb-6">Checkout</h1>
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Form */}
           <div className="lg:col-span-2 space-y-5">
             {/* Shipping */}
-            <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-6">
-              <h2 className="font-semibold text-slate-900 mb-4">Alamat Pengiriman</h2>
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-6">
+              <h2 className="font-semibold text-[var(--foreground)] mb-4">Alamat Pengiriman</h2>
 
               {/* Pill toggle — only show if profile has an address */}
               {profileAddress && (
-                <div className="flex gap-1 bg-slate-100 rounded-xl p-1 mb-5">
+                <div className="flex gap-1 bg-[var(--surface-sunken)] rounded-xl p-1 mb-5">
                   <button
                     type="button"
                     onClick={() => setUseProfileAddress(true)}
                     className={cn(
                       'flex-1 py-2 px-4 rounded-[10px] text-sm font-medium transition-[background-color,color,box-shadow] duration-150',
                       useProfileAddress
-                        ? 'bg-white text-slate-900 shadow-[var(--shadow-xs)]'
-                        : 'text-slate-500 hover:text-slate-700'
+                        ? 'bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-xs)]'
+                        : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'
                     )}
                   >
                     Alamat Terdaftar
@@ -174,8 +174,8 @@ export default function CheckoutPage() {
                     className={cn(
                       'flex-1 py-2 px-4 rounded-[10px] text-sm font-medium transition-[background-color,color,box-shadow] duration-150',
                       !useProfileAddress
-                        ? 'bg-white text-slate-900 shadow-[var(--shadow-xs)]'
-                        : 'text-slate-500 hover:text-slate-700'
+                        ? 'bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-xs)]'
+                        : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'
                     )}
                   >
                     Alamat Lain
@@ -185,8 +185,8 @@ export default function CheckoutPage() {
 
               {/* Read-only profile address card */}
               {useProfileAddress && profileAddress ? (
-                <div className="bg-slate-50/60 rounded-xl border border-[var(--border-subtle)] px-4 py-3 text-sm text-slate-700 space-y-0.5">
-                  <p className="font-semibold text-slate-900">{profileAddress.name}</p>
+                <div className="bg-[var(--surface-sunken)] rounded-xl border border-[var(--border-subtle)] px-4 py-3 text-sm text-[var(--text-body)] space-y-0.5">
+                  <p className="font-semibold text-[var(--foreground)]">{profileAddress.name}</p>
                   <p>
                     {[profileAddress.zh_road,
                       profileAddress.zh_number ? profileAddress.zh_number + '號' : '',
@@ -261,21 +261,21 @@ export default function CheckoutPage() {
 
           {/* Order summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-5 sticky top-24">
-              <h2 className="font-semibold text-slate-900 mb-4">Ringkasan Pesanan</h2>
+            <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-5 sticky top-24">
+              <h2 className="font-semibold text-[var(--foreground)] mb-4">Ringkasan Pesanan</h2>
               <div className="space-y-2 text-sm mb-4 max-h-48 overflow-y-auto">
                 {cart.items.map(item => (
                   <div key={item.id} className="flex justify-between gap-2 items-start">
-                    <span className="text-slate-600 truncate flex-1">
+                    <span className="text-[var(--text-body)] truncate flex-1">
                       {item.tboCode} {item.moduleName}
                       {item.isRequest && (
                         <span className="ml-1 text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">REQ</span>
                       )}
                       {item.quantity > 1 && (
-                        <span className="ml-1 text-slate-400 text-xs">×{item.quantity}</span>
+                        <span className="ml-1 text-[var(--text-muted)] text-xs">×{item.quantity}</span>
                       )}
                     </span>
-                    <span className="text-slate-900 font-medium whitespace-nowrap tabular-nums">
+                    <span className="text-[var(--foreground)] font-medium whitespace-nowrap tabular-nums">
                       {item.isRequest && item.subtotal === 0 ? '—' : formatIDR(item.subtotal)}
                     </span>
                   </div>
@@ -290,16 +290,16 @@ export default function CheckoutPage() {
                 </div>
               )}
               <div className="border-t border-[var(--border-subtle)] pt-3 mb-5">
-                <div className="flex justify-between text-slate-500 text-sm mb-1">
+                <div className="flex justify-between text-[var(--text-body)] text-sm mb-1">
                   <span>Subtotal</span>
                   <span className="tabular-nums">{formatIDR(cart.subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-slate-500 text-sm mb-3">
+                <div className="flex justify-between text-[var(--text-body)] text-sm mb-3">
                   <span>Ongkos Kirim</span>
                   <span className="tabular-nums">{formatIDR(0)}</span>
                 </div>
                 <div className="flex justify-between font-bold items-end">
-                  <span className="text-slate-700">Total Pesanan</span>
+                  <span className="text-[var(--foreground)]">Total Pesanan</span>
                   <span className="text-2xl font-extrabold text-indigo-700 tabular-nums">{formatIDR(cart.subtotal)}</span>
                 </div>
               </div>

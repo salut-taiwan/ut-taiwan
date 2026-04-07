@@ -144,40 +144,40 @@ export default function Home() {
       <section className="mb-16">
         <div className="text-center mb-8">
           <span className="text-xs font-semibold uppercase tracking-caps text-indigo-600">Mulai dari sini</span>
-          <h2 className="text-3xl font-bold text-slate-900 mt-2 mb-2">Pilih Fakultas</h2>
-          <p className="text-slate-500">Mulai dari fakultas Anda untuk menemukan modul yang tepat</p>
+          <h2 className="text-3xl font-bold text-[var(--foreground)] mt-2 mb-2">Pilih Fakultas</h2>
+          <p className="text-[var(--text-body)]">Mulai dari fakultas Anda untuk menemukan modul yang tepat</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {faculties.map(f => (
             <Link key={f.code} href={`/program?faculty=${f.code}`}
-              className="group bg-white rounded-2xl border border-[var(--border-subtle)] p-6 text-center transition-[box-shadow,transform] duration-200 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1 active:scale-[0.99] cursor-pointer">
+              className="group bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] p-6 text-center transition-[box-shadow,transform] duration-200 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1 active:scale-[0.99] cursor-pointer">
               <div className={`w-12 h-12 ${f.iconBg} ${f.iconColor} rounded-xl flex items-center justify-center mx-auto mb-4`}>
                 <span className="w-6 h-6">{f.icon}</span>
               </div>
-              <div className="font-bold text-slate-900 text-sm mb-1">{f.code}</div>
-              <div className="font-semibold text-slate-700 mb-2 text-sm leading-snug">{f.name}</div>
-              <div className="text-xs text-slate-500">{f.programs}</div>
+              <div className="font-bold text-[var(--foreground)] text-sm mb-1">{f.code}</div>
+              <div className="font-semibold text-[var(--text-body)] mb-2 text-sm leading-snug">{f.name}</div>
+              <div className="text-xs text-[var(--text-muted)]">{f.programs}</div>
             </Link>
           ))}
         </div>
       </section>
 
       {/* How it works */}
-      <section className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-8 mb-16">
+      <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-8 mb-16">
         <div className="text-center mb-10">
           <span className="text-xs font-semibold uppercase tracking-caps text-indigo-600">Proses mudah & cepat</span>
-          <h2 className="text-3xl font-bold text-slate-900 mt-2">Cara Pemesanan</h2>
+          <h2 className="text-3xl font-bold text-[var(--foreground)] mt-2">Cara Pemesanan</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 text-center relative">
           {/* Dashed connector (desktop only) */}
-          <div className="hidden sm:block absolute top-7 left-[12.5%] right-[12.5%] border-t-2 border-dashed border-slate-200 pointer-events-none" />
+          <div className="hidden sm:block absolute top-7 left-[12.5%] right-[12.5%] border-t-2 border-dashed border-[var(--border)] pointer-events-none" />
           {steps.map(item => (
             <div key={item.step} className="relative flex flex-col items-center">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-700 text-white text-xl font-bold flex items-center justify-center mb-4 shadow-[var(--shadow-md)] relative z-10">
                 {item.step}
               </div>
-              <h3 className="font-semibold text-slate-900 mb-1">{item.title}</h3>
-              <p className="text-sm text-slate-500">{item.desc}</p>
+              <h3 className="font-semibold text-[var(--foreground)] mb-1">{item.title}</h3>
+              <p className="text-sm text-[var(--text-body)]">{item.desc}</p>
             </div>
           ))}
         </div>
@@ -187,12 +187,12 @@ export default function Home() {
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16">
         {infoCards.map(item => (
           <div key={item.title}
-            className={`bg-white rounded-2xl border border-[var(--border-subtle)] border-l-4 ${item.accent} shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200 p-6`}>
+            className={`bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] border-l-4 ${item.accent} shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200 p-6`}>
             <div className={`w-10 h-10 ${item.iconBg} ${item.iconColor} rounded-xl flex items-center justify-center mb-4`}>
               <span className="w-5 h-5">{item.icon}</span>
             </div>
-            <h3 className="font-semibold text-slate-900 mb-2">{item.title}</h3>
-            <p className="text-sm text-slate-600">{item.desc}</p>
+            <h3 className="font-semibold text-[var(--foreground)] mb-2">{item.title}</h3>
+            <p className="text-sm text-[var(--text-body)]">{item.desc}</p>
           </div>
         ))}
       </section>

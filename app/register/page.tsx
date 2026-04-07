@@ -6,14 +6,14 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { NTD_BANKS, IDR_BANKS } from '@/lib/banks';
 
-const inputClass = "w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm text-slate-900 bg-white placeholder:text-slate-400 transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
-const selectClass = inputClass + " bg-white";
-const labelClass = "block text-sm font-medium text-slate-700 mb-1.5";
+const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
+const selectClass = inputClass;
+const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
 
 function SectionBox({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl bg-slate-50/40 border border-[var(--border-subtle)] p-5">
-      <p className="text-sm font-semibold text-slate-700 mb-4">{title}</p>
+    <div className="rounded-2xl bg-[var(--surface-sunken)] border border-[var(--border-subtle)] p-5">
+      <p className="text-sm font-semibold text-[var(--foreground)] mb-4">{title}</p>
       {children}
     </div>
   );
@@ -99,15 +99,15 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50/40">
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[var(--background)]">
         <div className="max-w-md text-center p-8">
           <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[var(--shadow-sm)]">
             <svg className="w-12 h-12 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Cek Email Anda</h2>
-          <p className="text-slate-600 mb-6">
+          <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2">Cek Email Anda</h2>
+          <p className="text-[var(--text-body)] mb-6">
             Link verifikasi telah dikirim ke <strong>{form.email}</strong>. Silakan klik link tersebut untuk mengaktifkan akun Anda.
           </p>
           <Link href="/login" className="text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors">Kembali ke Halaman Masuk</Link>
@@ -132,11 +132,11 @@ export default function RegisterPage() {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 flex items-start justify-center p-6 lg:p-12 overflow-y-auto bg-gradient-to-br from-slate-50 to-indigo-50/40">
+      <div className="flex-1 flex items-start justify-center p-6 lg:p-12 overflow-y-auto bg-[var(--background)]">
         <div className="w-full max-w-md py-8">
-          <div className="bg-white rounded-3xl border border-[var(--border-subtle)] shadow-[var(--shadow-xl)] p-8">
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Daftar Akun</h1>
-            <p className="text-sm text-slate-500 mb-6">
+          <div className="bg-[var(--surface)] rounded-3xl border border-[var(--border-subtle)] shadow-[var(--shadow-xl)] p-8">
+            <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Daftar Akun</h1>
+            <p className="text-sm text-[var(--text-body)] mb-6">
               Sudah punya akun? <Link href="/login" className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Masuk</Link>
             </p>
 
@@ -166,7 +166,7 @@ export default function RegisterPage() {
                 <label className={labelClass}>Nomor WhatsApp Aktif *</label>
                 <input name="phone" type="tel" value={form.phone} onChange={handleChange} required
                   className={inputClass} placeholder="+886 xxx xxx xxx" />
-                <p className="text-xs text-slate-400 mt-1">Gunakan nomor yang aktif di WhatsApp</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">Gunakan nomor yang aktif di WhatsApp</p>
               </div>
               <div>
                 <label className={labelClass}>Password *</label>
@@ -249,8 +249,8 @@ export default function RegisterPage() {
               {/* Bank section */}
               <div className="pt-2">
                 <div className="mb-3">
-                  <span className="text-sm font-semibold text-slate-900">Rekening Bank *</span>
-                  <p className="text-xs text-slate-500 mt-0.5">Wajib isi minimal satu rekening (NTD atau IDR)</p>
+                  <span className="text-sm font-semibold text-[var(--foreground)]">Rekening Bank *</span>
+                  <p className="text-xs text-[var(--text-body)] mt-0.5">Wajib isi minimal satu rekening (NTD atau IDR)</p>
                 </div>
                 <div className="space-y-3">
                   <SectionBox title="Rekening NTD (Taiwan)">

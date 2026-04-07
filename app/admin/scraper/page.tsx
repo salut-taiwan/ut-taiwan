@@ -64,7 +64,7 @@ export default function AdminScraperPage() {
     }
   }
 
-  if (isLoading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
+  if (isLoading) return <div className="text-center py-16 text-[var(--text-muted)]">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
 
   return (
@@ -72,11 +72,11 @@ export default function AdminScraperPage() {
       <div className="flex items-center gap-3 mb-2">
         <Link href="/admin" className="text-sm text-indigo-600 hover:underline">&larr; Admin</Link>
       </div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Scraper TBO Karunika</h1>
+      <h1 className="text-2xl font-bold text-[var(--foreground)] mb-6">Scraper TBO Karunika</h1>
 
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 mb-6">
-        <h2 className="font-semibold text-slate-900 mb-2">Jalankan Scraper Manual</h2>
-        <p className="text-sm text-slate-500 mb-4">
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm p-6 mb-6">
+        <h2 className="font-semibold text-[var(--foreground)] mb-2">Jalankan Scraper Manual</h2>
+        <p className="text-sm text-[var(--text-body)] mb-4">
           Scraper otomatis berjalan setiap hari pukul 02:00 WIB. Klik di bawah untuk memulai sinkronisasi manual.
         </p>
         <div className="flex flex-wrap gap-3">
@@ -102,26 +102,26 @@ export default function AdminScraperPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <h2 className="font-semibold text-slate-900">Riwayat Scraper Run</h2>
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-[var(--border)]">
+          <h2 className="font-semibold text-[var(--foreground)]">Riwayat Scraper Run</h2>
         </div>
         {loading ? (
-          <div className="text-center py-12 text-slate-400">Memuat...</div>
+          <div className="text-center py-12 text-[var(--text-muted)]">Memuat...</div>
         ) : runs.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">Belum ada riwayat scraper</div>
+          <div className="text-center py-12 text-[var(--text-muted)]">Belum ada riwayat scraper</div>
         ) : (
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-[var(--border-subtle)]">
             {runs.map(run => (
-              <div key={run.id} className="px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
+              <div key={run.id} className="px-5 py-4 flex items-center justify-between gap-4 hover:bg-[var(--surface-sunken)] transition-colors">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_COLORS[run.status]}`}>
                       {run.status}
                     </span>
-                    <span className="text-xs text-slate-400">{run.triggered_by}</span>
+                    <span className="text-xs text-[var(--text-body)]">{run.triggered_by}</span>
                   </div>
-                  <p className="text-sm text-slate-700">{formatDate(run.started_at)}</p>
+                  <p className="text-sm text-[var(--text-body)]">{formatDate(run.started_at)}</p>
                   {run.error_message && (
                     <p className="text-xs text-red-500 mt-1 truncate">{run.error_message}</p>
                   )}
@@ -136,7 +136,7 @@ export default function AdminScraperPage() {
           </div>
         )}
       </div>
-      <p className="text-xs text-slate-400 mt-3 text-center">+Ditambahkan &bull; ~Diperbarui &bull; -Dihapus</p>
+      <p className="text-xs text-[var(--text-muted)] mt-3 text-center">+Ditambahkan &bull; ~Diperbarui &bull; -Dihapus</p>
     </div>
   );
 }

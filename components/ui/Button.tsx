@@ -14,10 +14,10 @@ export default function Button({
 
   const variants = {
     primary:   'bg-indigo-600 text-white hover:bg-indigo-700 hover:-translate-y-px hover:shadow-[var(--shadow-md)] focus-visible:ring-indigo-500 shadow-[var(--shadow-btn-primary)]',
-    secondary: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-slate-400 shadow-[var(--shadow-xs)]',
+    secondary: 'bg-[var(--surface)] border border-[var(--border-default)] text-[var(--foreground)] hover:bg-[var(--surface-sunken)] hover:border-[var(--border-strong)] focus-visible:ring-slate-400 shadow-[var(--shadow-xs)]',
     outline:   'border border-indigo-300 text-indigo-600 hover:bg-indigo-50 hover:shadow-[var(--shadow-xs)] focus-visible:ring-indigo-500',
     danger:    'bg-red-600 text-white hover:bg-red-700 hover:-translate-y-px focus-visible:ring-red-500',
-    ghost:     'text-slate-600 hover:bg-slate-100 focus-visible:ring-slate-400',
+    ghost:     'text-[var(--text-body)] hover:bg-[var(--surface-sunken)] focus-visible:ring-slate-400',
   };
 
   const sizes = {

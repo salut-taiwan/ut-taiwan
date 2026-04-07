@@ -71,7 +71,7 @@ export default function AdminModulesPage() {
     }
   }
 
-  if (isLoading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
+  if (isLoading) return <div className="text-center py-16 text-[var(--text-muted)]">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
 
   const totalPages = Math.ceil(total / LIMIT);
@@ -81,8 +81,8 @@ export default function AdminModulesPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <Link href="/admin" className="text-sm text-indigo-600 hover:underline">&larr; Admin</Link>
-          <h1 className="text-2xl font-bold text-slate-900 mt-1">Manajemen Modul</h1>
-          <p className="text-sm text-slate-500">{total} modul total</p>
+          <h1 className="text-2xl font-bold text-[var(--foreground)] mt-1">Manajemen Modul</h1>
+          <p className="text-sm text-[var(--text-body)]">{total} modul total</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
@@ -92,27 +92,27 @@ export default function AdminModulesPage() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">
         {loading ? (
-          <div className="text-center py-12 text-slate-400">Memuat...</div>
+          <div className="text-center py-12 text-[var(--text-muted)]">Memuat...</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-[var(--surface-sunken)] border-b border-[var(--border)]">
               <tr>
-                <th className="text-left px-4 py-3 text-slate-500 text-xs uppercase tracking-wide font-semibold">Kode</th>
-                <th className="text-left px-4 py-3 text-slate-500 text-xs uppercase tracking-wide font-semibold">Nama</th>
-                <th className="text-left px-4 py-3 text-slate-500 text-xs uppercase tracking-wide font-semibold">Edisi</th>
-                <th className="text-right px-4 py-3 text-slate-500 text-xs uppercase tracking-wide font-semibold">Harga Mhs</th>
-                <th className="text-center px-4 py-3 text-slate-500 text-xs uppercase tracking-wide font-semibold">Status</th>
+                <th className="text-left px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold">Kode</th>
+                <th className="text-left px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold">Nama</th>
+                <th className="text-left px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold">Edisi</th>
+                <th className="text-right px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold">Harga Mhs</th>
+                <th className="text-center px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-[var(--border-subtle)]">
               {modules.map(mod => (
-                <tr key={mod.id} className="hover:bg-slate-50 transition-colors">
+                <tr key={mod.id} className="hover:bg-[var(--surface-sunken)] transition-colors">
                   <td className="px-4 py-3 font-mono text-xs text-indigo-600 font-semibold">{mod.tbo_code}</td>
-                  <td className="px-4 py-3 text-slate-900 max-w-xs truncate">{mod.name}</td>
-                  <td className="px-4 py-3 text-slate-500">{mod.edition || '-'}</td>
-                  <td className="px-4 py-3 text-right text-slate-900">{mod.price_student ? formatIDR(mod.price_student) : '-'}</td>
+                  <td className="px-4 py-3 text-[var(--foreground)] max-w-xs truncate">{mod.name}</td>
+                  <td className="px-4 py-3 text-[var(--text-body)]">{mod.edition || '-'}</td>
+                  <td className="px-4 py-3 text-right text-[var(--foreground)]">{mod.price_student ? formatIDR(mod.price_student) : '-'}</td>
                   <td className="px-4 py-3 text-center">
                     <span className={`text-xs px-3 py-1 rounded-full font-medium ${
                       mod.is_available ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
@@ -130,12 +130,12 @@ export default function AdminModulesPage() {
       {totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-4">
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            className="px-4 py-2 border border-slate-200 rounded-lg text-sm disabled:opacity-40 hover:bg-slate-50 text-slate-700">
+            className="px-4 py-2 border border-[var(--border)] rounded-lg text-sm disabled:opacity-40 hover:bg-[var(--surface-sunken)] text-[var(--text-body)]">
             Sebelumnya
           </button>
-          <span className="px-4 py-2 text-sm text-slate-600">Halaman {page} dari {totalPages}</span>
+          <span className="px-4 py-2 text-sm text-[var(--text-body)]">Halaman {page} dari {totalPages}</span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-            className="px-4 py-2 border border-slate-200 rounded-lg text-sm disabled:opacity-40 hover:bg-slate-50 text-slate-700">
+            className="px-4 py-2 border border-[var(--border)] rounded-lg text-sm disabled:opacity-40 hover:bg-[var(--surface-sunken)] text-[var(--text-body)]">
             Selanjutnya
           </button>
         </div>
@@ -143,50 +143,50 @@ export default function AdminModulesPage() {
 
       {showCreate && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-slate-100">
-              <h2 className="text-lg font-bold text-slate-900">Tambah Modul Baru</h2>
+          <div className="bg-[var(--surface)] rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-[var(--border)]">
+              <h2 className="text-lg font-bold text-[var(--foreground)]">Tambah Modul Baru</h2>
             </div>
             <form onSubmit={handleCreate} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Kode TBO *</label>
+                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Kode TBO *</label>
                   <input
                     type="text"
                     value={form.tbo_code}
                     onChange={e => setForm(f => ({ ...f, tbo_code: e.target.value }))}
                     required
                     placeholder="ADBI4201"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-mono uppercase"
+                    className="w-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-mono uppercase"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Edisi</label>
+                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Edisi</label>
                   <input
                     type="text"
                     value={form.edition}
                     onChange={e => setForm(f => ({ ...f, edition: e.target.value }))}
                     placeholder="1"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    className="w-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Nama Modul *</label>
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Nama Modul *</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   required
                   placeholder="Pengantar Bisnis"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="w-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Harga Mahasiswa (Rp) *</label>
+                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Harga Mahasiswa (Rp) *</label>
                   <input
                     type="number"
                     value={form.price_student}
@@ -194,11 +194,11 @@ export default function AdminModulesPage() {
                     required
                     min={0}
                     placeholder="25000"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    className="w-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Harga Umum (Rp) *</label>
+                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Harga Umum (Rp) *</label>
                   <input
                     type="number"
                     value={form.price_general}
@@ -206,68 +206,68 @@ export default function AdminModulesPage() {
                     required
                     min={0}
                     placeholder="35000"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    className="w-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Pengarang</label>
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Pengarang</label>
                 <input
                   type="text"
                   value={form.author}
                   onChange={e => setForm(f => ({ ...f, author: e.target.value }))}
                   placeholder="Nama pengarang"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="w-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Penerbit</label>
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Penerbit</label>
                 <input
                   type="text"
                   value={form.publisher}
                   onChange={e => setForm(f => ({ ...f, publisher: e.target.value }))}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="w-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Berat (gram)</label>
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Berat (gram)</label>
                 <input
                   type="number"
                   value={form.weight_grams}
                   onChange={e => setForm(f => ({ ...f, weight_grams: e.target.value }))}
                   min={0}
                   placeholder="300"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="w-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">URL Sampul</label>
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">URL Sampul</label>
                 <input
                   type="url"
                   value={form.cover_image_url}
                   onChange={e => setForm(f => ({ ...f, cover_image_url: e.target.value }))}
                   placeholder="https://..."
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="w-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">URL TBO</label>
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">URL TBO</label>
                 <input
                   type="url"
                   value={form.tbo_url}
                   onChange={e => setForm(f => ({ ...f, tbo_url: e.target.value }))}
                   placeholder="https://tbo.karunika.co.id/..."
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="w-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 />
               </div>
 
               <div className="flex gap-6">
-                <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                <label className="flex items-center gap-2 text-sm text-[var(--text-body)] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.is_available}
@@ -276,7 +276,7 @@ export default function AdminModulesPage() {
                   />
                   Tersedia
                 </label>
-                <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                <label className="flex items-center gap-2 text-sm text-[var(--text-body)] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.has_multimedia}
@@ -291,7 +291,7 @@ export default function AdminModulesPage() {
                 <button
                   type="button"
                   onClick={() => { setShowCreate(false); setForm({ ...EMPTY_FORM }); }}
-                  className="px-4 py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2 text-sm text-[var(--text-body)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-sunken)] transition-colors"
                 >
                   Batal
                 </button>

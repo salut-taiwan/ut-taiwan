@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 
-const inputClass = "w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm text-slate-900 bg-white placeholder:text-slate-400 transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
-const labelClass = "block text-sm font-medium text-slate-700 mb-1.5";
+const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
+const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
 
 function LoginForm() {
   const router = useRouter();
@@ -61,11 +61,11 @@ function LoginForm() {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-gradient-to-br from-slate-50 to-indigo-50/40">
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-[var(--background)]">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-3xl border border-[var(--border-subtle)] shadow-[var(--shadow-xl)] p-8">
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Masuk</h1>
-            <p className="text-sm text-slate-500 mb-6">
+          <div className="bg-[var(--surface)] rounded-3xl border border-[var(--border-subtle)] shadow-[var(--shadow-xl)] p-8">
+            <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Masuk</h1>
+            <p className="text-sm text-[var(--text-body)] mb-6">
               Belum punya akun? <Link href="/register" className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Daftar sekarang</Link>
             </p>
 

@@ -10,17 +10,17 @@ import { OrderDTO } from '@/types';
 const PAYMENT_STATUS_COLORS: Record<string, string> = {
   pending: 'bg-amber-50   border-l-[3px] border-l-amber-400   text-amber-800  rounded-r-sm',
   paid:    'bg-emerald-50 border-l-[3px] border-l-emerald-500 text-emerald-800 rounded-r-sm',
-  expired: 'bg-slate-50   border-l-[3px] border-l-slate-400   text-slate-600  rounded-r-sm',
+  expired: 'bg-[var(--surface-sunken)] border-l-[3px] border-l-[var(--border-default)] text-[var(--text-body)] rounded-r-sm',
   failed:  'bg-red-50     border-l-[3px] border-l-red-400     text-red-700    rounded-r-sm',
 };
 
 const ORDER_STATUS_COLORS: Record<string, string> = {
-  pending:          'bg-slate-50   border-l-[3px] border-l-slate-400   text-slate-700  rounded-r-sm',
+  pending:          'bg-[var(--surface-sunken)] border-l-[3px] border-l-[var(--border-default)] text-[var(--text-body)] rounded-r-sm',
   awaiting_payment: 'bg-amber-50   border-l-[3px] border-l-amber-400   text-amber-800  rounded-r-sm',
   paid:             'bg-emerald-50 border-l-[3px] border-l-emerald-500 text-emerald-800 rounded-r-sm',
   processing:       'bg-indigo-50  border-l-[3px] border-l-indigo-500  text-indigo-800 rounded-r-sm',
   shipped:          'bg-purple-50  border-l-[3px] border-l-purple-400  text-purple-800 rounded-r-sm',
-  delivered:        'bg-slate-50   border-l-[3px] border-l-slate-400   text-slate-700  rounded-r-sm',
+  delivered:        'bg-[var(--surface-sunken)] border-l-[3px] border-l-[var(--border-default)] text-[var(--text-body)] rounded-r-sm',
   cancelled:        'bg-red-50     border-l-[3px] border-l-red-400     text-red-700    rounded-r-sm',
 };
 
@@ -162,7 +162,7 @@ export default function AdminOrdersPage() {
     }
   }
 
-  if (isLoading || loading) return <div className="text-center py-16 text-slate-400">Memuat...</div>;
+  if (isLoading || loading) return <div className="text-center py-16 text-[var(--text-muted)]">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
 
   return (
@@ -170,7 +170,7 @@ export default function AdminOrdersPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Panel Admin</span>
-          <h1 className="text-2xl font-bold text-slate-900 mt-1">Pesanan & Pembayaran</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)] mt-1">Pesanan & Pembayaran</h1>
         </div>
         <button
           onClick={fetchOrders}
@@ -181,11 +181,11 @@ export default function AdminOrdersPage() {
       </div>
 
       {orders.length === 0 ? (
-        <div className="text-center py-16 text-slate-400">Belum ada pesanan</div>
+        <div className="text-center py-16 text-[var(--text-muted)]">Belum ada pesanan</div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+            <thead className="bg-[var(--surface-sunken)] text-[var(--text-muted)] text-xs uppercase tracking-wide">
               <tr>
                 <th className="px-4 py-3 text-left">No. Pesanan</th>
                 <th className="px-4 py-3 text-left">Pelanggan</th>
@@ -196,7 +196,7 @@ export default function AdminOrdersPage() {
                 <th className="px-4 py-3 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-[var(--border-subtle)]">
               {orders.map(order => {
                 const payment = order.payments?.[0];
                 const canConfirmKarunika = order.status === 'pending';
@@ -207,8 +207,8 @@ export default function AdminOrdersPage() {
                 const isExpanded = expanded.has(order.id);
                 return (
                   <React.Fragment key={order.id}>
-                  <tr className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 font-mono font-semibold text-slate-900">
+                  <tr className="hover:bg-[var(--surface-sunken)] transition-colors">
+                    <td className="px-4 py-3 font-mono font-semibold text-[var(--foreground)]">
                       <div>{order.order_number}</div>
                       {(requestItems.length > 0 || order.status === 'awaiting_payment') && (
                         <button
@@ -218,7 +218,7 @@ export default function AdminOrdersPage() {
                               ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
                               : order.status === 'awaiting_payment'
                               ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                              : 'bg-[var(--surface-sunken)] text-[var(--text-body)] hover:bg-[var(--border-subtle)]'
                           }`}
                         >
                           {pendingRequests.length > 0
@@ -231,27 +231,27 @@ export default function AdminOrdersPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-slate-900 font-medium">{order.shipping_name}</p>
-                      <p className="text-slate-400 text-xs">{order.shipping_phone}</p>
+                      <p className="text-[var(--foreground)] font-medium">{order.shipping_name}</p>
+                      <p className="text-[var(--text-muted)] text-xs">{order.shipping_phone}</p>
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-slate-900 tabular-nums">
+                    <td className="px-4 py-3 text-right font-semibold text-[var(--foreground)] tabular-nums">
                       {formatIDR(payment?.amount ?? order.total_amount)}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`text-xs font-medium px-2 py-1 ${ORDER_STATUS_COLORS[order.status] || 'bg-slate-100 text-slate-700 rounded-r-sm'}`}>
+                      <span className={`text-xs font-medium px-2 py-1 ${ORDER_STATUS_COLORS[order.status] || 'bg-[var(--surface-sunken)] text-[var(--text-body)] rounded-r-sm'}`}>
                         {orderStatusLabel(order.status)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
                       {payment ? (
-                        <span className={`text-xs font-medium px-2 py-1 ${PAYMENT_STATUS_COLORS[payment.status] || 'bg-slate-100 text-slate-500 rounded-r-sm'}`}>
+                        <span className={`text-xs font-medium px-2 py-1 ${PAYMENT_STATUS_COLORS[payment.status] || 'bg-[var(--surface-sunken)] text-[var(--text-muted)] rounded-r-sm'}`}>
                           {paymentStatusLabel(payment.status)}
                         </span>
                       ) : (
-                        <span className="text-slate-300 text-xs">—</span>
+                        <span className="text-[var(--border-default)] text-xs">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">{formatDate(order.created_at)}</td>
+                    <td className="px-4 py-3 text-[var(--text-body)] text-xs">{formatDate(order.created_at)}</td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex flex-col gap-1 items-center">
                         {canConfirmKarunika && (
@@ -295,7 +295,7 @@ export default function AdminOrdersPage() {
                           <button
                             onClick={() => handleStatusUpdate(order.id, 'delivered', 'Terima')}
                             disabled={busy}
-                            className="bg-slate-600 text-white text-xs px-3 py-2 rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors font-semibold w-full"
+                            className="bg-[var(--border-strong)] text-white text-xs px-3 py-2 rounded-lg hover:opacity-80 disabled:opacity-50 transition-opacity font-semibold w-full"
                           >
                             Terima
                           </button>
@@ -308,7 +308,7 @@ export default function AdminOrdersPage() {
                       <td colSpan={7} className="px-4 pb-2 pt-0 bg-blue-50/40">
                         <div className="flex gap-6 text-xs py-2 border border-blue-100 rounded-xl px-4">
                           <div className="flex-1">
-                            <p className="font-semibold text-slate-600 mb-1">Bukti Bayar Pembeli</p>
+                            <p className="font-semibold text-[var(--text-body)] mb-1">Bukti Bayar Pembeli</p>
                             {payment.proof_path ? (
                               <button
                                 onClick={async () => {
@@ -323,11 +323,11 @@ export default function AdminOrdersPage() {
                                 Lihat Bukti
                               </button>
                             ) : (
-                              <span className="text-slate-400 italic">Belum ada bukti</span>
+                              <span className="text-[var(--text-muted)] italic">Belum ada bukti</span>
                             )}
                           </div>
                           <div className="flex-1">
-                            <p className="font-semibold text-slate-600 mb-1">Invoice Karunika</p>
+                            <p className="font-semibold text-[var(--text-body)] mb-1">Invoice Karunika</p>
                             {payment.invoice_path ? (
                               <div className="flex items-center gap-2">
                                 <button
@@ -342,7 +342,7 @@ export default function AdminOrdersPage() {
                                 >
                                   Lihat Invoice
                                 </button>
-                                <label className="text-slate-400 cursor-pointer hover:text-slate-600">[Ganti]
+                                <label className="text-[var(--text-muted)] cursor-pointer hover:text-[var(--text-body)]">[Ganti]
                                   <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => handleInvoiceUpload(order.id, e)} />
                                 </label>
                               </div>
@@ -368,13 +368,13 @@ export default function AdminOrdersPage() {
                               return (
                               <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
                                 <div className="flex-1 min-w-0">
-                                  <span className="font-mono text-slate-500 mr-1">{item.module_code}</span>
-                                  <span className="text-slate-700">{item.module_name}</span>
-                                  <span className="text-slate-400 ml-1">×{item.quantity}</span>
+                                  <span className="font-mono text-[var(--text-muted)] mr-1">{item.module_code}</span>
+                                  <span className="text-[var(--text-body)]">{item.module_name}</span>
+                                  <span className="text-[var(--text-muted)] ml-1">×{item.quantity}</span>
                                 </div>
-                                <span className="font-semibold text-slate-700 tabular-nums shrink-0">
+                                <span className="font-semibold text-[var(--text-body)] tabular-nums shrink-0">
                                   {isZeroPrice && item.request_status !== 'rejected'
-                                    ? <span className="text-xs text-slate-400 italic font-normal">Harga menyusul</span>
+                                    ? <span className="text-xs text-[var(--text-muted)] italic font-normal">Harga menyusul</span>
                                     : formatIDR(item.subtotal)
                                   }
                                 </span>
@@ -382,7 +382,7 @@ export default function AdminOrdersPage() {
                                   {item.request_status === 'pending' ? (
                                     pricingItem === item.id ? (
                                       <div className="flex items-center gap-1.5">
-                                        <span className="text-slate-500">Rp</span>
+                                        <span className="text-[var(--text-body)]">Rp</span>
                                         <input
                                           type="number"
                                           min="1"
@@ -390,7 +390,7 @@ export default function AdminOrdersPage() {
                                           onChange={e => setPriceInput(e.target.value)}
                                           placeholder="Harga..."
                                           autoFocus
-                                          className="w-24 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:border-indigo-400 text-xs"
+                                          className="w-24 border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-lg px-2 py-1 focus:outline-none focus:border-indigo-400 text-xs"
                                         />
                                         <button
                                           onClick={() => handleRequestStatus(order.id, item.id, 'approved', Number(priceInput))}
@@ -401,7 +401,7 @@ export default function AdminOrdersPage() {
                                         </button>
                                         <button
                                           onClick={() => { setPricingItem(null); setPriceInput(''); }}
-                                          className="text-slate-400 hover:text-slate-600 px-1"
+                                          className="text-[var(--text-muted)] hover:text-[var(--text-body)] px-1"
                                         >
                                           ✕
                                         </button>
