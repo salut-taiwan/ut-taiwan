@@ -1,4 +1,4 @@
-import type { CartDTO, OrderDTO, ScraperRunDTO, UserProfileDTO } from '@/types';
+import type { AdminUserDTO, CartDTO, OrderDTO, ScraperRunDTO, UserProfileDTO } from '@/types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -227,5 +227,14 @@ export const api = {
       const blob = await res.blob();
       return URL.createObjectURL(blob);
     },
+    listUsers: (params?: { search?: string; sort?: string; dir?: string; salut?: string }) => {
+      const qs = params ? new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== ''))).toString() : '';
+      return apiFetch<AdminUserDTO[]>(`/users/admin/all${qs ? '?' + qs : ''}`);
+    },
+    updateUserSalut: (userId: string, is_salut: boolean) =>
+      apiFetch<AdminUserDTO>(`/users/admin/${userId}/salut`, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_salut }),
+      }),
   },
 };

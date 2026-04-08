@@ -187,6 +187,20 @@ export interface UserProfileDTO {
   address_zh_floor?: string | null;
   role: 'student' | 'admin';
   is_verified: boolean;
+  is_salut?: boolean;
+  programs?: { code: string; name: string } | null;
+}
+
+export interface AdminUserDTO {
+  id: string;
+  email: string;
+  name: string;
+  nim: string | null;
+  phone: string | null;
+  current_semester: number | null;
+  is_salut: boolean;
+  is_verified: boolean;
+  created_at: string;
   programs?: { code: string; name: string } | null;
 }
 
