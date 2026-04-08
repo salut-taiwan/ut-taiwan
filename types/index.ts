@@ -108,6 +108,9 @@ export interface OrderDTO {
   status: 'pending' | 'awaiting_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   subtotal: number;
   shipping_cost: number;
+  box_fee: number;
+  admin_fee: number;
+  is_salut_order: boolean;
   total_amount: number;
   shipping_name: string;
   shipping_address: string;

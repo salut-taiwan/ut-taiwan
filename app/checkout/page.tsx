@@ -27,6 +27,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { syncCartCount } = useCart();
   const [cart, setCart] = useState<CartDTO | null>(null);
+  const [isSalut, setIsSalut] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [profileAddress, setProfileAddress] = useState<ProfileAddress | null>(null);
@@ -52,6 +53,7 @@ export default function CheckoutPage() {
 
     Promise.all([api.cart.get(), api.auth.getMe()]).then(([cartData, profileData]) => {
       setCart(cartData);
+      setIsSalut(profileData.is_salut ?? false);
       const addr: ProfileAddress = {
         name: profileData.name || '',
         phone: profileData.phone || '',
@@ -289,18 +291,37 @@ export default function CheckoutPage() {
                   <span>Item bertanda <strong>REQ</strong> adalah permintaan. Admin akan mengkonfirmasi ketersediaan sebelum meminta pembayaran.</span>
                 </div>
               )}
-              <div className="border-t border-[var(--border-subtle)] pt-3 mb-5">
-                <div className="flex justify-between text-[var(--text-body)] text-sm mb-1">
-                  <span>Subtotal</span>
+              <div className="border-t border-[var(--border-subtle)] pt-3 mb-5 space-y-1.5 text-sm">
+                <div className="flex justify-between text-[var(--text-body)]">
+                  <span>Subtotal Modul</span>
                   <span className="tabular-nums">{formatIDR(cart.subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-[var(--text-body)] text-sm mb-3">
-                  <span>Ongkos Kirim</span>
-                  <span className="tabular-nums">{formatIDR(0)}</span>
+                {([
+                  { label: 'Ongkir', amount: 300000 },
+                  { label: 'Biaya Box', amount: 100000 },
+                  { label: 'Biaya Admin', amount: 25000 },
+                ] as { label: string; amount: number }[]).map(({ label, amount }) => (
+                  <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
+                    <span>{label}</span>
+                    {isSalut ? (
+                      <span className="flex items-center gap-1.5">
+                        <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{formatIDR(amount)}</span>
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
+                      </span>
+                    ) : (
+                      <span className="tabular-nums">{formatIDR(amount)}</span>
+                    )}
+                  </div>
+                ))}
+                <div className="flex justify-between text-[var(--text-muted)] text-xs italic">
+                  <span>Kode unik</span>
+                  <span>+akan ditambahkan</span>
                 </div>
-                <div className="flex justify-between font-bold items-end">
+                <div className="flex justify-between font-bold items-end pt-2 border-t border-[var(--border-subtle)]">
                   <span className="text-[var(--foreground)]">Total Pesanan</span>
-                  <span className="text-2xl font-extrabold text-indigo-700 tabular-nums">{formatIDR(cart.subtotal)}</span>
+                  <span className="text-2xl font-extrabold text-indigo-700 tabular-nums">
+                    {formatIDR(cart.subtotal + (isSalut ? 0 : 425000))}
+                  </span>
                 </div>
               </div>
               <button

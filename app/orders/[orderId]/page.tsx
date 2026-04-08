@@ -367,9 +367,38 @@ function OrderDetailContent() {
               </div>
             );
           })}
-          <div className="pt-3 flex justify-between font-bold text-[var(--foreground)]">
-            <span>Total</span>
-            <span className="text-indigo-700 tabular-nums">{formatIDR(payment?.amount ?? order.total_amount)}</span>
+          <div className="pt-3 space-y-1.5 text-sm border-t border-[var(--border-subtle)]">
+            <div className="flex justify-between text-[var(--text-body)]">
+              <span>Subtotal Modul</span>
+              <span className="tabular-nums">{formatIDR(order.subtotal)}</span>
+            </div>
+            {([
+              { label: 'Ongkir', field: order.shipping_cost, salutFee: 300000 },
+              { label: 'Biaya Box', field: order.box_fee, salutFee: 100000 },
+              { label: 'Biaya Admin', field: order.admin_fee, salutFee: 25000 },
+            ] as { label: string; field: number; salutFee: number }[]).map(({ label, field, salutFee }) => (
+              <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
+                <span>{label}</span>
+                {order.is_salut_order ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{formatIDR(salutFee)}</span>
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
+                  </span>
+                ) : (
+                  <span className="tabular-nums">{formatIDR(field)}</span>
+                )}
+              </div>
+            ))}
+            {payment?.unique_code != null && payment.unique_code > 0 && (
+              <div className="flex justify-between text-[var(--text-body)]">
+                <span>Kode Unik</span>
+                <span className="tabular-nums">+{formatIDR(payment.unique_code)}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-bold text-[var(--foreground)] pt-2 border-t border-[var(--border-subtle)]">
+              <span>Total</span>
+              <span className="text-indigo-700 tabular-nums">{formatIDR(payment?.amount ?? order.total_amount)}</span>
+            </div>
           </div>
         </div>
       </div>
