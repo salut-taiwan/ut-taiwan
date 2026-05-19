@@ -10,6 +10,7 @@ export default function ModulesPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<ModuleSummaryDTO[] | null>(null);
   const [searching, setSearching] = useState(false);
@@ -18,10 +19,11 @@ export default function ModulesPage() {
 
   useEffect(() => {
     setLoading(true);
+    setError(false);
     api.modules.list(page, LIMIT).then((data: any) => {
       setModules(data.data || []);
       setTotal(data.total || 0);
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch(() => setError(true)).finally(() => setLoading(false));
   }, [page]);
 
   function handleSearch(q: string) {
@@ -49,10 +51,12 @@ export default function ModulesPage() {
 
       {/* Search */}
       <div className="relative mb-8">
+        <label htmlFor="module-search" className="sr-only">Cari modul</label>
         <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <input
+          id="module-search"
           type="text"
           value={searchQuery}
           onChange={e => handleSearch(e.target.value)}
@@ -64,7 +68,17 @@ export default function ModulesPage() {
         )}
       </div>
 
-      {loading ? (
+      {error ? (
+        <div className="flex flex-col items-center gap-4 py-20 text-center">
+          <p className="text-[var(--text-muted)]">Gagal memuat modul.</p>
+          <button
+            onClick={() => { setPage(1); setError(false); setLoading(true); api.modules.list(1, LIMIT).then((data: any) => { setModules(data.data || []); setTotal(data.total || 0); }).catch(() => setError(true)).finally(() => setLoading(false)); }}
+            className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Coba lagi
+          </button>
+        </div>
+      ) : loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           {Array.from({ length: 12 }).map((_, i) => <ModuleCardSkeleton key={i} />)}
         </div>

@@ -132,7 +132,7 @@ export default function AdminPage() {
             <p className="text-sm text-[var(--text-body)] mt-1">{card.desc}</p>
             {card.href === '/admin/scraper' && recentRun && (
               <p className="text-xs text-[var(--text-muted)] mt-2">
-                Terakhir: {formatDate(recentRun.started_at)} — {recentRun.status}
+                Terakhir: {formatDate(recentRun.started_at)} · {recentRun.status}
               </p>
             )}
           </Link>

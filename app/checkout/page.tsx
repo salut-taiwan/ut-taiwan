@@ -9,6 +9,7 @@ import { useCart } from '@/lib/cart';
 import { CartDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/Toast';
 
 interface ProfileAddress {
   name: string;
@@ -29,6 +30,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { syncCartCount } = useCart();
+  const { showToast } = useToast();
   const [cart, setCart] = useState<CartDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -128,7 +130,7 @@ export default function CheckoutPage() {
       syncCartCount(0);
       router.push(`/orders/${order.id}?new=1`);
     } catch (err) {
-      alert((err as Error).message || 'Gagal membuat pesanan');
+      showToast((err as Error).message || 'Gagal membuat pesanan', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -148,8 +150,15 @@ export default function CheckoutPage() {
   );
   if (!cart || cart.items.length === 0) {
     return (
-      <div className="text-center py-16">
-        <p className="text-[var(--text-body)]">Keranjang Anda kosong.</p>
+      <div className="flex flex-col items-center gap-4 py-20 text-center">
+        <svg className="w-16 h-16 text-[var(--border)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.25}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <h2 className="text-lg font-semibold text-[var(--foreground)]">Keranjang kosong</h2>
+        <p className="text-sm text-[var(--text-muted)]">Tambahkan modul ke keranjang sebelum checkout.</p>
+        <Link href="/modules" className="mt-1 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors">
+          Lihat Modul
+        </Link>
       </div>
     );
   }
@@ -289,7 +298,7 @@ export default function CheckoutPage() {
                       )}
                     </span>
                     <span className="text-[var(--foreground)] font-medium whitespace-nowrap tabular-nums">
-                      {item.isRequest && item.subtotal === 0 ? '—' : formatIDR(item.subtotal)}
+                      {item.isRequest && item.subtotal === 0 ? '-' : formatIDR(item.subtotal)}
                     </span>
                   </div>
                 ))}
@@ -300,7 +309,7 @@ export default function CheckoutPage() {
                       <span className="ml-1 text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">REQ</span>
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[var(--foreground)] font-medium tabular-nums">—</span>
+                      <span className="text-[var(--foreground)] font-medium tabular-nums">-</span>
                       <button
                         type="button"
                         onClick={() => setCustomItems(prev => prev.filter((_, i) => i !== idx))}

@@ -164,7 +164,7 @@ export default function SalutApplyPage() {
 
       {/* Payment reminder */}
       <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-5 mb-5">
-        <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 1 — Lakukan Pembayaran</h2>
+        <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 1: Lakukan Pembayaran</h2>
         <div className="flex gap-5 items-start">
           <div className="flex-1 space-y-3 text-sm">
             <div>
@@ -195,7 +195,7 @@ export default function SalutApplyPage() {
 
       {/* Upload form */}
       <form onSubmit={handleSubmit} className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-5">
-        <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 2 — Upload Bukti Pembayaran</h2>
+        <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 2: Upload Bukti Pembayaran</h2>
 
         <div
           onClick={() => inputRef.current?.click()}
@@ -220,7 +220,7 @@ export default function SalutApplyPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
               <p className="text-sm font-medium">Klik untuk pilih file</p>
-              <p className="text-xs">JPG, PNG, WebP, atau PDF — maks. 5 MB</p>
+              <p className="text-xs">JPG, PNG, WebP, atau PDF (maks. 5 MB)</p>
             </div>
           )}
         </div>

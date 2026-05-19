@@ -106,7 +106,7 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative -mx-4 sm:-mx-6 lg:-mx-8 -mt-8 mb-16 overflow-hidden bg-[#0A4595] text-white px-4 sm:px-6 lg:px-8 py-24">
+      <section className="relative -mx-4 sm:-mx-6 lg:-mx-8 -mt-8 mb-16 overflow-hidden bg-[var(--primary)] text-white px-4 sm:px-6 lg:px-8 py-24">
         {/* Radial glow overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(250,218,2,0.08),transparent)] pointer-events-none" />
         {/* Decorative blobs */}

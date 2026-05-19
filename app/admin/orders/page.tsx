@@ -57,7 +57,7 @@ export default function AdminOrdersPage() {
       const data = await api.admin.listOrders();
       setOrders(data);
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export default function AdminOrdersPage() {
       await api.admin.updateOrderStatus(orderId, newStatus);
       updateOrderInState(orderId, { status: newStatus as OrderDTO['status'] });
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setUpdatingStatus(null);
     }
@@ -90,7 +90,7 @@ export default function AdminOrdersPage() {
       await api.admin.confirmKarunika(orderId);
       updateOrderInState(orderId, { status: 'awaiting_payment' });
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setConfirmingKarunika(null);
     }
@@ -110,7 +110,7 @@ export default function AdminOrdersPage() {
       }));
       showToast('Pembayaran dikonfirmasi');
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setConfirming(null);
     }
@@ -136,7 +136,7 @@ export default function AdminOrdersPage() {
         ),
       }));
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       e.target.value = '';
     }
@@ -159,7 +159,7 @@ export default function AdminOrdersPage() {
         }),
       }));
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setUpdatingRequest(null);
     }
@@ -261,7 +261,7 @@ export default function AdminOrdersPage() {
                           {paymentStatusLabel(payment.status)}
                         </span>
                       ) : (
-                        <span className="text-[var(--border-default)] text-xs">—</span>
+                        <span className="text-[var(--border-default)] text-xs">-</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-[var(--text-body)] text-xs">{formatDate(order.created_at)}</td>
@@ -357,7 +357,7 @@ export default function AdminOrdersPage() {
                                     const url = await api.payments.viewProof(order.id);
                                     window.open(url, '_blank');
                                     setTimeout(() => URL.revokeObjectURL(url), 10000);
-                                  } catch (err) { alert((err as Error).message); }
+                                  } catch (err) { showToast((err as Error).message, 'error'); }
                                 }}
                                 className="text-blue-600 underline"
                               >
@@ -377,7 +377,7 @@ export default function AdminOrdersPage() {
                                       const url = await api.admin.viewInvoice(order.id);
                                       window.open(url, '_blank');
                                       setTimeout(() => URL.revokeObjectURL(url), 10000);
-                                    } catch (err) { alert((err as Error).message); }
+                                    } catch (err) { showToast((err as Error).message, 'error'); }
                                   }}
                                   className="text-blue-600 underline"
                                 >

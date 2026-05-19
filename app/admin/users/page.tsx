@@ -273,7 +273,7 @@ export default function AdminUsersPage() {
                     <p className="text-xs text-[var(--text-muted)] mt-0.5">{u.email}</p>
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-[var(--text-body)]">
-                    {u.nim || <span className="text-[var(--text-muted)] not-italic">—</span>}
+                    {u.nim || <span className="text-[var(--text-muted)] not-italic">-</span>}
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {u.programs ? (
@@ -284,7 +284,7 @@ export default function AdminUsersPage() {
                         )}
                       </>
                     ) : (
-                      <span className="text-[var(--text-muted)] text-xs">—</span>
+                      <span className="text-[var(--text-muted)] text-xs">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-center">

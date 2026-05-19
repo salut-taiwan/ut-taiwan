@@ -52,7 +52,7 @@ export default function SalutApplicationsPage() {
       const { signedUrl } = await api.admin.getSalutProofUrl(userId);
       window.open(signedUrl, '_blank', 'noopener');
     } catch (err) {
-      alert((err as Error).message || 'Gagal memuat bukti');
+      showToast((err as Error).message || 'Gagal memuat bukti', 'error');
     } finally {
       setLoadingProof(null);
     }
@@ -65,7 +65,7 @@ export default function SalutApplicationsPage() {
       setApplications(prev => prev.filter(a => a.id !== userId));
       setSelectedIds(prev => { const s = new Set(prev); s.delete(userId); return s; });
     } catch (err) {
-      alert((err as Error).message || 'Gagal menyetujui');
+      showToast((err as Error).message || 'Gagal menyetujui', 'error');
     } finally {
       setApprovingIds(prev => { const s = new Set(prev); s.delete(userId); return s; });
     }
@@ -81,7 +81,7 @@ export default function SalutApplicationsPage() {
       setRejectingId(null);
       setRejectReason('');
     } catch (err) {
-      alert((err as Error).message || 'Gagal menolak');
+      showToast((err as Error).message || 'Gagal menolak', 'error');
     } finally {
       setRejectingInProgress(false);
     }
@@ -152,7 +152,7 @@ export default function SalutApplicationsPage() {
             }`}
           >
             {t === 'pending' ? 'Menunggu' : 'Semua'}
-            {t === 'pending' && pendingCount > 0 && tab === 'pending' && (
+            {t === 'pending' && pendingCount > 0 && (
               <span className="bg-amber-400 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                 {pendingCount}
               </span>
@@ -233,9 +233,9 @@ export default function SalutApplicationsPage() {
                       <p className="font-medium text-[var(--foreground)]">{app.name}</p>
                       <p className="text-xs text-[var(--text-muted)]">{app.email}</p>
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-[var(--foreground)]">{app.nim ?? '—'}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-[var(--foreground)]">{app.nim ?? '-'}</td>
                     <td className="px-4 py-3 hidden md:table-cell text-[var(--text-body)]">
-                      {app.programs?.code ?? '—'}
+                      {app.programs?.code ?? '-'}
                       {app.current_semester && <span className="ml-1 text-[var(--text-muted)]">Sem {app.current_semester}</span>}
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell text-[var(--text-body)] text-xs">

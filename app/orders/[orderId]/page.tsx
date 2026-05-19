@@ -7,6 +7,7 @@ import { api } from '@/lib/api';
 import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
 import { OrderDTO, OrderItemDTO } from '@/types';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/Toast';
 
 const ORDER_STEPS = ['pending', 'awaiting_payment', 'paid', 'processing', 'shipped', 'delivered'];
 const STEP_LABELS: Record<string, string> = {
@@ -41,10 +42,13 @@ function OrderDetailContent() {
   const router = useRouter();
   const isNew = searchParams.get('new') === '1';
 
+  const { showToast } = useToast();
   const [order, setOrder] = useState<OrderDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showDeliveryConfirm, setShowDeliveryConfirm] = useState(false);
   const [copied, setCopied] = useState(false);
   const [uploadingProof, setUploadingProof] = useState(false);
 
@@ -65,14 +69,14 @@ function OrderDetailContent() {
   }
 
   async function handleConfirmDelivery() {
-    if (!confirm('Konfirmasi penerimaan paket ini? Pastikan Anda telah menerima semua modul sebelum mengkonfirmasi.')) return;
     setConfirming(true);
+    setShowDeliveryConfirm(false);
     try {
       await api.orders.confirmDelivery(orderId);
       const updated = await api.orders.get(orderId);
       setOrder(updated);
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setConfirming(false);
     }
@@ -87,7 +91,7 @@ function OrderDetailContent() {
       const updated = await api.orders.get(orderId);
       setOrder(updated);
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setUploadingProof(false);
       e.target.value = '';
@@ -95,14 +99,14 @@ function OrderDetailContent() {
   }
 
   async function handleCancel() {
-    if (!confirm('Batalkan pesanan ini?')) return;
     setCancelling(true);
+    setShowCancelConfirm(false);
     try {
       await api.orders.cancel(orderId);
       const updated = await api.orders.get(orderId);
       setOrder(updated);
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setCancelling(false);
     }
@@ -120,7 +124,17 @@ function OrderDetailContent() {
       <div className="h-48 rounded-2xl skeleton" />
     </div>
   );
-  if (!order) return <div className="text-center py-16 text-red-500">Pesanan tidak ditemukan</div>;
+  if (!order) return (
+    <div className="flex flex-col items-center gap-4 py-20 text-center">
+      <svg className="w-16 h-16 text-[var(--border)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.25}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2 2 0 002-2V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75a2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
+      </svg>
+      <h2 className="text-lg font-semibold text-[var(--foreground)]">Pesanan tidak ditemukan</h2>
+      <Link href="/orders" className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors">
+        Kembali ke Pesanan
+      </Link>
+    </div>
+  );
 
   const payment = order.payments?.[0];
   const stepIndex = order.step_index ?? ORDER_STEPS.indexOf(order.status);
@@ -181,10 +195,14 @@ function OrderDetailContent() {
                 <span className="text-xs text-[var(--text-body)] mt-1.5 text-center leading-tight hidden sm:block">
                   {STEP_LABELS[step] || orderStatusLabel(step)}
                 </span>
+
               </div>
               );
             })}
           </div>
+          <p className="text-xs text-center text-[var(--text-body)] mt-2 sm:hidden">
+            {STEP_LABELS[ORDER_STEPS[stepIndex]] || orderStatusLabel(ORDER_STEPS[stepIndex])}
+          </p>
         </div>
       )}
 
@@ -280,7 +298,7 @@ function OrderDetailContent() {
                             const url = await api.payments.viewProof(orderId);
                             window.open(url, '_blank');
                             setTimeout(() => URL.revokeObjectURL(url), 10000);
-                          } catch (err) { alert((err as Error).message); }
+                          } catch (err) { showToast((err as Error).message, 'error'); }
                         }}
                         className="text-blue-600 hover:underline text-xs ml-auto"
                       >
@@ -359,10 +377,10 @@ function OrderDetailContent() {
                   )}
                 </div>
                 <span className="w-24 text-right tabular-nums text-[var(--text-body)]">
-                  {hidePrice ? <span className="text-[var(--text-muted)]">—</span> : formatIDR(item.unit_price)}
+                  {hidePrice ? <span className="text-[var(--text-muted)]">-</span> : formatIDR(item.unit_price)}
                 </span>
                 <span className="w-24 text-right ml-4 font-medium tabular-nums">
-                  {hidePrice ? <span className="text-[var(--text-muted)]">—</span> : <span className="text-[var(--foreground)]">{formatIDR(item.subtotal)}</span>}
+                  {hidePrice ? <span className="text-[var(--text-muted)]">-</span> : <span className="text-[var(--foreground)]">{formatIDR(item.subtotal)}</span>}
                 </span>
               </div>
             );
@@ -409,33 +427,77 @@ function OrderDetailContent() {
           <h2 className="font-semibold text-purple-900 text-base mb-1">Paket Sudah Sampai?</h2>
           <p className={`text-sm mb-5 ${order.confirm_deadline_is_urgent ? 'text-amber-700 font-medium' : 'text-purple-700'}`}>
             Konfirmasi penerimaan sebelum <strong>{formatDate(order.confirm_deadline)}</strong>
-            {order.confirm_deadline_is_urgent && ' — segera konfirmasi!'}
+            {order.confirm_deadline_is_urgent && ' Segera konfirmasi!'}
           </p>
-          <button
-            onClick={handleConfirmDelivery}
-            disabled={confirming}
-            className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]"
-          >
-            {confirming
-              ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" /> Mengkonfirmasi...</>
-              : 'Sudah Diterima'
-            }
-          </button>
-          <p className="text-xs text-purple-500 mt-2 text-center">
-            Klik tombol ini setelah Anda menerima semua modul yang dipesan.
-          </p>
+          {showDeliveryConfirm ? (
+            <div className="space-y-3">
+              <p className="text-sm text-purple-800 bg-purple-100 rounded-xl px-4 py-3">
+                Pastikan Anda telah menerima semua modul sebelum mengkonfirmasi.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleConfirmDelivery}
+                  disabled={confirming}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors duration-150"
+                >
+                  {confirming
+                    ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" /> Mengkonfirmasi...</>
+                    : 'Ya, Sudah Diterima'
+                  }
+                </button>
+                <button
+                  onClick={() => setShowDeliveryConfirm(false)}
+                  disabled={confirming}
+                  className="px-5 py-3 rounded-xl border border-purple-200 text-purple-700 text-sm font-medium hover:bg-purple-50 disabled:opacity-50 transition-colors duration-150"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={() => setShowDeliveryConfirm(true)}
+                className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 hover:-translate-y-px text-white font-semibold py-3.5 rounded-xl transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]"
+              >
+                Sudah Diterima
+              </button>
+              <p className="text-xs text-purple-500 mt-2 text-center">
+                Klik tombol ini setelah Anda menerima semua modul yang dipesan.
+              </p>
+            </>
+          )}
         </div>
       )}
 
       {order.can_cancel && (
         <div className="text-right">
-          <button
-            onClick={handleCancel}
-            disabled={cancelling}
-            className="text-sm text-red-400 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-md disabled:opacity-40 transition-[color,background-color] duration-150"
-          >
-            {cancelling ? 'Membatalkan...' : 'Batalkan Pesanan'}
-          </button>
+          {showCancelConfirm ? (
+            <div className="flex items-center justify-end gap-3">
+              <span className="text-sm text-[var(--text-body)]">Batalkan pesanan ini?</span>
+              <button
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="text-sm bg-red-600 text-white px-3 py-1.5 rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors duration-150 font-medium"
+              >
+                {cancelling ? 'Membatalkan...' : 'Ya, Batalkan'}
+              </button>
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                disabled={cancelling}
+                className="text-sm text-[var(--text-muted)] hover:text-[var(--foreground)] px-3 py-1.5 rounded-md hover:bg-[var(--surface-sunken)] disabled:opacity-50 transition-colors duration-150"
+              >
+                Batal
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowCancelConfirm(true)}
+              className="text-sm text-red-400 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-md transition-[color,background-color] duration-150"
+            >
+              Batalkan Pesanan
+            </button>
+          )}
         </div>
       )}
     </div>

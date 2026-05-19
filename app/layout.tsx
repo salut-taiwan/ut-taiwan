@@ -42,7 +42,7 @@ export default function RootLayout({
                   href="https://wa.me/886936501760"
                   target="_blank"
                   rel="noopener noreferrer"
-                  title="Hubungi kami via WhatsApp"
+                  aria-label="Hubungi kami via WhatsApp"
                   className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg bg-[#25D366] hover:bg-[#1ebe5d] transition-colors duration-200"
                 >
                   <svg viewBox="0 0 32 32" className="w-7 h-7 fill-white" xmlns="http://www.w3.org/2000/svg">

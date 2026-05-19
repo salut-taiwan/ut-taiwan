@@ -31,7 +31,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('ut_token');
-    if (!token) { router.push('/login'); return; }
+    if (!token) { router.push('/login?redirect=/orders'); return; }
     api.orders.list().then(data => setOrders(data)).catch(() => setError(true)).finally(() => setLoading(false));
   }, [router]);
 

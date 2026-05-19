@@ -16,6 +16,7 @@ export default function CartPage() {
   const [removing, setRemoving] = useState<string | null>(null);
   const [updatingQty, setUpdatingQty] = useState<string | null>(null);
   const [converting, setConverting] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
   const [showTnC, setShowTnC] = useState(false);
   const [tncAgreed, setTncAgreed] = useState(false);
   const [customItems, setCustomItems] = useState<{ code: string; name: string }[]>([]);
@@ -82,12 +83,15 @@ export default function CartPage() {
 
   async function handleClear() {
     if (!confirm('Kosongkan semua isi keranjang?')) return;
+    setClearing(true);
     try {
       await api.cart.clear();
       await loadCart();
       await refreshCart();
     } catch {
       showToast('Gagal mengosongkan keranjang, coba lagi.', 'error');
+    } finally {
+      setClearing(false);
     }
   }
 
@@ -141,8 +145,8 @@ export default function CartPage() {
       <div className="max-w-4xl">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-[var(--foreground)]">Keranjang Belanja</h1>
-          <button onClick={handleClear} className="text-sm text-red-400 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded-md transition-[color,background-color] duration-150">
-            Kosongkan Keranjang
+          <button onClick={handleClear} disabled={clearing} className="text-sm text-red-400 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded-md disabled:opacity-50 transition-[color,background-color] duration-150">
+            {clearing ? 'Mengosongkan...' : 'Kosongkan Keranjang'}
           </button>
         </div>
 
@@ -249,7 +253,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex flex-col items-end gap-2 flex-shrink-0">
                     <span className="text-sm font-semibold text-[var(--foreground)] tabular-nums">
-                      {item.isPricePending ? '—' : formatIDR(item.subtotal)}
+                      {item.isPricePending ? '-' : formatIDR(item.subtotal)}
                     </span>
                     <button
                       onClick={() => handleRemove(item.id)}

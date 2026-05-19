@@ -45,7 +45,7 @@ export default function SalutPage() {
           SALUT Membership
         </span>
         <h1 className="text-3xl font-extrabold text-[var(--foreground)] mb-3">
-          Bergabung SALUT — Hemat {formatIDR(425_000)} Per Semester
+          Bergabung SALUT: Hemat {formatIDR(425_000)} Per Semester
         </h1>
         <p className="text-[var(--text-body)] text-base max-w-xl mx-auto">
           Anggota SALUT tidak dikenakan biaya layanan pengiriman internasional. Daftar sekali, nikmati manfaatnya setiap semester.

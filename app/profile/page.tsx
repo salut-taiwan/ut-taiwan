@@ -30,7 +30,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const token = localStorage.getItem('ut_token');
-    if (!token) { router.push('/login'); return; }
+    if (!token) { router.push('/login?redirect=/profile'); return; }
     Promise.all([api.auth.getMe(), api.catalog.getPrograms()]).then(([p, progs]: any[]) => {
       setProfile(p);
       setPrograms(progs);

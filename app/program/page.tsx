@@ -43,7 +43,7 @@ function ProgramPageContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.catalog.getFaculties().then((data: any) => setFaculties(data));
+    api.catalog.getFaculties().then((data: any) => setFaculties(data)).catch(() => {});
   }, []);
 
   useEffect(() => {

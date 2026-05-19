@@ -84,7 +84,22 @@ export default function PackagesPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-[var(--text-muted)]">Memuat paket...</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-[var(--surface)] rounded-xl border border-[var(--border)] overflow-hidden">
+              <div className="skeleton h-20 rounded-none" />
+              <div className="p-5 space-y-3">
+                <div className="skeleton h-3 w-3/4 rounded" />
+                <div className="skeleton h-3 w-1/2 rounded" />
+                <div className="skeleton h-3 w-2/3 rounded" />
+                <div className="flex justify-between items-center pt-2">
+                  <div className="skeleton h-6 w-20 rounded" />
+                  <div className="skeleton h-8 w-28 rounded-lg" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : error ? (
         <div className="text-center py-16">
           <p className="text-[var(--text-muted)] mb-4">Gagal memuat paket. Coba lagi.</p>
