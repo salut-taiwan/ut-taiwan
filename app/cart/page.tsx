@@ -183,13 +183,15 @@ export default function CartPage() {
             {cart.items.map(item => {
               const isStale = item.isStale ?? (!item.isAvailable && !item.isRequest);
               const busyItem = removing === item.id || updatingQty === item.id || converting === item.id;
+              const displayName = item.itemType === 'merch' ? item.productNameSnapshot : item.moduleName;
+              const isMerch = item.itemType === 'merch';
               return (
                 <div key={item.id} className={`bg-[var(--surface)] rounded-2xl border shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-shadow duration-150 p-4 flex items-start gap-4
                   ${isStale ? 'border-red-200 bg-red-50/30' : item.isRequest ? 'border-amber-200 bg-amber-50/20' : 'border-[var(--border-subtle)]'}`}>
                   <div className="bg-[var(--surface-sunken)] rounded-xl w-16 h-20 flex-shrink-0 flex items-center justify-center overflow-hidden">
                     {item.coverImageUrl ? (
-                      <Image src={item.coverImageUrl} alt={item.moduleName} width={56} height={72}
-                        className="object-contain" unoptimized />
+                      <Image src={item.coverImageUrl} alt={displayName ?? ''} width={56} height={isMerch ? 56 : 72}
+                        className={isMerch ? 'object-cover w-full h-full' : 'object-contain'} unoptimized />
                     ) : (
                       <svg className="w-7 h-7 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.25}>
                         <path strokeLinecap="round" strokeLinejoin="round"
@@ -199,12 +201,15 @@ export default function CartPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                      <p className="font-mono text-xs text-indigo-600 font-semibold">{item.tboCode}</p>
+                      {!isMerch && <p className="font-mono text-xs text-indigo-600 font-semibold">{item.tboCode}</p>}
+                      {isMerch && item.variantLabel && (
+                        <span className="text-[10px] font-semibold bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-full">{item.variantLabel}</span>
+                      )}
                       {item.isRequest && (
                         <span className="text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Permintaan</span>
                       )}
                     </div>
-                    <p className="text-sm font-medium text-[var(--foreground)] truncate">{item.moduleName}</p>
+                    <p className="text-sm font-medium text-[var(--foreground)] truncate">{displayName}</p>
                     {item.isPricePending
                       ? <p className="text-xs text-[var(--text-muted)] italic">Harga menyusul</p>
                       : <p className="text-sm text-[var(--text-body)] tabular-nums">{formatIDR(item.priceSnapshot)} / eks</p>

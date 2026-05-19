@@ -25,6 +25,7 @@ export default function ConditionalFooter() {
             <Link href="/program"  className="hover:text-indigo-700 transition-colors duration-150">Program Studi</Link>
             <Link href="/packages" className="hover:text-indigo-700 transition-colors duration-150">Paket Semester</Link>
             <Link href="/panduan"  className="hover:text-indigo-700 transition-colors duration-150">Panduan</Link>
+            <Link href="/toko"     className="hover:text-indigo-700 transition-colors duration-150">Toko</Link>
             <Link href="/orders"   className="hover:text-indigo-700 transition-colors duration-150">Pesanan</Link>
             <Link href="/salut"    className="hover:text-indigo-700 transition-colors duration-150">SALUT</Link>
             <Link href="/profile"  className="hover:text-indigo-700 transition-colors duration-150">Profil</Link>

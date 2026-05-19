@@ -78,11 +78,60 @@ export interface PackageDTO {
   totalPrice: number;
 }
 
+export interface ProductImageDTO {
+  id: string;
+  image_url: string;
+  sort_order: number;
+}
+
+export interface ProductVariantOptionDTO {
+  id: string;
+  value: string;
+  hex_color: string | null;
+  sort_order: number;
+}
+
+export interface ProductVariantTypeDTO {
+  id: string;
+  name: string;
+  identifier: string;
+  sort_order: number;
+  product_variant_options: ProductVariantOptionDTO[];
+}
+
+export interface ProductSKUDTO {
+  id: string;
+  tokopedia_sku_id: string | null;
+  price: number;
+  option_names: string[];
+}
+
+export interface ProductDTO {
+  id: string;
+  tokopedia_id: string | null;
+  category: string;
+  name: string;
+  description: string | null;
+  base_price: number;
+  weight_grams: number;
+  cover_image_url?: string | null;
+  product_images?: ProductImageDTO[];
+  product_variant_types?: ProductVariantTypeDTO[];
+  product_skus?: ProductSKUDTO[];
+}
+
 export interface CartItemDTO {
   id: string;
-  moduleId: string;
-  tboCode: string;
-  moduleName: string;
+  itemType: 'module' | 'merch';
+  // Module fields
+  moduleId?: string;
+  tboCode?: string;
+  moduleName?: string;
+  // Merch fields
+  skuId?: string;
+  variantLabel?: string | null;
+  productNameSnapshot?: string;
+  // Shared
   coverImageUrl: string | null;
   quantity: number;
   priceSnapshot: number;
@@ -140,6 +189,8 @@ export interface OrderItemDTO {
   subtotal: number;
   is_request: boolean;
   request_status: 'pending' | 'approved' | 'rejected' | null;
+  sku_id?: string | null;
+  variant_label?: string | null;
   display_status?: 'normal' | 'rejected' | 'pending_request' | 'zero_price';
 }
 

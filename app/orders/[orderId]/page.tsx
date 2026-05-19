@@ -368,8 +368,11 @@ function OrderDetailContent() {
             return (
               <div key={item.id} className={`flex items-center text-sm py-2.5 border-b border-[var(--border-subtle)] last:border-0 ${isRejected ? 'opacity-60' : ''}`}>
                 <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
-                  <span className="font-mono text-xs text-[var(--text-muted)] whitespace-nowrap">{item.module_code}</span>
+                  {!item.sku_id && <span className="font-mono text-xs text-[var(--text-muted)] whitespace-nowrap">{item.module_code}</span>}
                   <span className={`truncate ${isRejected ? 'line-through text-[var(--text-muted)]' : 'text-[var(--foreground)]'}`}>{item.module_name}</span>
+                  {item.variant_label && (
+                    <span className="text-[10px] font-semibold bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-full whitespace-nowrap">{item.variant_label}</span>
+                  )}
                   {item.quantity > 1 && (
                     <span className="text-xs text-[var(--text-muted)] whitespace-nowrap">×{item.quantity}</span>
                   )}

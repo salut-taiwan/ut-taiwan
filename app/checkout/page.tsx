@@ -295,7 +295,10 @@ export default function CheckoutPage() {
                 {cart.items.map(item => (
                   <div key={item.id} className="flex justify-between gap-2 items-start">
                     <span className="text-[var(--text-body)] truncate flex-1">
-                      {item.tboCode} {item.moduleName}
+                      {item.itemType === 'module' ? `${item.tboCode} ${item.moduleName}` : item.productNameSnapshot}
+                      {item.itemType === 'merch' && item.variantLabel && (
+                        <span className="ml-1 text-[10px] font-semibold bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-full">{item.variantLabel}</span>
+                      )}
                       {item.isRequest && (
                         <span className="ml-1 text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">REQ</span>
                       )}

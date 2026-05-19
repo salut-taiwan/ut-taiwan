@@ -1,4 +1,4 @@
-import type { AdminSalutApplicationDTO, AdminUserDTO, CartDTO, OrderDTO, ScraperRunDTO, UserProfileDTO } from '@/types';
+import type { AdminSalutApplicationDTO, AdminUserDTO, CartDTO, OrderDTO, ProductDTO, ScraperRunDTO, UserProfileDTO } from '@/types';
 
 export interface FeesConfig {
   membershipFee: number;
@@ -159,6 +159,8 @@ export const api = {
       apiFetch('/cart/items', { method: 'POST', body: JSON.stringify({ moduleId, quantity }) }),
     addPackage: (packageId: string) =>
       apiFetch('/cart/packages', { method: 'POST', body: JSON.stringify({ packageId }) }),
+    addMerch: (skuId: string, quantity = 1) =>
+      apiFetch<CartDTO>('/cart/merch', { method: 'POST', body: JSON.stringify({ skuId, quantity }) }),
     updateItem: (itemId: string, quantity: number) =>
       apiFetch(`/cart/items/${itemId}`, { method: 'PUT', body: JSON.stringify({ quantity }) }),
     convertToRequest: (itemId: string) =>
@@ -217,6 +219,11 @@ export const api = {
       apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl }) }),
     getStatus: () =>
       apiFetch<{ is_salut: boolean; salut_status: string; salut_applied_at: string | null; salut_rejection_reason: string | null; salut_approved_at: string | null }>('/salut/status'),
+  },
+  products: {
+    list: (category?: string) =>
+      apiFetch<ProductDTO[]>(`/products${category ? `?category=${encodeURIComponent(category)}` : ''}`),
+    get: (id: string) => apiFetch<ProductDTO>(`/products/${id}`),
   },
   config: {
     getFees: () => apiFetch<FeesConfig>('/config/fees'),

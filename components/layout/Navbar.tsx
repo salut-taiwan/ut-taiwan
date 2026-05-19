@@ -20,6 +20,7 @@ export default function Navbar() {
     { href: '/program', label: 'Program Studi' },
     { href: '/packages', label: 'Paket Semester' },
     { href: '/panduan', label: 'Panduan' },
+    { href: '/toko', label: 'Toko' },
     { href: '/salut', label: 'SALUT' },
   ];
 
