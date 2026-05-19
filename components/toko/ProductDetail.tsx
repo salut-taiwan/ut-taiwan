@@ -12,7 +12,6 @@ import { formatIDR } from '@/lib/utils';
 import { storageUrl } from '@/lib/storage';
 import type { ProductDTO, ProductSKUDTO } from '@/types';
 
-const CLOTHING_CATEGORIES = new Set(['jas-almamater', 'jaket', 'jersey', 'training-set', 'kaos']);
 
 export default function ProductDetail({ product }: { product: ProductDTO }) {
   const { user } = useAuth();
@@ -52,8 +51,8 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
       await api.cart.addMerch(skuId, 1);
       await refreshCart();
       showToast('Ditambahkan ke keranjang');
-    } catch (err: any) {
-      showToast(err.message ?? 'Gagal menambahkan ke keranjang', 'error');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Gagal menambahkan ke keranjang', 'error');
     } finally {
       setAdding(false);
     }
@@ -179,20 +178,6 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
               </>
             )}
           </button>
-
-          {/* Size chart */}
-          {CLOTHING_CATEGORIES.has(product.category) && (
-            <div className="mt-5 pt-5 border-t border-[var(--border-subtle)]">
-              <p className="text-sm font-semibold text-[var(--foreground)] mb-3">Panduan Ukuran</p>
-              <Image
-                src="/size-chart-pakaian.jpg"
-                alt="Panduan ukuran pakaian Universitas Terbuka"
-                width={700}
-                height={700}
-                className="rounded-xl w-full h-auto"
-              />
-            </div>
-          )}
 
           {/* Description */}
           {product.description && (
