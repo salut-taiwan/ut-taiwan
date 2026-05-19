@@ -123,6 +123,8 @@ export const api = {
         '/auth/refresh', { method: 'POST', body: JSON.stringify(body) }
       ),
     logout: () => apiFetch('/auth/logout', { method: 'POST' }),
+    resendVerification: (email: string) =>
+      apiFetch<{ message: string }>('/auth/resend-verification', { method: 'POST', body: JSON.stringify({ email }) }),
     getMe: () => apiFetch<UserProfileDTO>('/auth/me'),
     updateMe: (body: Record<string, unknown>) =>
       apiFetch('/auth/me', { method: 'PUT', body: JSON.stringify(body) }),

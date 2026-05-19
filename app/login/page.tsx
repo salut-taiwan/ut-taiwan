@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { api } from '@/lib/api';
 
 const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
 const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
@@ -18,18 +19,33 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [notVerified, setNotVerified] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setNotVerified(false);
+    setResendSent(false);
     setLoading(true);
     try {
       await login(email, password);
       router.push('/program');
     } catch (err) {
-      setError((err as Error).message || 'Email atau password salah');
+      const msg = (err as Error).message || 'Email atau password salah';
+      setError(msg);
+      if (msg.includes('belum diverifikasi')) setNotVerified(true);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    try {
+      await api.auth.resendVerification(email);
+      setResendSent(true);
+    } catch {
+      setResendSent(false);
     }
   }
 
@@ -82,6 +98,18 @@ function LoginForm() {
             {error && (
               <div role="alert" className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
                 {error}
+                {notVerified && !resendSent && (
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    className="block mt-2 text-indigo-600 hover:underline font-medium"
+                  >
+                    Kirim ulang email verifikasi
+                  </button>
+                )}
+                {resendSent && (
+                  <p className="mt-2 text-emerald-600 font-medium">Email verifikasi telah dikirim ulang. Cek inbox Anda.</p>
+                )}
               </div>
             )}
 
