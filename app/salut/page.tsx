@@ -1,0 +1,159 @@
+'use client';
+
+import Link from 'next/link';
+import Image from 'next/image';
+import { useAuth } from '@/lib/auth';
+import { formatIDR } from '@/lib/utils';
+
+const MEMBERSHIP_FEE = 650_000;
+
+const fees = [
+  { label: 'Ongkos Kirim', amount: 300_000 },
+  { label: 'Biaya Box', amount: 100_000 },
+  { label: 'Biaya Admin', amount: 25_000 },
+];
+
+const steps = [
+  {
+    n: '1',
+    title: 'Transfer Biaya Keanggotaan',
+    desc: `Transfer Rp ${formatIDR(MEMBERSHIP_FEE)} ke rekening atau QRIS SALUT di bawah.`,
+  },
+  {
+    n: '2',
+    title: 'Upload Bukti Pembayaran',
+    desc: 'Upload screenshot atau foto bukti transfer melalui halaman pendaftaran.',
+  },
+  {
+    n: '3',
+    title: 'Tunggu Konfirmasi Admin',
+    desc: 'Admin akan memverifikasi pembayaran dalam 1–2 hari kerja.',
+  },
+];
+
+export default function SalutPage() {
+  const { user } = useAuth();
+
+  const isMember = user?.is_salut;
+  const isPending = !isMember && user?.salut_status === 'pending';
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      {/* Hero */}
+      <div className="text-center mb-10">
+        <span className="inline-block bg-teal-50 text-teal-700 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full border border-teal-200 mb-4">
+          SALUT Membership
+        </span>
+        <h1 className="text-3xl font-extrabold text-[var(--foreground)] mb-3">
+          Bergabung SALUT — Hemat {formatIDR(425_000)} Per Semester
+        </h1>
+        <p className="text-[var(--text-body)] text-base max-w-xl mx-auto">
+          Anggota SALUT tidak dikenakan biaya layanan pengiriman internasional. Daftar sekali, nikmati manfaatnya setiap semester.
+        </p>
+      </div>
+
+      {/* Benefits */}
+      <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-6 mb-6">
+        <h2 className="font-semibold text-[var(--foreground)] mb-4">Perbandingan Biaya Per Pesanan</h2>
+        <div className="grid grid-cols-3 gap-2 text-sm mb-3">
+          <div className="font-medium text-[var(--text-muted)]">Komponen</div>
+          <div className="font-medium text-[var(--text-muted)] text-center">Non-SALUT</div>
+          <div className="font-semibold text-teal-700 text-center">SALUT</div>
+        </div>
+        {fees.map(({ label, amount }) => (
+          <div key={label} className="grid grid-cols-3 gap-2 text-sm py-2.5 border-t border-[var(--border-subtle)]">
+            <div className="text-[var(--foreground)]">{label}</div>
+            <div className="text-center tabular-nums text-[var(--text-body)]">{formatIDR(amount)}</div>
+            <div className="text-center font-semibold text-teal-600">Gratis</div>
+          </div>
+        ))}
+        <div className="grid grid-cols-3 gap-2 text-sm py-2.5 border-t-2 border-[var(--border)] mt-1">
+          <div className="font-bold text-[var(--foreground)]">Total Biaya</div>
+          <div className="text-center tabular-nums font-bold text-[var(--foreground)] line-through opacity-60">{formatIDR(425_000)}</div>
+          <div className="text-center font-extrabold text-teal-700">Rp 0</div>
+        </div>
+      </div>
+
+      {/* Steps */}
+      <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-6 mb-6">
+        <h2 className="font-semibold text-[var(--foreground)] mb-5">Cara Daftar</h2>
+        <div className="space-y-4">
+          {steps.map(step => (
+            <div key={step.n} className="flex gap-4 items-start">
+              <div className="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-sm font-bold shrink-0">
+                {step.n}
+              </div>
+              <div>
+                <p className="font-semibold text-[var(--foreground)] text-sm">{step.title}</p>
+                <p className="text-sm text-[var(--text-body)] mt-0.5">{step.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Payment details */}
+      <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-6 mb-8">
+        <h2 className="font-semibold text-[var(--foreground)] mb-4">Detail Pembayaran</h2>
+        <div className="flex flex-col sm:flex-row gap-6 items-start">
+          <div className="flex-1 space-y-3 text-sm">
+            <div>
+              <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Jumlah Transfer</p>
+              <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">{formatIDR(MEMBERSHIP_FEE)}</p>
+            </div>
+            <div>
+              <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Berita / Catatan Transfer</p>
+              <p className="font-mono bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-xs">SALUT [NIM Anda]</p>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 text-xs text-amber-800">
+              Simpan bukti pembayaran Anda, lalu upload melalui halaman pendaftaran.
+            </div>
+          </div>
+          <div className="shrink-0 flex flex-col items-center gap-2">
+            <div className="w-40 h-40 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-xl flex items-center justify-center overflow-hidden">
+              <Image
+                src="/qris.png"
+                alt="QRIS SALUT"
+                width={152}
+                height={152}
+                className="object-contain"
+                unoptimized
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            </div>
+            <p className="text-xs text-[var(--text-muted)]">Scan QRIS</p>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="text-center">
+        {isMember ? (
+          <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 px-6 py-3 rounded-xl font-semibold">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Anda sudah menjadi Anggota SALUT
+          </div>
+        ) : isPending ? (
+          <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-6 py-3 rounded-xl font-semibold">
+            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.07-7.07-2.83 2.83M8.76 15.24l-2.83 2.83m0-15.14 2.83 2.83m6.48 6.48 2.83 2.83" />
+            </svg>
+            Permohonan Sedang Diproses
+          </div>
+        ) : (
+          <Link
+            href={user ? '/salut/apply' : '/login?redirect=/salut/apply'}
+            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-xl hover:bg-indigo-700 hover:-translate-y-px transition-[background-color,transform,box-shadow] duration-150 font-semibold shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]"
+          >
+            Daftar Sekarang
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}

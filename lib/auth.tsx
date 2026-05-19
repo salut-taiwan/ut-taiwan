@@ -9,6 +9,7 @@ interface AuthUser {
   name?: string;
   role?: string;
   is_salut?: boolean;
+  salut_status?: 'none' | 'pending' | 'approved' | 'rejected';
 }
 
 interface AuthContextType {
@@ -91,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token) {
       if (expiresAt) scheduleTimers(Number(expiresAt));
       api.auth.getMe()
-        .then((profile: any) => setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false }))
+        .then((profile: any) => setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, salut_status: profile.salut_status ?? 'none' }))
         .catch(() => {
           localStorage.removeItem('ut_token');
           localStorage.removeItem('ut_refresh_token');
@@ -111,8 +112,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     pollRef.current = setInterval(async () => {
       try {
         const profile: any = await api.auth.getMe();
-        const fresh = profile.is_salut ?? false;
-        setUser(prev => prev && prev.is_salut !== fresh ? { ...prev, is_salut: fresh } : prev);
+        const freshSalut = profile.is_salut ?? false;
+        const freshStatus = profile.salut_status ?? 'none';
+        setUser(prev => {
+          if (!prev) return prev;
+          if (prev.is_salut === freshSalut && prev.salut_status === freshStatus) return prev;
+          return { ...prev, is_salut: freshSalut, salut_status: freshStatus };
+        });
       } catch { /* ignore — token refresh handles re-auth */ }
     }, 30_000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
@@ -127,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     scheduleTimers(data.expiresAt);
     try {
       const profile: any = await api.auth.getMe();
-      setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false });
+      setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, salut_status: profile.salut_status ?? 'none' });
     } catch {
       localStorage.removeItem('ut_token');
       localStorage.removeItem('ut_refresh_token');

@@ -17,6 +17,7 @@ export default function Navbar() {
     { href: '/program', label: 'Program Studi' },
     { href: '/modules', label: 'Semua Modul' },
     { href: '/packages', label: 'Paket Semester' },
+    { href: '/salut', label: 'SALUT' },
   ];
 
   return (

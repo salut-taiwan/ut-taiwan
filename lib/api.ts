@@ -1,4 +1,4 @@
-import type { AdminUserDTO, CartDTO, OrderDTO, ScraperRunDTO, UserProfileDTO } from '@/types';
+import type { AdminSalutApplicationDTO, AdminUserDTO, CartDTO, OrderDTO, ScraperRunDTO, UserProfileDTO } from '@/types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -187,6 +187,25 @@ export const api = {
       return URL.createObjectURL(blob);
     },
   },
+  salut: {
+    uploadProof: (file: File): Promise<{ url: string }> => {
+      const token = getToken();
+      const fd = new FormData();
+      fd.append('proof', file);
+      return fetch(`${API_BASE}/salut/upload-proof`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      }).then(async r => {
+        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e as any).error || 'Upload gagal'); }
+        return r.json();
+      });
+    },
+    apply: (proofUrl: string): Promise<void> =>
+      apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl }) }),
+    getStatus: () =>
+      apiFetch<{ is_salut: boolean; salut_status: string; salut_applied_at: string | null; salut_rejection_reason: string | null; salut_approved_at: string | null }>('/salut/status'),
+  },
   scraper: {
     run: () => apiFetch('/scraper/run', { method: 'POST' }),
     runPrefixes: () => apiFetch('/scraper/run-prefixes', { method: 'POST' }),
@@ -241,5 +260,13 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify({ userIds, is_salut }),
       }),
+    listSalutApplications: (status?: 'pending' | 'all') =>
+      apiFetch<AdminSalutApplicationDTO[]>(`/users/admin/salut/applications${status === 'all' ? '?status=all' : ''}`),
+    getSalutProofUrl: (userId: string) =>
+      apiFetch<{ signedUrl: string }>(`/users/admin/salut/proof-url/${userId}`),
+    approveSalut: (userId: string) =>
+      apiFetch(`/users/admin/${userId}/salut/approve`, { method: 'PATCH' }),
+    rejectSalut: (userId: string, reason: string) =>
+      apiFetch(`/users/admin/${userId}/salut/reject`, { method: 'PATCH', body: JSON.stringify({ reason }) }),
   },
 };

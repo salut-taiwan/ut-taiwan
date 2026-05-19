@@ -78,6 +78,18 @@ const adminCards = [
       </svg>
     ),
   },
+  {
+    href: '/admin/salut-applications',
+    title: 'Permohonan SALUT',
+    desc: 'Verifikasi permohonan keanggotaan SALUT',
+    iconColor: 'text-cyan-600',
+    iconBg: 'bg-cyan-50',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
 ];
 
 export default function AdminPage() {

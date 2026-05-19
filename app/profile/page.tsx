@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import { NTD_BANKS, IDR_BANKS } from '@/lib/banks';
+import { formatIDR } from '@/lib/utils';
 
 const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
 const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
@@ -87,9 +89,87 @@ export default function ProfilePage() {
     </div>
   );
 
+  const salutStatus = profile?.salut_status ?? 'none';
+  const isSalut = profile?.is_salut ?? false;
+
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-bold text-[var(--foreground)] mb-6">Profil Saya</h1>
+
+      {/* SALUT Membership card */}
+      {(isSalut || salutStatus !== 'none') ? (
+        <>
+          {(isSalut || salutStatus === 'approved') && (
+            <div className="bg-teal-50 border border-teal-200 rounded-2xl p-5 mb-6 flex items-start gap-4">
+              <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-teal-800">Anggota SALUT Aktif</p>
+                <p className="text-sm text-teal-700 mt-0.5">Semua biaya layanan ({formatIDR(425_000)}) dibebaskan untuk Anda.</p>
+                {profile?.salut_approved_at && (
+                  <p className="text-xs text-teal-600 mt-1">
+                    Aktif sejak {new Date(profile.salut_approved_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+          {salutStatus === 'pending' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6 flex items-start gap-4">
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-amber-800">Permohonan SALUT Sedang Diverifikasi</p>
+                {profile?.salut_applied_at && (
+                  <p className="text-sm text-amber-700 mt-0.5">
+                    Dikirim {new Date(profile.salut_applied_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                )}
+                <p className="text-xs text-amber-600 mt-1">Admin akan memverifikasi dalam 1–2 hari kerja.</p>
+              </div>
+            </div>
+          )}
+          {salutStatus === 'rejected' && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-5 mb-6 flex items-start gap-4">
+              <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-red-800">Permohonan SALUT Ditolak</p>
+                {profile?.salut_rejection_reason && (
+                  <p className="text-sm text-red-700 mt-0.5">{profile.salut_rejection_reason}</p>
+                )}
+                <Link href="/salut/apply" className="text-xs font-semibold text-red-700 hover:underline mt-2 inline-block">
+                  Ajukan Ulang →
+                </Link>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 mb-6 flex items-start gap-4">
+          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-indigo-800">Belum Anggota SALUT</p>
+            <p className="text-sm text-indigo-700 mt-0.5">Hemat {formatIDR(425_000)} biaya layanan per semester dengan bergabung SALUT.</p>
+            <Link href="/salut/apply" className="text-xs font-semibold text-indigo-700 hover:underline mt-2 inline-block">
+              Daftar SALUT →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {saved && (
         <div className="mb-4 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl px-4 py-3 animate-[slideDown_200ms_ease-out]">

@@ -191,7 +191,22 @@ export interface UserProfileDTO {
   role: 'student' | 'admin';
   is_verified: boolean;
   is_salut?: boolean;
+  salut_status?: 'none' | 'pending' | 'approved' | 'rejected';
+  salut_applied_at?: string | null;
+  salut_rejection_reason?: string | null;
+  salut_approved_at?: string | null;
   programs?: { code: string; name: string } | null;
+}
+
+export interface AdminSalutApplicationDTO {
+  id: string;
+  email: string;
+  name: string;
+  nim: string | null;
+  current_semester: number | null;
+  salut_applied_at: string;
+  salut_payment_proof_url: string;
+  programs: { code: string; name: string } | null;
 }
 
 export interface AdminUserDTO {
