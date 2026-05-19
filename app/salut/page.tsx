@@ -33,6 +33,7 @@ export default function SalutPage() {
     },
   ];
 
+  const [qrisOpen, setQrisOpen] = useState(false);
   const isMember = user?.is_salut;
   const isPending = !isMember && user?.salut_status === 'pending';
 
@@ -117,7 +118,11 @@ export default function SalutPage() {
             </div>
           </div>
           <div className="shrink-0 flex flex-col items-center gap-2">
-            <div className="w-40 h-40 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-xl flex items-center justify-center overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setQrisOpen(true)}
+              className="w-40 h-40 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-xl flex items-center justify-center overflow-hidden p-2 hover:border-indigo-400 transition-colors duration-150 cursor-zoom-in"
+            >
               <Image
                 src="/qris.png"
                 alt="QRIS SALUT"
@@ -127,9 +132,36 @@ export default function SalutPage() {
                 unoptimized
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
-            </div>
-            <p className="text-xs text-[var(--text-muted)]">Scan QRIS</p>
+            </button>
+            <p className="text-xs text-[var(--text-muted)]">Klik untuk memperbesar</p>
           </div>
+
+          {qrisOpen && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-6"
+              onClick={() => setQrisOpen(false)}
+            >
+              <div className="relative bg-white rounded-2xl p-4 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={() => setQrisOpen(false)}
+                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <Image
+                  src="/qris.png"
+                  alt="QRIS SALUT"
+                  width={400}
+                  height={400}
+                  className="w-full h-auto"
+                  unoptimized
+                />
+                <p className="text-center text-xs text-gray-400 mt-2">Scan QRIS untuk membayar</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
