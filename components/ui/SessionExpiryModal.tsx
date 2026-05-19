@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { getExpiresAt } from '@/lib/api';
 import Button from '@/components/ui/Button';
 
 export default function SessionExpiryModal() {
@@ -17,9 +18,9 @@ export default function SessionExpiryModal() {
       setCountdown(300);
       return;
     }
-    const expiresAt = localStorage.getItem('ut_expires_at');
+    const expiresAt = getExpiresAt();
     if (expiresAt) {
-      const secsLeft = Math.max(0, Math.floor(Number(expiresAt) - Date.now() / 1000));
+      const secsLeft = Math.max(0, Math.floor(expiresAt - Date.now() / 1000));
       setCountdown(secsLeft);
     }
     const interval = setInterval(() => {

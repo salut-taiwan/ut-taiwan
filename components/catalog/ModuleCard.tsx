@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ModuleSummaryDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { useState } from 'react';
 import { useToast } from '@/components/ui/Toast';
 import { useCart } from '@/lib/cart';
@@ -15,14 +16,14 @@ interface ModuleCardProps {
 }
 
 export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
+  const { user } = useAuth();
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
   const { showToast } = useToast();
   const { syncCartCount } = useCart();
 
   async function handleAdd() {
-    const token = localStorage.getItem('ut_token');
-    if (!token) {
+    if (!user) {
       window.location.href = '/login';
       return;
     }
