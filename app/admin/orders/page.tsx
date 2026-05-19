@@ -141,7 +141,7 @@ export default function AdminOrdersPage() {
 
   async function handleRequestStatus(orderId: string, itemId: string, status: 'approved' | 'rejected', unitPrice?: number) {
     const label = status === 'approved' ? 'Setujui' : 'Tolak';
-    if (!confirm(`${label} item permintaan ini?`)) return;
+    if (!confirm(`${label} item ini?`)) return;
     setUpdatingRequest(itemId);
     try {
       await api.admin.updateRequestItemStatus(orderId, itemId, status, unitPrice);
@@ -203,6 +203,7 @@ export default function AdminOrdersPage() {
                 const canConfirmPayment = order.status === 'awaiting_payment' && payment?.status === 'pending';
                 const busy = confirming === order.id || confirmingKarunika === order.id || updatingStatus === order.id;
                 const requestItems = (order.order_items || []).filter(i => i.is_request);
+                const availableItems = (order.order_items || []).filter(i => !i.is_request);
                 const pendingRequests = requestItems.filter(i => i.request_status === 'pending');
                 const isExpanded = expanded.has(order.id);
                 return (
@@ -215,12 +216,14 @@ export default function AdminOrdersPage() {
                           <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200 font-sans">SALUT</span>
                         )}
                       </div>
-                      {(requestItems.length > 0 || order.status === 'awaiting_payment') && (
+                      {(order.order_items && order.order_items.length > 0) && (
                         <button
                           onClick={() => toggleExpand(order.id)}
                           className={`mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full transition-colors ${
                             pendingRequests.length > 0
                               ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                              : requestItems.length > 0
+                              ? 'bg-[var(--surface-sunken)] text-[var(--text-body)] hover:bg-[var(--border-subtle)]'
                               : order.status === 'awaiting_payment'
                               ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                               : 'bg-[var(--surface-sunken)] text-[var(--text-body)] hover:bg-[var(--border-subtle)]'
@@ -230,7 +233,9 @@ export default function AdminOrdersPage() {
                             ? `${pendingRequests.length} permintaan pending`
                             : requestItems.length > 0
                             ? `${requestItems.length} permintaan`
-                            : 'Dokumen'
+                            : order.status === 'awaiting_payment'
+                            ? 'Dokumen'
+                            : 'Detail Item'
                           } {isExpanded ? '▲' : '▼'}
                         </button>
                       )}
@@ -385,6 +390,42 @@ export default function AdminOrdersPage() {
                                 <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => handleInvoiceUpload(order.id, e)} />
                               </label>
                             )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  {isExpanded && availableItems.length > 0 && (
+                    <tr>
+                      <td colSpan={7} className="px-4 pb-1 pt-0 bg-slate-50/40">
+                        <div className="border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+                          <div className="px-3 py-2 bg-[var(--surface-sunken)] border-b border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-body)]">Item Tersedia</div>
+                          <div className="divide-y divide-[var(--border-subtle)]">
+                            {availableItems.map(item => (
+                              <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
+                                <div className="flex-1 min-w-0">
+                                  <span className="font-mono text-[var(--text-muted)] mr-1">{item.module_code}</span>
+                                  <span className="text-[var(--text-body)]">{item.module_name}</span>
+                                  <span className="text-[var(--text-muted)] ml-1">×{item.quantity}</span>
+                                </div>
+                                <span className={`tabular-nums shrink-0 ${item.request_status === 'rejected' ? 'text-[var(--text-muted)] line-through' : 'font-semibold text-[var(--text-body)]'}`}>
+                                  {formatIDR(item.subtotal)}
+                                </span>
+                                <div className="shrink-0">
+                                  {item.request_status === 'rejected' ? (
+                                    <span className="px-2 py-0.5 rounded-full font-semibold bg-red-50 text-red-600">Ditolak</span>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleRequestStatus(order.id, item.id, 'rejected')}
+                                      disabled={updatingRequest === item.id}
+                                      className="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors font-semibold active:scale-[0.98]"
+                                    >
+                                      {updatingRequest === item.id ? '...' : 'Tolak'}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </td>
