@@ -62,6 +62,8 @@ export default function RootLayout({
                         <Link href="/modules" className="hover:text-indigo-700 transition-colors duration-150">Semua Modul</Link>
                         <Link href="/packages" className="hover:text-indigo-700 transition-colors duration-150">Paket Semester</Link>
                         <Link href="/orders" className="hover:text-indigo-700 transition-colors duration-150">Pesanan</Link>
+                        <Link href="/salut" className="hover:text-indigo-700 transition-colors duration-150">SALUT</Link>
+                        <Link href="/profile" className="hover:text-indigo-700 transition-colors duration-150">Profil</Link>
                       </nav>
                     </div>
                   </div>

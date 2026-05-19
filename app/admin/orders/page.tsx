@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/Toast';
 import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
 import { OrderDTO } from '@/types';
 
@@ -27,6 +28,7 @@ const ORDER_STATUS_COLORS: Record<string, string> = {
 export default function AdminOrdersPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const { showToast } = useToast();
   const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -106,6 +108,7 @@ export default function AdminOrdersPage() {
           i === 0 ? { ...p, status: 'paid' as const } : p
         ),
       }));
+      showToast('Pembayaran dikonfirmasi');
     } catch (err) {
       alert((err as Error).message);
     } finally {

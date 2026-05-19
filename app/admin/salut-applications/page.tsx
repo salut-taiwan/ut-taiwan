@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/Toast';
 import { AdminSalutApplicationDTO } from '@/types';
 import { formatDate } from '@/lib/utils';
 
@@ -12,6 +13,7 @@ type Tab = 'pending' | 'all';
 export default function SalutApplicationsPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [tab, setTab] = useState<Tab>('pending');
   const [applications, setApplications] = useState<AdminSalutApplicationDTO[]>([]);
@@ -90,12 +92,19 @@ export default function SalutApplicationsPage() {
     if (!confirm(`Setujui ${selectedIds.size} permohonan sekaligus?`)) return;
     setBulkApproving(true);
     const ids = Array.from(selectedIds);
+    let succeeded = 0;
+    let failed = 0;
     for (const id of ids) {
-      try { await api.admin.approveSalut(id); } catch {}
+      try { await api.admin.approveSalut(id); succeeded++; } catch { failed++; }
     }
     setBulkApproving(false);
     setSelectedIds(new Set());
     loadApplications();
+    if (failed === 0) {
+      showToast(`${succeeded} permohonan disetujui`);
+    } else {
+      showToast(`${succeeded} berhasil, ${failed} gagal`, 'error');
+    }
   }
 
   function toggleSelect(id: string) {

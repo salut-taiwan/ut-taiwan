@@ -27,12 +27,25 @@ export default function OrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('ut_token');
     if (!token) { router.push('/login'); return; }
-    api.orders.list().then(data => setOrders(data)).finally(() => setLoading(false));
+    api.orders.list().then(data => setOrders(data)).catch(() => setError(true)).finally(() => setLoading(false));
   }, [router]);
+
+  if (error) return (
+    <div className="text-center py-20 max-w-xs mx-auto">
+      <p className="text-[var(--text-muted)] mb-4">Gagal memuat pesanan. Coba lagi.</p>
+      <button
+        onClick={() => { setError(false); setLoading(true); api.orders.list().then(data => setOrders(data)).catch(() => setError(true)).finally(() => setLoading(false)); }}
+        className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+      >
+        Muat Ulang
+      </button>
+    </div>
+  );
 
   if (loading) return (
     <div className="max-w-3xl space-y-3">

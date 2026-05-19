@@ -82,9 +82,13 @@ export default function CartPage() {
 
   async function handleClear() {
     if (!confirm('Kosongkan semua isi keranjang?')) return;
-    await api.cart.clear();
-    await loadCart();
-    await refreshCart();
+    try {
+      await api.cart.clear();
+      await loadCart();
+      await refreshCart();
+    } catch {
+      showToast('Gagal mengosongkan keranjang, coba lagi.', 'error');
+    }
   }
 
   function closeTnC() {

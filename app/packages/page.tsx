@@ -14,6 +14,7 @@ export default function PackagesPage() {
   const [selectedProgram, setSelectedProgram] = useState<string>('');
   const [selectedSemester, setSelectedSemester] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
   const { showToast } = useToast();
   const { refreshCart } = useCart();
@@ -24,10 +25,11 @@ export default function PackagesPage() {
 
   useEffect(() => {
     setLoading(true);
+    setError(false);
     api.packages.list(
       selectedProgram || undefined,
       selectedSemester ? parseInt(selectedSemester) : undefined
-    ).then((data: any) => setPackages(data)).finally(() => setLoading(false));
+    ).then((data: any) => setPackages(data)).catch(() => setError(true)).finally(() => setLoading(false));
   }, [selectedProgram, selectedSemester]);
 
   async function handleAddPackage(pkg: PackageDTO) {
@@ -83,6 +85,16 @@ export default function PackagesPage() {
 
       {loading ? (
         <div className="text-center py-16 text-[var(--text-muted)]">Memuat paket...</div>
+      ) : error ? (
+        <div className="text-center py-16">
+          <p className="text-[var(--text-muted)] mb-4">Gagal memuat paket. Coba lagi.</p>
+          <button
+            onClick={() => { setError(false); setLoading(true); api.packages.list(selectedProgram || undefined, selectedSemester ? parseInt(selectedSemester) : undefined).then((data: any) => setPackages(data)).catch(() => setError(true)).finally(() => setLoading(false)); }}
+            className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+          >
+            Muat Ulang
+          </button>
+        </div>
       ) : packages.length === 0 ? (
         <div className="text-center py-16 text-[var(--text-muted)]">
           <p>Belum ada paket tersedia untuk filter yang dipilih.</p>

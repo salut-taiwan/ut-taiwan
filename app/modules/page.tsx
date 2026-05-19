@@ -21,7 +21,7 @@ export default function ModulesPage() {
     api.modules.list(page, LIMIT).then((data: any) => {
       setModules(data.data || []);
       setTotal(data.total || 0);
-    }).finally(() => setLoading(false));
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [page]);
 
   function handleSearch(q: string) {
@@ -35,7 +35,7 @@ export default function ModulesPage() {
     searchTimeout.current = setTimeout(() => {
       api.modules.search(q).then((data: any) => {
         setSearchResults(data);
-      }).finally(() => setSearching(false));
+      }).catch(() => setSearchResults([])).finally(() => setSearching(false));
     }, 400);
   }
 
