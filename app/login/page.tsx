@@ -34,7 +34,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 min-h-[calc(100vh-4rem)] flex">
+    <div className="min-h-[calc(100vh-4rem)] flex">
       {/* Left decorative panel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-[var(--primary)] flex-col items-center justify-center p-12 text-white">
         {/* Decorative blobs */}

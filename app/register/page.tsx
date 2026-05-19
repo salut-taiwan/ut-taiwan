@@ -99,7 +99,7 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[var(--background)]">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[var(--background)]">
         <div className="max-w-md text-center p-8">
           <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[var(--shadow-sm)]">
             <svg className="w-12 h-12 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -117,9 +117,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 min-h-[calc(100vh-4rem)] flex">
+    <div className="min-h-[calc(100vh-4rem)] flex">
       {/* Left decorative panel */}
-      <div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-[#0A4595] flex-col items-center justify-center p-12 text-white">
+      <div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-[var(--primary)] flex-col items-center justify-center p-12 text-white">
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/[0.03] rounded-full pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-800/30 rounded-full pointer-events-none" />
         <div className="relative max-w-sm text-center">
