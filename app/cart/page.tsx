@@ -5,12 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { CartDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
 
 export default function CartPage() {
+  const { user, isLoading: authLoading } = useAuth();
   const [cart, setCart] = useState<CartDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<string | null>(null);
@@ -31,10 +33,10 @@ export default function CartPage() {
   }
 
   useEffect(() => {
-    const token = localStorage.getItem('ut_token');
-    if (!token) { window.location.href = '/login'; return; }
+    if (authLoading) return;
+    if (!user) { window.location.href = '/login'; return; }
     loadCart();
-  }, []);
+  }, [authLoading, user]);
 
   // Refresh cart when user returns to the tab (catches scraper-driven availability changes)
   useEffect(() => {

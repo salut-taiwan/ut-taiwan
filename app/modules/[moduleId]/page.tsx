@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { formatIDR } from '@/lib/utils';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
@@ -15,6 +16,7 @@ export default function ModuleDetailPage() {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const { user } = useAuth();
   const { incrementCart } = useCart();
   const { showToast } = useToast();
 
@@ -26,8 +28,7 @@ export default function ModuleDetailPage() {
   }, [moduleId]);
 
   async function handleAddToCart() {
-    const token = localStorage.getItem('ut_token');
-    if (!token) { window.location.href = '/login'; return; }
+    if (!user) { window.location.href = '/login'; return; }
     setAdding(true);
     try {
       await api.cart.addItem(module.id);

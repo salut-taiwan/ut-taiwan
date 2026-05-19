@@ -2,37 +2,36 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
+import { api, type FeesConfig } from '@/lib/api';
 import { formatIDR } from '@/lib/utils';
-
-const MEMBERSHIP_FEE = 650_000;
-
-const fees = [
-  { label: 'Ongkos Kirim', amount: 300_000 },
-  { label: 'Biaya Box', amount: 100_000 },
-  { label: 'Biaya Admin', amount: 25_000 },
-];
-
-const steps = [
-  {
-    n: '1',
-    title: 'Transfer Biaya Keanggotaan',
-    desc: `Transfer Rp ${formatIDR(MEMBERSHIP_FEE)} ke rekening atau QRIS SALUT di bawah.`,
-  },
-  {
-    n: '2',
-    title: 'Upload Bukti Pembayaran',
-    desc: 'Upload screenshot atau foto bukti transfer melalui halaman pendaftaran.',
-  },
-  {
-    n: '3',
-    title: 'Tunggu Konfirmasi Admin',
-    desc: 'Admin akan memverifikasi pembayaran dalam 1–2 hari kerja.',
-  },
-];
 
 export default function SalutPage() {
   const { user } = useAuth();
+  const [fees, setFees] = useState<FeesConfig | null>(null);
+
+  useEffect(() => {
+    api.config.getFees().then(setFees).catch(() => {});
+  }, []);
+
+  const steps = [
+    {
+      n: '1',
+      title: 'Transfer Biaya Keanggotaan',
+      desc: `Transfer ${fees ? formatIDR(fees.membershipFee) : '...'} ke rekening atau QRIS SALUT di bawah.`,
+    },
+    {
+      n: '2',
+      title: 'Upload Bukti Pembayaran',
+      desc: 'Upload screenshot atau foto bukti transfer melalui halaman pendaftaran.',
+    },
+    {
+      n: '3',
+      title: 'Tunggu Konfirmasi Admin',
+      desc: 'Admin akan memverifikasi pembayaran dalam 1–2 hari kerja.',
+    },
+  ];
 
   const isMember = user?.is_salut;
   const isPending = !isMember && user?.salut_status === 'pending';
@@ -45,7 +44,7 @@ export default function SalutPage() {
           SALUT Membership
         </span>
         <h1 className="text-3xl font-extrabold text-[var(--foreground)] mb-3">
-          Bergabung SALUT: Hemat {formatIDR(425_000)} Per Semester
+          Bergabung SALUT: Hemat {fees ? formatIDR(fees.totalServiceFees) : '...'} Per Semester
         </h1>
         <p className="text-[var(--text-body)] text-base max-w-xl mx-auto">
           Anggota SALUT tidak dikenakan biaya layanan pengiriman internasional. Daftar sekali, nikmati manfaatnya setiap semester.
@@ -60,16 +59,16 @@ export default function SalutPage() {
           <div className="font-medium text-[var(--text-muted)] text-center">Non-SALUT</div>
           <div className="font-semibold text-teal-700 text-center">SALUT</div>
         </div>
-        {fees.map(({ label, amount }) => (
+        {(fees?.serviceFees ?? [{ label: 'Ongkos Kirim', key: 'shipping', amount: 0 }, { label: 'Biaya Box', key: 'box', amount: 0 }, { label: 'Biaya Admin', key: 'admin', amount: 0 }]).map(({ label, amount }) => (
           <div key={label} className="grid grid-cols-3 gap-2 text-sm py-2.5 border-t border-[var(--border-subtle)]">
             <div className="text-[var(--foreground)]">{label}</div>
-            <div className="text-center tabular-nums text-[var(--text-body)]">{formatIDR(amount)}</div>
+            <div className="text-center tabular-nums text-[var(--text-body)]">{fees ? formatIDR(amount) : <span className="inline-block w-16 h-4 rounded skeleton" />}</div>
             <div className="text-center font-semibold text-teal-600">Gratis</div>
           </div>
         ))}
         <div className="grid grid-cols-3 gap-2 text-sm py-2.5 border-t-2 border-[var(--border)] mt-1">
           <div className="font-bold text-[var(--foreground)]">Total Biaya</div>
-          <div className="text-center tabular-nums font-bold text-[var(--foreground)] line-through opacity-60">{formatIDR(425_000)}</div>
+          <div className="text-center tabular-nums font-bold text-[var(--foreground)] line-through opacity-60">{fees ? formatIDR(fees.totalServiceFees) : '...'}</div>
           <div className="text-center font-extrabold text-teal-700">Rp 0</div>
         </div>
       </div>
@@ -92,6 +91,14 @@ export default function SalutPage() {
         </div>
       </div>
 
+      {/* Panduan cross-link */}
+      <div className="mb-6 flex items-center gap-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-800">
+        <svg className="w-4 h-4 shrink-0 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+        </svg>
+        <span>Mahasiswa baru UT? <a href="/panduan#mahasiswa-baru" className="font-semibold underline hover:text-indigo-600">Lihat panduan pendaftaran &rarr;</a></span>
+      </div>
+
       {/* Payment details */}
       <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-6 mb-8">
         <h2 className="font-semibold text-[var(--foreground)] mb-4">Detail Pembayaran</h2>
@@ -99,7 +106,7 @@ export default function SalutPage() {
           <div className="flex-1 space-y-3 text-sm">
             <div>
               <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Jumlah Transfer</p>
-              <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">{formatIDR(MEMBERSHIP_FEE)}</p>
+              <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">{fees ? formatIDR(fees.membershipFee) : '...'}</p>
             </div>
             <div>
               <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Berita / Catatan Transfer</p>

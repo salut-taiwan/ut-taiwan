@@ -1,5 +1,11 @@
 import type { AdminSalutApplicationDTO, AdminUserDTO, CartDTO, OrderDTO, ScraperRunDTO, UserProfileDTO } from '@/types';
 
+export interface FeesConfig {
+  membershipFee: number;
+  serviceFees: { label: string; key: string; amount: number }[];
+  totalServiceFees: number;
+}
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 function getToken(): string | null {
@@ -10,6 +16,12 @@ function getToken(): string | null {
 function getRefreshToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('ut_refresh_token');
+}
+
+export function getExpiresAt(): number | null {
+  if (typeof window === 'undefined') return null;
+  const v = localStorage.getItem('ut_expires_at');
+  return v ? Number(v) : null;
 }
 
 // Callback set by AuthContext to signal that the session is fully expired
@@ -205,6 +217,9 @@ export const api = {
       apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl }) }),
     getStatus: () =>
       apiFetch<{ is_salut: boolean; salut_status: string; salut_applied_at: string | null; salut_rejection_reason: string | null; salut_approved_at: string | null }>('/salut/status'),
+  },
+  config: {
+    getFees: () => apiFetch<FeesConfig>('/config/fees'),
   },
   scraper: {
     run: () => apiFetch('/scraper/run', { method: 'POST' }),

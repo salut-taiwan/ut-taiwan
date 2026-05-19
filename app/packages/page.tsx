@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { PackageDTO, FacultyDTO, ProgramDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 import Link from 'next/link';
@@ -16,6 +17,7 @@ export default function PackagesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
+  const { user } = useAuth();
   const { showToast } = useToast();
   const { refreshCart } = useCart();
 
@@ -33,8 +35,7 @@ export default function PackagesPage() {
   }, [selectedProgram, selectedSemester]);
 
   async function handleAddPackage(pkg: PackageDTO) {
-    const token = localStorage.getItem('ut_token');
-    if (!token) { window.location.href = '/login'; return; }
+    if (!user) { window.location.href = '/login'; return; }
     setAdding(pkg.id);
     try {
       await api.cart.addPackage(pkg.id);

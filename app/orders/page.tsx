@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
 import { OrderDTO } from '@/types';
 
@@ -25,15 +26,16 @@ const PAYMENT_COLORS: Record<string, string> = {
 
 export default function OrdersPage() {
   const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
   const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('ut_token');
-    if (!token) { router.push('/login?redirect=/orders'); return; }
+    if (authLoading) return;
+    if (!user) { router.push('/login?redirect=/orders'); return; }
     api.orders.list().then(data => setOrders(data)).catch(() => setError(true)).finally(() => setLoading(false));
-  }, [router]);
+  }, [authLoading, user, router]);
 
   if (error) return (
     <div className="text-center py-20 max-w-xs mx-auto">

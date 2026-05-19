@@ -3,7 +3,8 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { api, type FeesConfig } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
 import { OrderDTO, OrderItemDTO } from '@/types';
 import { cn } from '@/lib/utils';
@@ -42,8 +43,10 @@ function OrderDetailContent() {
   const router = useRouter();
   const isNew = searchParams.get('new') === '1';
 
+  const { user, isLoading: authLoading } = useAuth();
   const { showToast } = useToast();
   const [order, setOrder] = useState<OrderDTO | null>(null);
+  const [fees, setFees] = useState<FeesConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -53,10 +56,11 @@ function OrderDetailContent() {
   const [uploadingProof, setUploadingProof] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('ut_token');
-    if (!token) { router.push('/login'); return; }
+    if (authLoading) return;
+    if (!user) { router.push('/login'); return; }
+    api.config.getFees().then(setFees).catch(() => {});
     api.orders.get(orderId).then(setOrder).catch(() => {}).finally(() => setLoading(false));
-  }, [orderId, router]);
+  }, [authLoading, user, orderId, router]);
 
   async function handleCopyAccount() {
     const payment = order?.payments?.[0];
@@ -391,22 +395,25 @@ function OrderDetailContent() {
               <span className="tabular-nums">{formatIDR(order.subtotal)}</span>
             </div>
             {([
-              { label: 'Ongkir', field: order.shipping_cost, salutFee: 300000 },
-              { label: 'Biaya Box', field: order.box_fee, salutFee: 100000 },
-              { label: 'Biaya Admin', field: order.admin_fee, salutFee: 25000 },
-            ] as { label: string; field: number; salutFee: number }[]).map(({ label, field, salutFee }) => (
-              <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
-                <span>{label}</span>
-                {order.is_salut_order ? (
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{formatIDR(salutFee)}</span>
-                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
-                  </span>
-                ) : (
-                  <span className="tabular-nums">{formatIDR(field)}</span>
-                )}
-              </div>
-            ))}
+              { label: 'Ongkir',      field: order.shipping_cost, key: 'shipping' },
+              { label: 'Biaya Box',   field: order.box_fee,       key: 'box'      },
+              { label: 'Biaya Admin', field: order.admin_fee,     key: 'admin'    },
+            ] as { label: string; field: number; key: string }[]).map(({ label, field, key }) => {
+              const standardAmount = fees?.serviceFees.find(f => f.key === key)?.amount;
+              return (
+                <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
+                  <span>{label}</span>
+                  {order.is_salut_order ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{standardAmount != null ? formatIDR(standardAmount) : '...'}</span>
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
+                    </span>
+                  ) : (
+                    <span className="tabular-nums">{formatIDR(field)}</span>
+                  )}
+                </div>
+              );
+            })}
             {payment?.unique_code != null && payment.unique_code > 0 && (
               <div className="flex justify-between text-[var(--text-body)]">
                 <span>Kode Unik</span>

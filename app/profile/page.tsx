@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { api, type FeesConfig } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { NTD_BANKS, IDR_BANKS } from '@/lib/banks';
 import { formatIDR } from '@/lib/utils';
 
@@ -20,6 +21,8 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
+  const [fees, setFees] = useState<FeesConfig | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [programs, setPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,8 +32,9 @@ export default function ProfilePage() {
   const [form, setForm] = useState<any>({});
 
   useEffect(() => {
-    const token = localStorage.getItem('ut_token');
-    if (!token) { router.push('/login?redirect=/profile'); return; }
+    if (authLoading) return;
+    if (!user) { router.push('/login?redirect=/profile'); return; }
+    api.config.getFees().then(setFees).catch(() => {});
     Promise.all([api.auth.getMe(), api.catalog.getPrograms()]).then(([p, progs]: any[]) => {
       setProfile(p);
       setPrograms(progs);
@@ -55,7 +59,7 @@ export default function ProfilePage() {
         bank_idr_account: p.bank_idr_account || '',
       });
     }).finally(() => setLoading(false));
-  }, [router]);
+  }, [authLoading, user, router]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     setForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
@@ -110,7 +114,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-teal-800">Anggota SALUT Aktif</p>
-                <p className="text-sm text-teal-700 mt-0.5">Semua biaya layanan ({formatIDR(425_000)}) dibebaskan untuk Anda.</p>
+                <p className="text-sm text-teal-700 mt-0.5">Semua biaya layanan ({fees ? formatIDR(fees.totalServiceFees) : '...'}) dibebaskan untuk Anda.</p>
                 {profile?.salut_approved_at && (
                   <p className="text-xs text-teal-600 mt-1">
                     Aktif sejak {new Date(profile.salut_approved_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -165,7 +169,7 @@ export default function ProfilePage() {
           </div>
           <div className="flex-1">
             <p className="font-semibold text-indigo-800">Belum Anggota SALUT</p>
-            <p className="text-sm text-indigo-700 mt-0.5">Hemat {formatIDR(425_000)} biaya layanan per semester dengan bergabung SALUT.</p>
+            <p className="text-sm text-indigo-700 mt-0.5">Hemat {fees ? formatIDR(fees.totalServiceFees) : '...'} biaya layanan per semester dengan bergabung SALUT.</p>
             <Link href="/salut/apply" className="text-xs font-semibold text-indigo-700 hover:underline mt-2 inline-block">
               Daftar SALUT →
             </Link>

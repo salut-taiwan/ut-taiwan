@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { api, type FeesConfig } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import { CartDTO } from '@/types';
@@ -28,10 +28,11 @@ const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { syncCartCount } = useCart();
   const { showToast } = useToast();
   const [cart, setCart] = useState<CartDTO | null>(null);
+  const [fees, setFees] = useState<FeesConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [profileAddress, setProfileAddress] = useState<ProfileAddress | null>(null);
@@ -55,8 +56,10 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('ut_token');
-    if (!token) { router.push('/login'); return; }
+    if (authLoading) return;
+    if (!user) { router.push('/login'); return; }
+
+    api.config.getFees().then(setFees).catch(() => {});
 
     const stored = sessionStorage.getItem('cart_custom_items');
     if (stored) {
@@ -83,7 +86,7 @@ export default function CheckoutPage() {
         setUseProfileAddress(true);
       }
     }).finally(() => setLoading(false));
-  }, [router]);
+  }, [authLoading, user, router]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -275,8 +278,11 @@ export default function CheckoutPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <p className="font-semibold mb-1">Instruksi pembayaran</p>
-                <p>Instruksi pembayaran akan dikirimkan melalui email setelah admin mengkonfirmasi ketersediaan stok. Anda tidak perlu melakukan transfer sekarang.</p>
+                <div>
+                  <p className="font-semibold mb-1">Instruksi pembayaran</p>
+                  <p>Instruksi pembayaran akan dikirimkan melalui email setelah admin mengkonfirmasi ketersediaan stok. Anda tidak perlu melakukan transfer sekarang.</p>
+                  <a href="/panduan#pembayaran" className="inline-block mt-2 text-xs text-blue-600 hover:underline font-medium">Panduan cara bayar SPP UT &rarr;</a>
+                </div>
               </div>
             </div>
           </div>
@@ -386,7 +392,7 @@ export default function CheckoutPage() {
                       <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span>Anggota SALUT hemat {formatIDR(425_000)} di pesanan ini. <Link href="/salut" className="font-semibold underline">Pelajari →</Link></span>
+                      <span>Anggota SALUT hemat {fees ? formatIDR(fees.totalServiceFees) : '...'} di pesanan ini. <Link href="/salut" className="font-semibold underline">Pelajari →</Link></span>
                     </div>
                   )}
                 </div>
@@ -396,14 +402,10 @@ export default function CheckoutPage() {
                   <span>Subtotal Modul</span>
                   <span className="tabular-nums">{formatIDR(cart.subtotal)}</span>
                 </div>
-                {([
-                  { label: 'Ongkir', amount: 300000 },
-                  { label: 'Biaya Box', amount: 100000 },
-                  { label: 'Biaya Admin', amount: 25000 },
-                ] as { label: string; amount: number }[]).map(({ label, amount }) => (
+                {(fees?.serviceFees ?? []).map(({ label, amount }) => (
                   <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
                     <span>{label}</span>
-                    {user?.is_salut ?? false ? (
+                    {user?.is_salut ? (
                       <span className="flex items-center gap-1.5">
                         <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{formatIDR(amount)}</span>
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
@@ -420,7 +422,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between font-bold items-end pt-2 border-t border-[var(--border-subtle)]">
                   <span className="text-[var(--foreground)]">Total Pesanan</span>
                   <span className="text-2xl font-extrabold text-indigo-700 tabular-nums">
-                    {formatIDR(cart.subtotal + (user?.is_salut ?? false ? 0 : 425000))}
+                    {fees ? formatIDR(cart.subtotal + (user?.is_salut ? 0 : fees.totalServiceFees)) : '...'}
                   </span>
                 </div>
               </div>

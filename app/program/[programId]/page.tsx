@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { ProgramDTO, SubjectDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
 import Link from 'next/link';
@@ -22,6 +23,7 @@ export default function ProgramDetailPage() {
   const [semesterSubjects, setSemesterSubjects] = useState<SubjectDTO[]>([]);
   const [addingAll, setAddingAll] = useState(false);
   const [addingModule, setAddingModule] = useState<string | null>(null);
+  const { user } = useAuth();
   const { showToast } = useToast();
   const { syncCartCount, refreshCart } = useCart();
 
@@ -42,8 +44,7 @@ export default function ProgramDetailPage() {
   }, [activeSemester, subjects, activeTab]);
 
   async function handleAddSemesterToCart() {
-    const token = localStorage.getItem('ut_token');
-    if (!token) { window.location.href = '/login'; return; }
+    if (!user) { window.location.href = '/login'; return; }
     setAddingAll(true);
     try {
       const allModules = semesterSubjects.flatMap(s =>
@@ -70,8 +71,7 @@ export default function ProgramDetailPage() {
   }
 
   async function handleAddModuleToCart(moduleId: string, isRequest: boolean) {
-    const token = localStorage.getItem('ut_token');
-    if (!token) { window.location.href = '/login'; return; }
+    if (!user) { window.location.href = '/login'; return; }
     setAddingModule(moduleId);
     try {
       const cart = await api.cart.addItem(moduleId) as any;

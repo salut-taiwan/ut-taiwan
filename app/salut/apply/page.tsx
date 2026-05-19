@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { api } from '@/lib/api';
+import { api, type FeesConfig } from '@/lib/api';
 import { formatIDR } from '@/lib/utils';
 
-const MEMBERSHIP_FEE = 650_000;
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
@@ -16,6 +15,7 @@ export default function SalutApplyPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
+  const [fees, setFees] = useState<FeesConfig | null>(null);
   const [status, setStatus] = useState<'loading' | 'none' | 'pending' | 'approved' | 'rejected'>('loading');
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [appliedAt, setAppliedAt] = useState<string | null>(null);
@@ -33,6 +33,7 @@ export default function SalutApplyPage() {
       router.replace('/login?redirect=/salut/apply');
       return;
     }
+    api.config.getFees().then(setFees).catch(() => {});
     api.salut.getStatus().then(s => {
       setStatus((s.is_salut || s.salut_status === 'approved') ? 'approved' : (s.salut_status as any) || 'none');
       setRejectionReason(s.salut_rejection_reason);
@@ -150,7 +151,7 @@ export default function SalutApplyPage() {
           Kembali
         </Link>
         <h1 className="text-2xl font-bold text-[var(--foreground)]">Daftar Keanggotaan SALUT</h1>
-        <p className="text-sm text-[var(--text-body)] mt-1">Hemat {formatIDR(425_000)} biaya layanan per semester.</p>
+        <p className="text-sm text-[var(--text-body)] mt-1">Hemat {fees ? formatIDR(fees.totalServiceFees) : '...'} biaya layanan per semester.</p>
       </div>
 
       {/* Rejection notice */}
@@ -169,7 +170,7 @@ export default function SalutApplyPage() {
           <div className="flex-1 space-y-3 text-sm">
             <div>
               <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Jumlah Transfer</p>
-              <p className="text-xl font-extrabold text-indigo-700 tabular-nums">{formatIDR(MEMBERSHIP_FEE)}</p>
+              <p className="text-xl font-extrabold text-indigo-700 tabular-nums">{fees ? formatIDR(fees.membershipFee) : '...'}</p>
             </div>
             <div>
               <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Berita Transfer</p>
