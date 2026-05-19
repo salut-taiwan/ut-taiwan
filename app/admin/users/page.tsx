@@ -35,6 +35,8 @@ export default function AdminUsersPage() {
   const [salutFilter, setSalutFilter] = useState<SalutFilter>('all');
   const [sort, setSort] = useState<{ col: SortCol; dir: SortDir }>({ col: 'created_at', dir: 'desc' });
   const [toggling, setToggling] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulking, setBulking] = useState(false);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -51,6 +53,7 @@ export default function AdminUsersPage() {
 
   async function fetchUsers() {
     setLoading(true);
+    setSelectedIds(new Set());
     try {
       const params: Record<string, string> = {
         sort: sort.col,
@@ -70,16 +73,28 @@ export default function AdminUsersPage() {
 
   async function handleToggleSalut(u: AdminUserDTO) {
     setToggling(u.id);
-    // Optimistic update
     setUsers(prev => prev.map(x => x.id === u.id ? { ...x, is_salut: !u.is_salut } : x));
     try {
       await api.admin.updateUserSalut(u.id, !u.is_salut);
     } catch (err) {
-      // Revert on failure
       setUsers(prev => prev.map(x => x.id === u.id ? { ...x, is_salut: u.is_salut } : x));
       alert((err as Error).message);
     } finally {
       setToggling(null);
+    }
+  }
+
+  async function handleBulkSalut(is_salut: boolean) {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulking(true);
+    try {
+      await api.admin.bulkUpdateUserSalut(ids, is_salut);
+      await fetchUsers();
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setBulking(false);
     }
   }
 
@@ -90,6 +105,25 @@ export default function AdminUsersPage() {
         : { col, dir: 'asc' }
     );
   }
+
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === users.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(users.map(u => u.id)));
+    }
+  }
+
+  const allSelected = users.length > 0 && selectedIds.size === users.length;
+  const someSelected = selectedIds.size > 0 && !allSelected;
 
   if (isLoading) return <div className="text-center py-16 text-[var(--text-muted)]">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
@@ -145,6 +179,34 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 mb-3 px-4 py-2.5 bg-indigo-50 border border-indigo-200 rounded-xl text-sm">
+          <span className="font-semibold text-indigo-800 flex-1">{selectedIds.size} mahasiswa dipilih</span>
+          <button
+            onClick={() => handleBulkSalut(true)}
+            disabled={bulking}
+            className="px-3 py-1.5 bg-teal-600 text-white text-xs font-semibold rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors"
+          >
+            {bulking ? '...' : 'Tandai SALUT'}
+          </button>
+          <button
+            onClick={() => handleBulkSalut(false)}
+            disabled={bulking}
+            className="px-3 py-1.5 bg-[var(--surface)] text-[var(--text-body)] border border-[var(--border-default)] text-xs font-semibold rounded-lg hover:bg-[var(--surface-sunken)] disabled:opacity-50 transition-colors"
+          >
+            {bulking ? '...' : 'Cabut SALUT'}
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            disabled={bulking}
+            className="px-3 py-1.5 text-[var(--text-muted)] text-xs font-semibold rounded-lg hover:text-[var(--foreground)] disabled:opacity-50 transition-colors"
+          >
+            Batal
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">
         {loading ? (
@@ -157,6 +219,15 @@ export default function AdminUsersPage() {
           <table className="w-full text-sm">
             <thead className="bg-[var(--surface-sunken)] border-b border-[var(--border)]">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={el => { if (el) el.indeterminate = someSelected; }}
+                    onChange={toggleSelectAll}
+                    className="rounded border-[var(--border-default)] text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                </th>
                 <th className="text-left px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold">
                   <button onClick={() => toggleSort('name')} className="flex items-center hover:text-[var(--foreground)] transition-colors">
                     Nama & Email <SortIcon active={sort.col === 'name'} dir={sort.dir} />
@@ -182,7 +253,21 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-[var(--border-subtle)]">
               {users.map(u => (
-                <tr key={u.id} className="hover:bg-[var(--surface-sunken)] transition-colors">
+                <tr
+                  key={u.id}
+                  className={cn(
+                    'hover:bg-[var(--surface-sunken)] transition-colors',
+                    selectedIds.has(u.id) && 'bg-indigo-50/60'
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(u.id)}
+                      onChange={() => toggleSelect(u.id)}
+                      className="rounded border-[var(--border-default)] text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <p className="font-medium text-[var(--foreground)]">{u.name}</p>
                     <p className="text-xs text-[var(--text-muted)] mt-0.5">{u.email}</p>
@@ -205,7 +290,7 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => handleToggleSalut(u)}
-                      disabled={toggling === u.id}
+                      disabled={toggling === u.id || bulking}
                       title={u.is_salut ? 'Klik untuk cabut status SALUT' : 'Klik untuk tandai sebagai SALUT'}
                       className={cn(
                         'text-xs font-semibold px-2.5 py-1 rounded-full border transition-[background-color,color,border-color,opacity] duration-150 disabled:opacity-50',

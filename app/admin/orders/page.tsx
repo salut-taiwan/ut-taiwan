@@ -209,7 +209,12 @@ export default function AdminOrdersPage() {
                   <React.Fragment key={order.id}>
                   <tr className="hover:bg-[var(--surface-sunken)] transition-colors">
                     <td className="px-4 py-3 font-mono font-semibold text-[var(--foreground)]">
-                      <div>{order.order_number}</div>
+                      <div className="flex items-center gap-1.5">
+                        {order.order_number}
+                        {order.is_salut_order && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200 font-sans">SALUT</span>
+                        )}
+                      </div>
                       {(requestItems.length > 0 || order.status === 'awaiting_payment') && (
                         <button
                           onClick={() => toggleExpand(order.id)}
@@ -306,7 +311,35 @@ export default function AdminOrdersPage() {
                   {isExpanded && order.status === 'awaiting_payment' && payment && (
                     <tr>
                       <td colSpan={7} className="px-4 pb-2 pt-0 bg-blue-50/40">
-                        <div className="flex gap-6 text-xs py-2 border border-blue-100 rounded-xl px-4">
+                        <div className="border border-blue-100 rounded-xl px-4 py-3 mt-1.5 text-xs space-y-1">
+                          <p className="font-semibold text-[var(--text-body)] mb-2">Rincian Biaya</p>
+                          <div className="flex justify-between text-[var(--text-body)]">
+                            <span>Subtotal Modul</span>
+                            <span className="tabular-nums">{formatIDR(order.subtotal)}</span>
+                          </div>
+                          {([
+                            { label: 'Ongkir', val: order.shipping_cost },
+                            { label: 'Biaya Box', val: order.box_fee },
+                            { label: 'Biaya Admin', val: order.admin_fee },
+                          ] as { label: string; val: number }[]).map(({ label, val }) => (
+                            <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
+                              <span>{label}</span>
+                              {order.is_salut_order ? (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="text-[var(--text-muted)] line-through tabular-nums">{formatIDR(val || 0)}</span>
+                                  <span className="text-[10px] font-semibold px-1 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
+                                </span>
+                              ) : (
+                                <span className="tabular-nums">{formatIDR(val)}</span>
+                              )}
+                            </div>
+                          ))}
+                          <div className="flex justify-between font-bold pt-1 border-t border-[var(--border-subtle)]">
+                            <span>Total</span>
+                            <span className="tabular-nums">{formatIDR(payment.amount)}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-6 text-xs py-2 border border-blue-100 rounded-xl px-4 mt-2">
                           <div className="flex-1">
                             <p className="font-semibold text-[var(--text-body)] mb-1">Bukti Bayar Pembeli</p>
                             {payment.proof_path ? (

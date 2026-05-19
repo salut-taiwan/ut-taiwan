@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import { CartDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
@@ -25,9 +26,9 @@ const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { syncCartCount } = useCart();
   const [cart, setCart] = useState<CartDTO | null>(null);
-  const [isSalut, setIsSalut] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [profileAddress, setProfileAddress] = useState<ProfileAddress | null>(null);
@@ -53,7 +54,6 @@ export default function CheckoutPage() {
 
     Promise.all([api.cart.get(), api.auth.getMe()]).then(([cartData, profileData]) => {
       setCart(cartData);
-      setIsSalut(profileData.is_salut ?? false);
       const addr: ProfileAddress = {
         name: profileData.name || '',
         phone: profileData.phone || '',
@@ -303,7 +303,7 @@ export default function CheckoutPage() {
                 ] as { label: string; amount: number }[]).map(({ label, amount }) => (
                   <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
                     <span>{label}</span>
-                    {isSalut ? (
+                    {user?.is_salut ?? false ? (
                       <span className="flex items-center gap-1.5">
                         <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{formatIDR(amount)}</span>
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
@@ -320,7 +320,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between font-bold items-end pt-2 border-t border-[var(--border-subtle)]">
                   <span className="text-[var(--foreground)]">Total Pesanan</span>
                   <span className="text-2xl font-extrabold text-indigo-700 tabular-nums">
-                    {formatIDR(cart.subtotal + (isSalut ? 0 : 425000))}
+                    {formatIDR(cart.subtotal + (user?.is_salut ?? false ? 0 : 425000))}
                   </span>
                 </div>
               </div>

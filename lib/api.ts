@@ -236,5 +236,10 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify({ is_salut }),
       }),
+    bulkUpdateUserSalut: (userIds: string[], is_salut: boolean) =>
+      apiFetch<{ updated: number }>('/users/admin/salut/bulk', {
+        method: 'PATCH',
+        body: JSON.stringify({ userIds, is_salut }),
+      }),
   },
 };

@@ -8,6 +8,7 @@ interface AuthUser {
   email: string;
   name?: string;
   role?: string;
+  is_salut?: boolean;
 }
 
 interface AuthContextType {
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const expiredTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const clearTimers = useCallback(() => {
     if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
@@ -89,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token) {
       if (expiresAt) scheduleTimers(Number(expiresAt));
       api.auth.getMe()
-        .then((profile: any) => setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role }))
+        .then((profile: any) => setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false }))
         .catch(() => {
           localStorage.removeItem('ut_token');
           localStorage.removeItem('ut_refresh_token');
@@ -103,6 +105,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return clearTimers;
   }, [scheduleTimers, clearTimers]);
 
+  // Poll for is_salut changes while logged in (admin may change status at any time)
+  useEffect(() => {
+    if (!user) return;
+    pollRef.current = setInterval(async () => {
+      try {
+        const profile: any = await api.auth.getMe();
+        const fresh = profile.is_salut ?? false;
+        setUser(prev => prev && prev.is_salut !== fresh ? { ...prev, is_salut: fresh } : prev);
+      } catch { /* ignore — token refresh handles re-auth */ }
+    }, 30_000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   async function login(email: string, password: string) {
     const data = await api.auth.login({ email, password }) as any;
     localStorage.setItem('ut_token', data.token);
@@ -111,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     scheduleTimers(data.expiresAt);
     try {
       const profile: any = await api.auth.getMe();
-      setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role });
+      setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false });
     } catch {
       localStorage.removeItem('ut_token');
       localStorage.removeItem('ut_refresh_token');
