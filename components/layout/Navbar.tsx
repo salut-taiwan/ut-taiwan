@@ -16,9 +16,10 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-    { href: '/program', label: 'Program Studi' },
     { href: '/modules', label: 'Semua Modul' },
+    { href: '/program', label: 'Program Studi' },
     { href: '/packages', label: 'Paket Semester' },
+    { href: '/panduan', label: 'Panduan' },
     { href: '/salut', label: 'SALUT' },
   ];
 
@@ -30,7 +31,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" prefetch={true} className="flex items-center gap-2.5">
             <span className="text-xl font-bold tracking-tight text-indigo-700">UT Taiwan</span>
-            <span className="text-xs text-[var(--text-muted)] hidden sm:block">Toko Modul Kuliah</span>
+            <span className="text-xs text-[var(--text-muted)] hidden sm:block">Sentra Layanan UT Taiwan</span>
           </Link>
 
           {/* Desktop nav */}
@@ -46,7 +47,9 @@ export default function Navbar() {
                     'font-medium rounded-md px-2.5 py-1.5 transition-[color,background-color] duration-150',
                     isActive
                       ? 'text-indigo-700 font-semibold bg-indigo-50'
-                      : 'text-[var(--text-body)] hover:text-indigo-700 hover:bg-indigo-50'
+                      : link.href === '/salut'
+                        ? 'text-indigo-600 font-semibold bg-indigo-50/70 animate-[ringPulse_2.5s_ease-in-out_infinite] hover:bg-indigo-100'
+                        : 'text-[var(--text-body)] hover:text-indigo-700 hover:bg-indigo-50'
                   )}
                 >
                   {link.label}
@@ -160,7 +163,9 @@ export default function Navbar() {
                     'block px-3 py-2.5 rounded-xl text-sm font-medium transition-[color,background-color] duration-150',
                     isActive
                       ? 'text-indigo-700 font-semibold bg-indigo-50'
-                      : 'text-[var(--text-body)] hover:text-indigo-700 hover:bg-indigo-50'
+                      : link.href === '/salut'
+                        ? 'text-indigo-600 font-semibold bg-indigo-50/60 animate-[ringPulse_2.5s_ease-in-out_infinite]'
+                        : 'text-[var(--text-body)] hover:text-indigo-700 hover:bg-indigo-50'
                   )}
                 >
                   {link.label}

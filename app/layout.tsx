@@ -18,8 +18,8 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Toko Modul Kuliah Universitas Terbuka Taiwan",
-  description: "Temukan dan beli modul kuliah UT sesuai program studi Anda. Mahasiswa UT di Taiwan.",
+  title: "Sentra Layanan Universitas Terbuka Taiwan",
+  description: "Pusat layanan mahasiswa Universitas Terbuka di Taiwan — panduan, modul kuliah, dan SALUT.",
 };
 
 export default function RootLayout({

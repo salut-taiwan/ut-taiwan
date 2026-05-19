@@ -163,6 +163,11 @@ a { text-underline-offset: 3px; }
   to   { transform: translateY(16px); opacity: 0; }
 }
 
+@keyframes ringPulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.55); }
+  50%       { box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12); }
+}
+
 /* View Transitions API - free cross-page fade */
 @view-transition { navigation: auto; }
 

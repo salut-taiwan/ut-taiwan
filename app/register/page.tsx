@@ -124,7 +124,7 @@ export default function RegisterPage() {
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-800/30 rounded-full pointer-events-none" />
         <div className="relative max-w-sm text-center">
           <span className="text-4xl font-bold block mb-2 tracking-tight">UT Taiwan</span>
-          <span className="text-indigo-200/80 text-sm block mb-8">Toko Modul Kuliah</span>
+          <span className="text-indigo-200/80 text-sm block mb-8">Sentra Layanan UT Taiwan</span>
           <p className="text-indigo-100/90 text-lg leading-relaxed">
             Daftar sekarang dan mulai belanja modul kuliah Universitas Terbuka dari Taiwan dengan mudah.
           </p>

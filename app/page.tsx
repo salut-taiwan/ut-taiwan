@@ -115,7 +115,7 @@ export default function Home() {
 
         <div className="relative max-w-3xl mx-auto text-center">
           <span className="inline-block text-xs font-semibold uppercase tracking-caps bg-white/15 border border-white/20 backdrop-blur-sm text-white/90 px-3 py-1 rounded-full mb-6">
-            Toko Modul Resmi Universitas Terbuka
+            Sentra Layanan Resmi UT Taiwan
           </span>
           <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight leading-[1.1] text-white mb-5">
             Temukan Modul Kuliah{' '}<br className="hidden sm:block" />
@@ -195,6 +195,30 @@ export default function Home() {
             <p className="text-sm text-[var(--text-body)]">{item.desc}</p>
           </div>
         ))}
+      </section>
+
+      {/* Panduan section */}
+      <section className="mb-16 bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-2xl p-8 text-white overflow-hidden relative">
+        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/[0.04] rounded-full pointer-events-none" />
+        <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/[0.04] rounded-full pointer-events-none" />
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wide text-indigo-200 mb-2 block">Sumber daya resmi</span>
+            <h2 className="text-2xl font-bold mb-2">Butuh Panduan UT?</h2>
+            <p className="text-indigo-100/90 text-sm max-w-md">
+              Login eCampus, registrasi mata kuliah, cara bayar SPP, hingga panduan ujian online — semua tersedia di sini.
+            </p>
+          </div>
+          <Link
+            href="/panduan"
+            className="shrink-0 inline-flex items-center gap-2 bg-white text-indigo-700 font-semibold text-sm px-6 py-3 rounded-xl hover:bg-indigo-50 hover:-translate-y-px transition-[background-color,transform] duration-150 shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
+          >
+            Lihat Semua Panduan
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
+        </div>
       </section>
     </div>
   );

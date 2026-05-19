@@ -44,7 +44,7 @@ function LoginForm() {
 
         <div className="relative max-w-sm text-center">
           <span className="text-4xl font-bold block mb-2 tracking-tight">UT Taiwan</span>
-          <span className="text-indigo-200/80 text-sm block mb-8">Toko Modul Kuliah</span>
+          <span className="text-indigo-200/80 text-sm block mb-8">Sentra Layanan UT Taiwan</span>
           <p className="text-indigo-100/90 text-lg leading-relaxed mb-8">
             Platform pembelian modul bahan ajar Universitas Terbuka untuk mahasiswa di Taiwan.
           </p>
