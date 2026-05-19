@@ -55,6 +55,12 @@ export default function CheckoutPage() {
     const token = localStorage.getItem('ut_token');
     if (!token) { router.push('/login'); return; }
 
+    const stored = sessionStorage.getItem('cart_custom_items');
+    if (stored) {
+      try { setCustomItems(JSON.parse(stored)); } catch {}
+      sessionStorage.removeItem('cart_custom_items');
+    }
+
     Promise.all([api.cart.get(), api.auth.getMe()]).then(([cartData, profileData]) => {
       setCart(cartData);
       const addr: ProfileAddress = {

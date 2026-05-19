@@ -18,6 +18,9 @@ export default function CartPage() {
   const [converting, setConverting] = useState<string | null>(null);
   const [showTnC, setShowTnC] = useState(false);
   const [tncAgreed, setTncAgreed] = useState(false);
+  const [customItems, setCustomItems] = useState<{ code: string; name: string }[]>([]);
+  const [draftCode, setDraftCode] = useState('');
+  const [draftName, setDraftName] = useState('');
   const { refreshCart } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
@@ -142,6 +145,31 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Items */}
           <div className="lg:col-span-2 space-y-3">
+            {customItems.map((ci, idx) => (
+              <div key={`custom-${idx}`} className="bg-[var(--surface)] rounded-2xl border border-amber-200 bg-amber-50/20 shadow-[var(--shadow-xs)] p-4 flex items-start gap-4">
+                <div className="bg-[var(--surface-sunken)] rounded-xl w-16 h-20 flex-shrink-0 flex items-center justify-center">
+                  <svg className="w-7 h-7 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.25}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <p className="font-mono text-xs text-indigo-600 font-semibold">{ci.code}</p>
+                    <span className="text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Permintaan</span>
+                  </div>
+                  <p className="text-sm font-medium text-[var(--foreground)] truncate">{ci.name || ci.code}</p>
+                  <p className="text-xs text-[var(--text-muted)] italic">Harga menyusul</p>
+                </div>
+                <button
+                  onClick={() => setCustomItems(prev => prev.filter((_, i) => i !== idx))}
+                  className="text-[var(--border-default)] hover:text-red-400 hover:bg-red-50 transition-[color,background-color] duration-150 p-1 rounded-md flex-shrink-0"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
             {cart.items.map(item => {
               const isStale = item.isStale ?? (!item.isAvailable && !item.isRequest);
               const busyItem = removing === item.id || updatingQty === item.id || converting === item.id;
@@ -268,9 +296,36 @@ export default function CartPage() {
                 className="block w-full text-center bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 hover:-translate-y-px transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
                 Lanjut ke Checkout
               </button>
-              <Link href="/program" className="block w-full text-center text-sm text-[var(--text-body)] mt-3 hover:text-[var(--foreground)] transition-colors duration-150">
-                Tambah Modul Lagi
-              </Link>
+              <div className="mt-3 border border-[var(--border-subtle)] rounded-xl p-3 space-y-2">
+                <p className="text-xs font-semibold text-[var(--text-body)]">Tambah Modul Lain</p>
+                <input
+                  type="text"
+                  value={draftCode}
+                  onChange={e => setDraftCode(e.target.value.slice(0, 30))}
+                  placeholder="Kode TBO, misal EKMA4111"
+                  className="w-full border border-[var(--border-default)] rounded-lg px-2.5 py-1.5 text-xs text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-[var(--ring-focus)] transition-[border-color,box-shadow] duration-150"
+                />
+                <input
+                  type="text"
+                  value={draftName}
+                  onChange={e => setDraftName(e.target.value)}
+                  placeholder="Nama modul (opsional)"
+                  className="w-full border border-[var(--border-default)] rounded-lg px-2.5 py-1.5 text-xs text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-[var(--ring-focus)] transition-[border-color,box-shadow] duration-150"
+                />
+                <button
+                  type="button"
+                  disabled={!draftCode.trim()}
+                  onClick={() => {
+                    if (!draftCode.trim()) return;
+                    setCustomItems(prev => [...prev, { code: draftCode.trim(), name: draftName.trim() }]);
+                    setDraftCode('');
+                    setDraftName('');
+                  }}
+                  className="w-full py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  + Tambah
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -356,7 +411,10 @@ export default function CartPage() {
               </button>
               <button
                 disabled={!tncAgreed}
-                onClick={() => router.push('/checkout')}
+                onClick={() => {
+                  if (customItems.length > 0) sessionStorage.setItem('cart_custom_items', JSON.stringify(customItems));
+                  router.push('/checkout');
+                }}
                 className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 hover:-translate-y-px transition-[background-color,transform] duration-150 shadow-[var(--shadow-btn-primary)] disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0">
                 Lanjut ke Checkout
               </button>
