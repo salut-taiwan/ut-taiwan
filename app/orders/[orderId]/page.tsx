@@ -296,18 +296,24 @@ function OrderDetailContent() {
                     <div className="flex items-center gap-2 text-sm">
                       <CheckIcon className="w-4 h-4 text-emerald-500 shrink-0" />
                       <span className="text-emerald-700 font-medium">Bukti transfer sudah dikirim</span>
-                      <button
-                        onClick={async () => {
-                          try {
-                            const url = await api.payments.viewProof(orderId);
-                            window.open(url, '_blank');
-                            setTimeout(() => URL.revokeObjectURL(url), 10000);
-                          } catch (err) { showToast((err as Error).message, 'error'); }
-                        }}
-                        className="text-blue-600 hover:underline text-xs ml-auto"
-                      >
-                        Lihat
-                      </button>
+                      <div className="ml-auto flex items-center gap-3">
+                        <button
+                          onClick={async () => {
+                            try {
+                              const url = await api.payments.viewProof(orderId);
+                              window.open(url, '_blank');
+                              setTimeout(() => URL.revokeObjectURL(url), 10000);
+                            } catch (err) { showToast((err as Error).message, 'error'); }
+                          }}
+                          className="text-blue-600 hover:underline text-xs"
+                        >
+                          Lihat
+                        </button>
+                        <label className="cursor-pointer text-xs text-[var(--text-muted)] hover:text-indigo-600 transition-colors">
+                          {uploadingProof ? 'Mengupload...' : 'Ganti'}
+                          <input type="file" accept="image/*,.pdf" className="sr-only" onChange={handleProofUpload} disabled={uploadingProof} />
+                        </label>
+                      </div>
                     </div>
                   ) : (
                     <label className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-blue-200 rounded-xl py-3 px-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-[border-color,background-color] duration-150">

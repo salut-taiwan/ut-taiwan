@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { CartDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
+import { storageUrl } from '@/lib/storage';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
 
@@ -190,7 +191,7 @@ export default function CartPage() {
                   ${isStale ? 'border-red-200 bg-red-50/30' : item.isRequest ? 'border-amber-200 bg-amber-50/20' : 'border-[var(--border-subtle)]'}`}>
                   <div className="bg-[var(--surface-sunken)] rounded-xl w-16 h-20 flex-shrink-0 flex items-center justify-center overflow-hidden">
                     {item.coverImageUrl ? (
-                      <Image src={item.coverImageUrl} alt={displayName ?? ''} width={56} height={isMerch ? 56 : 72}
+                      <Image src={storageUrl(item.coverImageUrl)} alt={displayName ?? ''} width={56} height={isMerch ? 56 : 72}
                         className={isMerch ? 'object-cover w-full h-full' : 'object-contain'} unoptimized />
                     ) : (
                       <svg className="w-7 h-7 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.25}>

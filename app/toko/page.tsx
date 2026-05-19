@@ -3,6 +3,7 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 import type { ProductDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
+import { storageUrl } from '@/lib/storage';
 
 export const metadata: Metadata = {
   title: 'Toko UT Taiwan | Sentra Layanan Universitas Terbuka Taiwan',
@@ -90,7 +91,7 @@ export default async function TokoPage({
               <div className="aspect-square bg-[var(--surface-sunken)] relative overflow-hidden">
                 {product.cover_image_url ? (
                   <Image
-                    src={product.cover_image_url}
+                    src={storageUrl(product.cover_image_url)}
                     alt={product.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"

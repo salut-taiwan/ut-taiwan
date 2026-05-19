@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { formatIDR } from '@/lib/utils';
+import { storageUrl } from '@/lib/storage';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
 
@@ -79,7 +80,7 @@ export default function ModuleDetailPage() {
           <div className="bg-[var(--surface-sunken)] flex items-center justify-center sm:w-72 min-h-64 flex-shrink-0">
             {module.cover_image_url ? (
               <Image
-                src={module.cover_image_url}
+                src={storageUrl(module.cover_image_url)}
                 alt={module.name}
                 width={180}
                 height={240}

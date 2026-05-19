@@ -166,31 +166,29 @@ export default function SalutApplyPage() {
       {/* Payment reminder */}
       <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-5 mb-5">
         <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 1: Lakukan Pembayaran</h2>
-        <div className="flex gap-5 items-start">
-          <div className="flex-1 space-y-3 text-sm">
-            <div>
-              <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Jumlah Transfer</p>
-              <p className="text-xl font-extrabold text-indigo-700 tabular-nums">{fees ? formatIDR(fees.membershipFee) : '...'}</p>
-            </div>
-            <div>
-              <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Berita Transfer</p>
-              <p className="font-mono bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-xs">SALUT {user?.name?.split(' ')[0] || '[Nama]'}</p>
-            </div>
+        <div className="space-y-3 text-sm mb-5">
+          <div>
+            <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Jumlah Transfer</p>
+            <p className="text-xl font-extrabold text-indigo-700 tabular-nums">{fees ? formatIDR(fees.membershipFee) : '...'}</p>
           </div>
-          <div className="shrink-0 flex flex-col items-center gap-1.5">
-            <div className="w-28 h-28 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-xl flex items-center justify-center overflow-hidden">
-              <Image
-                src="/qris.png"
-                alt="QRIS"
-                width={108}
-                height={108}
-                className="object-contain"
-                unoptimized
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-            </div>
-            <p className="text-xs text-[var(--text-muted)]">Scan QRIS</p>
+          <div>
+            <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Berita Transfer</p>
+            <p className="font-mono bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-xs">SALUT {user?.name?.split(' ')[0] || '[Nama]'}</p>
           </div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-64 h-64 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-2xl flex items-center justify-center overflow-hidden">
+            <Image
+              src="/qris.png"
+              alt="QRIS"
+              width={240}
+              height={240}
+              className="object-contain"
+              unoptimized
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          </div>
+          <p className="text-xs text-[var(--text-muted)]">Scan QRIS untuk membayar</p>
         </div>
       </div>
 

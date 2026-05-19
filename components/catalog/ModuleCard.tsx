@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ModuleSummaryDTO } from '@/types';
 import { formatIDR } from '@/lib/utils';
+import { storageUrl } from '@/lib/storage';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useState } from 'react';
@@ -48,7 +49,7 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
         <div className="bg-[var(--surface-sunken)] h-48 flex items-center justify-center overflow-hidden">
           {module.cover_image_url ? (
             <Image
-              src={module.cover_image_url}
+              src={storageUrl(module.cover_image_url)}
               alt={module.name}
               width={120}
               height={160}

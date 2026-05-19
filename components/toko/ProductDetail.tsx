@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
 import { formatIDR } from '@/lib/utils';
+import { storageUrl } from '@/lib/storage';
 import type { ProductDTO, ProductSKUDTO } from '@/types';
 
 const CLOTHING_CATEGORIES = new Set(['jas-almamater', 'jaket', 'jersey', 'training-set', 'kaos']);
@@ -70,7 +71,7 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
           <div className="aspect-square bg-[var(--surface-sunken)] rounded-2xl overflow-hidden relative">
             {images[activeImage] ? (
               <Image
-                src={images[activeImage].image_url}
+                src={storageUrl(images[activeImage].image_url)}
                 alt={product.name}
                 fill
                 className="object-cover"
@@ -96,7 +97,7 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
                   }`}
                 >
                   <Image
-                    src={img.image_url}
+                    src={storageUrl(img.image_url)}
                     alt={`${product.name} ${i + 1}`}
                     width={64}
                     height={64}
