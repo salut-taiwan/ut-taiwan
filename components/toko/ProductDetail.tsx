@@ -8,8 +8,46 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
-import type { ProductDTO, ProductSKUDTO } from '@/types';
+import type { ProductDTO, ProductSKUDTO, ProductVariantOptionDTO } from '@/types';
 
+const NAMED_COLOR_HEX: Record<string, string> = {
+  navy: '#000080',
+  black: '#000000',
+  white: '#FFFFFF',
+  red: '#E11D48',
+  blue: '#2563EB',
+  green: '#16A34A',
+  yellow: '#FACC15',
+  purple: '#7C3AED',
+  orange: '#F97316',
+  pink: '#EC4899',
+  brown: '#92400E',
+  gray: '#6B7280',
+  grey: '#6B7280',
+  cream: '#FFFDD0',
+  beige: '#F5F5DC',
+  maroon: '#800000',
+  olive: '#808000',
+  teal: '#0D9488',
+  silver: '#C0C0C0',
+  gold: '#D4AF37',
+  hitam: '#000000',
+  putih: '#FFFFFF',
+  merah: '#E11D48',
+  biru: '#2563EB',
+  hijau: '#16A34A',
+  kuning: '#FACC15',
+  ungu: '#7C3AED',
+  abu: '#6B7280',
+  'abu-abu': '#6B7280',
+  coklat: '#92400E',
+  oranye: '#F97316',
+};
+
+function getSwatchHex(opt: ProductVariantOptionDTO): string | null {
+  if (opt.hex_color) return opt.hex_color;
+  return NAMED_COLOR_HEX[opt.value.toLowerCase().trim()] ?? null;
+}
 
 export default function ProductDetail({ product }: { product: ProductDTO }) {
   const { user } = useAuth();
@@ -123,7 +161,8 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
               <div className="flex flex-wrap gap-2">
                 {(vt.product_variant_options ?? []).map(opt => {
                   const isSelected = selectedOptions[vt.identifier] === opt.value;
-                  if (opt.hex_color) {
+                  const swatchHex = getSwatchHex(opt);
+                  if (swatchHex) {
                     return (
                       <button
                         key={opt.id}
@@ -132,7 +171,7 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
                         className={`w-8 h-8 rounded-full border-2 transition-all duration-150 ${
                           isSelected ? 'border-indigo-500 scale-110 ring-2 ring-indigo-200' : 'border-[var(--border)]'
                         }`}
-                        style={{ backgroundColor: opt.hex_color }}
+                        style={{ backgroundColor: swatchHex }}
                       />
                     );
                   }

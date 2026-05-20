@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <body className={`${geistSans.variable} antialiased min-h-screen`}>
+      <body className={`${geistSans.variable} antialiased min-h-screen flex flex-col`}>
         <Providers>
           <AuthProvider>
             <CartProvider>

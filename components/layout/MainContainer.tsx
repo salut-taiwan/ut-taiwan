@@ -8,7 +8,7 @@ export default function MainContainer({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const fullBleed = FULL_BLEED_PATHS.includes(pathname);
   return (
-    <main className={fullBleed ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'}>
+    <main className={fullBleed ? 'flex-1' : 'flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'}>
       {children}
     </main>
   );
