@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { ProgramDTO, SubjectDTO } from '@/types';
-import { formatIDR } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
 import { useCart } from '@/lib/cart';
@@ -230,8 +229,8 @@ function SubjectCard({ subject, onAddToCart, addingModule }: { subject: SubjectD
                   {!mod.price_student
                     ? <span className="text-[var(--text-muted)]">Hubungi Kami</span>
                     : mod.is_available
-                      ? <span className="text-[var(--foreground)]">{formatIDR(mod.price_student)}</span>
-                      : <span className="text-[var(--text-muted)] line-through">{formatIDR(mod.price_student)}</span>
+                      ? <span className="text-[var(--foreground)]">{mod.price_student_display}</span>
+                      : <span className="text-[var(--text-muted)] line-through">{mod.price_student_display}</span>
                   }
                 </span>
                 <button

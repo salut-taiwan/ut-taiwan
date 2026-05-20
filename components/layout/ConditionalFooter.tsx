@@ -23,7 +23,7 @@ export default function ConditionalFooter() {
           <nav className="flex flex-col gap-2 text-sm text-[var(--text-body)]">
             <Link href="/modules"  className="hover:text-indigo-700 transition-colors duration-150">Semua Modul</Link>
             <Link href="/program"  className="hover:text-indigo-700 transition-colors duration-150">Program Studi</Link>
-            <Link href="/packages" className="hover:text-indigo-700 transition-colors duration-150">Paket Semester</Link>
+            <Link href="/packages" className="hover:text-indigo-700 transition-colors duration-150">Paket Modul</Link>
             <Link href="/panduan"  className="hover:text-indigo-700 transition-colors duration-150">Panduan</Link>
             <Link href="/toko"     className="hover:text-indigo-700 transition-colors duration-150">Toko</Link>
             <Link href="/orders"   className="hover:text-indigo-700 transition-colors duration-150">Pesanan</Link>

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
 import { OrderDTO } from '@/types';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -96,10 +95,10 @@ export default function OrdersPage() {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <p className="font-mono text-sm font-semibold text-[var(--foreground)]">{order.order_number}</p>
-                <p className="text-xs text-[var(--text-muted)] mt-0.5">{formatDate(order.created_at)}</p>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">{order.created_at_display}</p>
               </div>
               <span className={`text-xs font-semibold px-3 py-1 rounded-full ${STATUS_COLORS[order.status] || 'bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text-body)]'}`}>
-                {orderStatusLabel(order.status)}
+                {order.status_label}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm text-[var(--text-body)]">
@@ -107,10 +106,10 @@ export default function OrdersPage() {
               <div className="flex items-center gap-2">
                 {order.payments?.[0] && (
                   <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${PAYMENT_COLORS[order.payments[0].status] || 'bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text-body)]'}`}>
-                    {paymentStatusLabel(order.payments[0].status)}
+                    {order.payments[0].payment_status_label}
                   </span>
                 )}
-                <span className="font-semibold text-[var(--foreground)] tabular-nums">{formatIDR(order.payments?.[0]?.amount ?? order.total_amount)}</span>
+                <span className="font-semibold text-[var(--foreground)] tabular-nums">{order.total_amount_display}</span>
               </div>
             </div>
           </Link>

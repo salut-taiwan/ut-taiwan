@@ -14,10 +14,27 @@ export interface FeesConfig {
     returning: number;
     rule: string;
     renewalPolicy: RenewalPolicy;
+    // Backend-formatted strings (Phase 1 additive fields)
+    new_display?: string;
+    returning_display?: string;
+    new_label?: string;
+    returning_label?: string;
+    tier_combined_display?: string;
   };
-  serviceFees: { label: string; key: string; amount: number }[];
+  serviceFees: { label: string; key: string; amount: number; amount_display?: string }[];
   totalServiceFees: number;
+  totalServiceFees_display?: string;
   serviceFeesCurrency: 'IDR';
+}
+
+export type EffectiveSalutStatus = 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
+
+export interface ApplicableFee {
+  amount: number;
+  currency: 'NTD';
+  tier: 'new' | 'returning';
+  amount_display: string;
+  tier_label: string;
 }
 
 export interface SalutStatus {
@@ -30,6 +47,20 @@ export interface SalutStatus {
   salut_applied_fee_amount: string | null;
   salut_applied_semester: number | null;
   renewalPolicy: RenewalPolicy;
+  // Backend-derived fields (Phase 1 additive)
+  effective_status?: EffectiveSalutStatus;
+  is_member?: boolean;
+  is_pending?: boolean;
+  applicable_fee?: ApplicableFee | null;
+  salut_applied_at_display?: string | null;
+  salut_approved_at_display?: string | null;
+  salut_applied_fee_amount_display?: string | null;
+}
+
+export interface BankOption {
+  code: string;
+  name: string;
+  display_label: string;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -159,8 +190,13 @@ export const api = {
   catalog: {
     getFaculties: () => apiFetch('/catalog/faculties'),
     getProgramsByFaculty: (facultyId: string) => apiFetch(`/catalog/faculties/${facultyId}/programs`),
-    getPrograms: (facultyId?: string) =>
-      apiFetch(`/catalog/programs${facultyId ? `?facultyId=${facultyId}` : ''}`),
+    getPrograms: (facultyId?: string, facultyCode?: string) => {
+      const qs = new URLSearchParams();
+      if (facultyId) qs.set('facultyId', facultyId);
+      if (facultyCode) qs.set('facultyCode', facultyCode);
+      const q = qs.toString();
+      return apiFetch(`/catalog/programs${q ? '?' + q : ''}`);
+    },
     getProgram: (id: string) => apiFetch(`/catalog/programs/${id}`),
     getSubjects: (programId: string, semester?: number) =>
       apiFetch(`/catalog/programs/${programId}/subjects${semester ? `?semester=${semester}` : ''}`),
@@ -255,6 +291,8 @@ export const api = {
   },
   config: {
     getFees: () => apiFetch<FeesConfig>('/config/fees'),
+    getBanks: (currency: 'NTD' | 'IDR') =>
+      apiFetch<{ currency: string; banks: BankOption[] }>(`/config/banks?currency=${currency}`),
   },
   scraper: {
     run: () => apiFetch('/scraper/run', { method: 'POST' }),

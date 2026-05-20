@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { api, type FeesConfig } from '@/lib/api';
-import { formatIDR } from '@/lib/utils';
 
 export default function SalutPage() {
   const { user } = useAuth();
@@ -15,9 +14,7 @@ export default function SalutPage() {
     api.config.getFees().then(setFees).catch(() => {});
   }, []);
 
-  const tierLabel = fees
-    ? `NT$ ${fees.salutMembership.new.toLocaleString('zh-TW')} (semester 1) atau NT$ ${fees.salutMembership.returning.toLocaleString('zh-TW')} (semester 2+)`
-    : '...';
+  const tierLabel = fees?.salutMembership.tier_combined_display ?? '...';
 
   const steps = [
     {
@@ -38,8 +35,8 @@ export default function SalutPage() {
   ];
 
   const [qrisOpen, setQrisOpen] = useState(false);
-  const isMember = user?.is_salut_active;
-  const isPending = !isMember && user?.salut_status === 'pending';
+  const isMember = Boolean(user?.is_member ?? user?.is_salut_active);
+  const isPending = Boolean(user?.is_pending) || (!isMember && user?.salut_status === 'pending');
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -49,7 +46,7 @@ export default function SalutPage() {
           SALUT Membership
         </span>
         <h1 className="text-3xl font-extrabold text-[var(--foreground)] mb-3">
-          Bergabung SALUT: Hemat {fees ? formatIDR(fees.totalServiceFees) : '...'} Per Semester
+          Bergabung SALUT: Hemat {fees?.totalServiceFees_display ?? '...'} Per Semester
         </h1>
         <p className="text-[var(--text-body)] text-base max-w-xl mx-auto">
           Anggota SALUT tidak dikenakan biaya layanan pengiriman internasional. Daftar sekali, nikmati manfaatnya setiap semester.
@@ -64,16 +61,16 @@ export default function SalutPage() {
           <div className="font-medium text-[var(--text-muted)] text-center">Non-SALUT</div>
           <div className="font-semibold text-teal-700 text-center">SALUT</div>
         </div>
-        {(fees?.serviceFees ?? [{ label: 'Ongkos Kirim', key: 'shipping', amount: 0 }, { label: 'Biaya Box', key: 'box', amount: 0 }, { label: 'Biaya Admin', key: 'admin', amount: 0 }]).map(({ label, amount }) => (
+        {(fees?.serviceFees ?? [{ label: 'Ongkos Kirim', key: 'shipping', amount: 0, amount_display: undefined }, { label: 'Biaya Box', key: 'box', amount: 0, amount_display: undefined }, { label: 'Biaya Admin', key: 'admin', amount: 0, amount_display: undefined }]).map(({ label, amount_display }) => (
           <div key={label} className="grid grid-cols-3 gap-2 text-sm py-2.5 border-t border-[var(--border-subtle)]">
             <div className="text-[var(--foreground)]">{label}</div>
-            <div className="text-center tabular-nums text-[var(--text-body)]">{fees ? formatIDR(amount) : <span className="inline-block w-16 h-4 rounded skeleton" />}</div>
+            <div className="text-center tabular-nums text-[var(--text-body)]">{amount_display ?? <span className="inline-block w-16 h-4 rounded skeleton" />}</div>
             <div className="text-center font-semibold text-teal-600">Gratis</div>
           </div>
         ))}
         <div className="grid grid-cols-3 gap-2 text-sm py-2.5 border-t-2 border-[var(--border)] mt-1">
           <div className="font-bold text-[var(--foreground)]">Total Biaya</div>
-          <div className="text-center tabular-nums font-bold text-[var(--foreground)] line-through opacity-60">{fees ? formatIDR(fees.totalServiceFees) : '...'}</div>
+          <div className="text-center tabular-nums font-bold text-[var(--foreground)] line-through opacity-60">{fees?.totalServiceFees_display ?? '...'}</div>
           <div className="text-center font-extrabold text-teal-700">Rp 0</div>
         </div>
       </div>
@@ -113,9 +110,9 @@ export default function SalutPage() {
               <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Jumlah Transfer</p>
               {fees ? (
                 <>
-                  <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">NT$ {fees.salutMembership.new.toLocaleString('zh-TW')}</p>
+                  <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">{fees.salutMembership.new_display}</p>
                   <p className="text-xs text-[var(--text-muted)] mt-0.5">Mahasiswa baru (semester 1)</p>
-                  <p className="text-2xl font-extrabold text-indigo-700 tabular-nums mt-2">NT$ {fees.salutMembership.returning.toLocaleString('zh-TW')}</p>
+                  <p className="text-2xl font-extrabold text-indigo-700 tabular-nums mt-2">{fees.salutMembership.returning_display}</p>
                   <p className="text-xs text-[var(--text-muted)] mt-0.5">Mahasiswa lama (semester 2+)</p>
                   {fees.salutMembership.renewalPolicy.notice && (
                     <p className="text-xs italic text-[var(--text-muted)] mt-3">{fees.salutMembership.renewalPolicy.notice}</p>

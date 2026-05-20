@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { PackageDTO, FacultyDTO, ProgramDTO } from '@/types';
-import { formatIDR } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
 import { useCart } from '@/lib/cart';
@@ -40,16 +39,7 @@ export default function PackagesPage() {
     try {
       await api.cart.addPackage(pkg.id);
       await refreshCart();
-      const total = (pkg.package_modules || []).length;
-      const available = (pkg.package_modules || []).filter((pm: any) => pm.modules.is_available).length;
-      const requestCount = total - available;
-      if (requestCount === 0) {
-        showToast(`${available} modul ditambahkan ke keranjang!`);
-      } else if (available === 0) {
-        showToast(`${total} modul ditambahkan sebagai permintaan!`);
-      } else {
-        showToast(`${available} modul ditambahkan, ${requestCount} sebagai permintaan!`);
-      }
+      showToast(`Paket ditambahkan. ${pkg.summary_label ?? ''}`);
     } catch (err: any) {
       showToast(err.message, 'error');
     } finally {
@@ -59,7 +49,7 @@ export default function PackagesPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">Paket Semester</h1>
+      <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">Paket Modul</h1>
       <p className="text-[var(--text-body)] mb-6">Paket modul lengkap per semester yang telah dikurasi</p>
 
       {/* Filters */}
@@ -141,14 +131,14 @@ export default function PackagesPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-[var(--text-muted)]">Total</p>
-                    <p className="text-lg font-bold text-indigo-700">{formatIDR(pkg.totalPrice)}</p>
+                    <p className="text-lg font-bold text-indigo-700">{pkg.totalPrice_display}</p>
                   </div>
                   <button
                     onClick={() => handleAddPackage(pkg)}
                     disabled={adding === pkg.id}
                     className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold shadow-sm"
                   >
-                    {adding === pkg.id ? 'Menambahkan...' : 'Tambah Paket'}
+                    {adding === pkg.id ? 'Menambahkan...' : 'Tambah ke Keranjang'}
                   </button>
                 </div>
               </div>

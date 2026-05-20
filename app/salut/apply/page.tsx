@@ -5,11 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { api, type FeesConfig } from '@/lib/api';
-import { formatIDR } from '@/lib/utils';
-
-const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+import { api, type FeesConfig, type ApplicableFee } from '@/lib/api';
 
 export default function SalutApplyPage() {
   const { user, isLoading } = useAuth();
@@ -18,8 +14,9 @@ export default function SalutApplyPage() {
   const [fees, setFees] = useState<FeesConfig | null>(null);
   const [status, setStatus] = useState<'loading' | 'none' | 'pending' | 'approved' | 'rejected' | 'expired'>('loading');
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
-  const [appliedAt, setAppliedAt] = useState<string | null>(null);
+  const [appliedAtDisplay, setAppliedAtDisplay] = useState<string | null>(null);
   const [currentSemester, setCurrentSemester] = useState<number | ''>('');
+  const [applicableFee, setApplicableFee] = useState<ApplicableFee | null>(null);
 
   const [qrisOpen, setQrisOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -37,38 +34,25 @@ export default function SalutApplyPage() {
     }
     api.config.getFees().then(setFees).catch(() => {});
     api.salut.getStatus().then(s => {
-      // Only block as 'approved' when the membership is currently active (not stale from a past cycle).
-      const eligibleStatus: 'none' | 'pending' | 'approved' | 'rejected' | 'expired' =
-        s.is_salut_active
-          ? 'approved'
-          : ((s.salut_status as 'none' | 'pending' | 'approved' | 'rejected' | 'expired') || 'none');
-      setStatus(eligibleStatus);
+      // Use backend-derived effective_status (replaces client eligibility logic)
+      setStatus((s.effective_status as 'none' | 'pending' | 'approved' | 'rejected' | 'expired') || 'none');
       setRejectionReason(s.salut_rejection_reason);
-      setAppliedAt(s.salut_applied_at);
+      setAppliedAtDisplay(s.salut_applied_at_display ?? null);
+      setApplicableFee(s.applicable_fee ?? null);
+      if (typeof s.salut_applied_semester === 'number') setCurrentSemester(s.salut_applied_semester);
     }).catch(() => setStatus('none'));
     api.auth.getMe().then((profile: { current_semester?: number | null }) => {
       if (typeof profile.current_semester === 'number') setCurrentSemester(profile.current_semester);
     }).catch(() => {});
   }, [user, isLoading, router]);
 
-  const tieredAmount = fees && currentSemester
-    ? (currentSemester === 1 ? fees.salutMembership.new : fees.salutMembership.returning)
-    : null;
-
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    // No client-side MIME/size validation — backend rejects with structured error.
     setFileError(null);
     const f = e.target.files?.[0];
     if (!f) return;
-    if (!ALLOWED_TYPES.includes(f.type)) {
-      setFileError('Format tidak didukung. Gunakan JPG, PNG, WebP, atau PDF.');
-      return;
-    }
-    if (f.size > MAX_SIZE_BYTES) {
-      setFileError('Ukuran file maksimal 5 MB.');
-      return;
-    }
     setFile(f);
-    if (f.type !== 'application/pdf') {
+    if (f.type.startsWith('image/')) {
       const url = URL.createObjectURL(f);
       setPreview(url);
     } else {
@@ -79,14 +63,10 @@ export default function SalutApplyPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!file) return;
-    if (!currentSemester) {
-      setFileError('Pilih semester saat ini terlebih dahulu.');
-      return;
-    }
     setUploading(true);
     try {
       const { url } = await api.salut.uploadProof(file);
-      await api.salut.apply(url, Number(currentSemester));
+      await api.salut.apply(url, currentSemester === '' ? 0 : Number(currentSemester));
       setSubmitted(true);
       setStatus('pending');
     } catch (err) {
@@ -131,9 +111,9 @@ export default function SalutApplyPage() {
           </svg>
         </div>
         <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Permohonan Sedang Diproses</h1>
-        {appliedAt && (
+        {appliedAtDisplay && (
           <p className="text-sm text-[var(--text-muted)] mb-2">
-            Dikirim: {new Date(appliedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+            Dikirim: {appliedAtDisplay}
           </p>
         )}
         <p className="text-[var(--text-body)] mb-6">Admin akan memverifikasi dalam 1–2 hari kerja.</p>
@@ -169,7 +149,7 @@ export default function SalutApplyPage() {
           Kembali
         </Link>
         <h1 className="text-2xl font-bold text-[var(--foreground)]">Daftar Keanggotaan SALUT</h1>
-        <p className="text-sm text-[var(--text-body)] mt-1">Hemat {fees ? formatIDR(fees.totalServiceFees) : '...'} biaya layanan per semester.</p>
+        <p className="text-sm text-[var(--text-body)] mt-1">Hemat {fees?.totalServiceFees_display ?? '...'} biaya layanan per semester.</p>
       </div>
 
       {/* Rejection notice */}
@@ -203,11 +183,11 @@ export default function SalutApplyPage() {
           <div>
             <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Jumlah Transfer</p>
             <p className="text-xl font-extrabold text-indigo-700 tabular-nums">
-              {tieredAmount !== null ? `NT$ ${tieredAmount.toLocaleString('zh-TW')}` : '...'}
+              {applicableFee?.amount_display ?? '...'}
             </p>
-            {currentSemester !== '' && (
+            {applicableFee?.tier_label && (
               <p className="text-xs text-[var(--text-muted)] mt-1">
-                {currentSemester === 1 ? 'Mahasiswa baru (Semester 1)' : 'Mahasiswa lama (Semester 2+)'}
+                {applicableFee.tier_label}
               </p>
             )}
           </div>

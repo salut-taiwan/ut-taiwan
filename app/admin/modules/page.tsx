@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
-import { formatIDR } from '@/lib/utils';
 
 const EMPTY_FORM = {
   tbo_code: '', name: '', price_student: '', price_general: '',
@@ -112,7 +111,7 @@ export default function AdminModulesPage() {
                   <td className="px-4 py-3 font-mono text-xs text-indigo-600 font-semibold">{mod.tbo_code}</td>
                   <td className="px-4 py-3 text-[var(--foreground)] max-w-xs truncate">{mod.name}</td>
                   <td className="px-4 py-3 text-[var(--text-body)]">{mod.edition || '-'}</td>
-                  <td className="px-4 py-3 text-right text-[var(--foreground)]">{mod.price_student ? formatIDR(mod.price_student) : '-'}</td>
+                  <td className="px-4 py-3 text-right text-[var(--foreground)]">{mod.price_student ? mod.price_student_display : '-'}</td>
                   <td className="px-4 py-3 text-center">
                     <span className={`text-xs px-3 py-1 rounded-full font-medium ${
                       mod.is_available ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
-import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
 import { OrderDTO } from '@/types';
 
 const PAYMENT_STATUS_COLORS: Record<string, string> = {
@@ -248,23 +247,23 @@ export default function AdminOrdersPage() {
                       <p className="text-[var(--text-muted)] text-xs">{order.shipping_phone}</p>
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-[var(--foreground)] tabular-nums">
-                      {formatIDR(payment?.amount ?? order.total_amount)}
+                      {payment?.amount_display ?? order.total_amount_display}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className={`text-xs font-medium px-2 py-1 ${ORDER_STATUS_COLORS[order.status] || 'bg-[var(--surface-sunken)] text-[var(--text-body)] rounded-r-sm'}`}>
-                        {orderStatusLabel(order.status)}
+                        {order.status_label}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
                       {payment ? (
                         <span className={`text-xs font-medium px-2 py-1 ${PAYMENT_STATUS_COLORS[payment.status] || 'bg-[var(--surface-sunken)] text-[var(--text-muted)] rounded-r-sm'}`}>
-                          {paymentStatusLabel(payment.status)}
+                          {payment.payment_status_label}
                         </span>
                       ) : (
                         <span className="text-[var(--border-default)] text-xs">-</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-[var(--text-body)] text-xs">{formatDate(order.created_at)}</td>
+                    <td className="px-4 py-3 text-[var(--text-body)] text-xs">{order.created_at_display}</td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex flex-col gap-1 items-center">
                         {canConfirmKarunika && (
@@ -323,28 +322,24 @@ export default function AdminOrdersPage() {
                           <p className="font-semibold text-[var(--text-body)] mb-2">Rincian Biaya</p>
                           <div className="flex justify-between text-[var(--text-body)]">
                             <span>Subtotal Modul</span>
-                            <span className="tabular-nums">{formatIDR(order.subtotal)}</span>
+                            <span className="tabular-nums">{order.subtotal_display}</span>
                           </div>
-                          {([
-                            { label: 'Ongkir', val: order.shipping_cost },
-                            { label: 'Biaya Box', val: order.box_fee },
-                            { label: 'Biaya Admin', val: order.admin_fee },
-                          ] as { label: string; val: number }[]).map(({ label, val }) => (
-                            <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
-                              <span>{label}</span>
-                              {order.is_salut_order ? (
+                          {order.fee_lines?.map((line) => (
+                            <div key={line.key} className="flex justify-between text-[var(--text-body)] items-center">
+                              <span>{line.label}</span>
+                              {line.is_waived ? (
                                 <span className="flex items-center gap-1.5">
-                                  <span className="text-[var(--text-muted)] line-through tabular-nums">{formatIDR(val || 0)}</span>
+                                  <span className="text-[var(--text-muted)] line-through tabular-nums">{line.original_amount_display}</span>
                                   <span className="text-[10px] font-semibold px-1 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
                                 </span>
                               ) : (
-                                <span className="tabular-nums">{formatIDR(val)}</span>
+                                <span className="tabular-nums">{line.amount_display}</span>
                               )}
                             </div>
                           ))}
                           <div className="flex justify-between font-bold pt-1 border-t border-[var(--border-subtle)]">
                             <span>Total</span>
-                            <span className="tabular-nums">{formatIDR(payment.amount)}</span>
+                            <span className="tabular-nums">{payment.amount_display}</span>
                           </div>
                         </div>
                         <div className="flex gap-6 text-xs py-2 border border-blue-100 rounded-xl px-4 mt-2">
@@ -412,7 +407,7 @@ export default function AdminOrdersPage() {
                                   <span className="text-[var(--text-muted)] ml-1">×{item.quantity}</span>
                                 </div>
                                 <span className={`tabular-nums shrink-0 ${item.request_status === 'rejected' ? 'text-[var(--text-muted)] line-through' : 'font-semibold text-[var(--text-body)]'}`}>
-                                  {formatIDR(item.subtotal)}
+                                  {item.subtotal_display}
                                 </span>
                                 <div className="shrink-0">
                                   {item.request_status === 'rejected' ? (
@@ -452,7 +447,7 @@ export default function AdminOrdersPage() {
                                 <span className="font-semibold text-[var(--text-body)] tabular-nums shrink-0">
                                   {isZeroPrice && item.request_status !== 'rejected'
                                     ? <span className="text-xs text-[var(--text-muted)] italic font-normal">Harga menyusul</span>
-                                    : formatIDR(item.subtotal)
+                                    : item.subtotal_display
                                   }
                                 </span>
                                 <div className="flex items-center gap-1.5 shrink-0">

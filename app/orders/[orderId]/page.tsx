@@ -3,22 +3,12 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api, type FeesConfig } from '@/lib/api';
+import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { formatIDR, formatDate, orderStatusLabel, paymentStatusLabel } from '@/lib/utils';
 import { OrderDTO, OrderItemDTO } from '@/types';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 
-const ORDER_STEPS = ['pending', 'awaiting_payment', 'paid', 'processing', 'shipped', 'delivered'];
-const STEP_LABELS: Record<string, string> = {
-  pending: 'Menunggu Konfirmasi',
-  awaiting_payment: 'Stok Dikonfirmasi',
-  paid: 'Dibayar',
-  processing: 'Diproses',
-  shipped: 'Dikirim',
-  delivered: 'Terkirim',
-};
 const STATUS_COLORS: Record<string, string> = {
   pending:          'bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text-body)]',
   awaiting_payment: 'bg-amber-50  border border-amber-200  text-amber-700',
@@ -46,7 +36,6 @@ function OrderDetailContent() {
   const { user, isLoading: authLoading } = useAuth();
   const { showToast } = useToast();
   const [order, setOrder] = useState<OrderDTO | null>(null);
-  const [fees, setFees] = useState<FeesConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -58,7 +47,6 @@ function OrderDetailContent() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) { router.push('/login'); return; }
-    api.config.getFees().then(setFees).catch(() => {});
     api.orders.get(orderId).then(setOrder).catch(() => {}).finally(() => setLoading(false));
   }, [authLoading, user, orderId, router]);
 
@@ -141,7 +129,9 @@ function OrderDetailContent() {
   );
 
   const payment = order.payments?.[0];
-  const stepIndex = order.step_index ?? ORDER_STEPS.indexOf(order.status);
+  const steps = order.steps ?? [];
+  const progressPercent = order.progress_percent ?? 0;
+  const currentStep = steps.find(s => s.state === 'current') ?? steps[steps.length - 1];
 
   return (
     <div className="max-w-3xl">
@@ -162,50 +152,44 @@ function OrderDetailContent() {
       <div className="flex items-start justify-between mb-5">
         <div>
           <h1 className="text-2xl font-bold text-[var(--foreground)]">{order.order_number}</h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">{formatDate(order.created_at)}</p>
+          <p className="text-sm text-[var(--text-muted)] mt-1">{order.created_at_display}</p>
         </div>
         <span className={`text-sm font-semibold px-3 py-1.5 rounded-full ${STATUS_COLORS[order.status] || 'bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text-body)]'}`}>
-          {orderStatusLabel(order.status)}
+          {order.status_label}
         </span>
       </div>
 
       {/* Progress */}
-      {order.status !== 'cancelled' && (
+      {order.status !== 'cancelled' && steps.length > 0 && (
         <div className="mb-5 bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
           <div className="flex items-center justify-between relative">
-            {/* Gradient connector */}
+            {/* Gradient connector — uses progress_percent from backend */}
             <div
               className="absolute top-4 left-0 right-0 h-0.5 -z-0"
               style={{
-                background: stepIndex > 0
-                  ? `linear-gradient(to right, #0A4595 ${(stepIndex / (ORDER_STEPS.length - 1)) * 100}%, #E2E8F0 ${(stepIndex / (ORDER_STEPS.length - 1)) * 100}%)`
+                background: progressPercent > 0
+                  ? `linear-gradient(to right, #0A4595 ${progressPercent}%, #E2E8F0 ${progressPercent}%)`
                   : '#E2E8F0',
               }}
             />
-            {ORDER_STEPS.map((step, i) => {
-              const isDelivered = order.status === 'delivered';
-              const isCompleted = i < stepIndex || (i === stepIndex && isDelivered);
-              const isCurrent   = i === stepIndex && !isDelivered;
-              return (
-              <div key={step} className="flex flex-col items-center flex-1">
+            {steps.map((step, i) => (
+              <div key={step.key} className="flex flex-col items-center flex-1">
                 <div className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold z-10',
-                  isCompleted ? 'bg-indigo-600 text-white'
-                  : isCurrent ? 'bg-amber-500 text-white ring-4 ring-amber-100'
+                  step.state === 'completed' ? 'bg-indigo-600 text-white'
+                  : step.state === 'current' ? 'bg-amber-500 text-white ring-4 ring-amber-100'
                   : 'bg-[var(--border)] text-[var(--text-muted)]'
                 )}>
-                  {isCompleted ? <CheckIcon className="w-3.5 h-3.5" /> : i + 1}
+                  {step.state === 'completed' ? <CheckIcon className="w-3.5 h-3.5" /> : i + 1}
                 </div>
                 <span className="text-xs text-[var(--text-body)] mt-1.5 text-center leading-tight hidden sm:block">
-                  {STEP_LABELS[step] || orderStatusLabel(step)}
+                  {step.label}
                 </span>
-
               </div>
-              );
-            })}
+            ))}
           </div>
           <p className="text-xs text-center text-[var(--text-body)] mt-2 sm:hidden">
-            {STEP_LABELS[ORDER_STEPS[stepIndex]] || orderStatusLabel(ORDER_STEPS[stepIndex])}
+            {currentStep?.label}
           </p>
         </div>
       )}
@@ -218,22 +202,22 @@ function OrderDetailContent() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-[var(--text-body)]">Status</span>
-                <span className="font-medium">{paymentStatusLabel(payment.status)}</span>
+                <span className="font-medium">{payment.payment_status_label}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[var(--text-body)]">Jumlah</span>
-                <span className="font-bold tabular-nums">{formatIDR(payment.amount)}</span>
+                <span className="font-bold tabular-nums">{payment.amount_display}</span>
               </div>
-              {payment.show_payment_deadline && payment.expires_at && (
+              {payment.show_payment_deadline && payment.expires_at_display && (
                 <div className="flex justify-between">
                   <span className="text-[var(--text-body)]">Batas Bayar</span>
-                  <span className="text-red-500 font-medium">{formatDate(payment.expires_at)}</span>
+                  <span className="text-red-500 font-medium">{payment.expires_at_display}</span>
                 </div>
               )}
-              {payment.paid_at && (
+              {payment.paid_at_display && (
                 <div className="flex justify-between">
                   <span className="text-[var(--text-body)]">Dibayar</span>
-                  <span>{formatDate(payment.paid_at)}</span>
+                  <span>{payment.paid_at_display}</span>
                 </div>
               )}
             </div>
@@ -267,17 +251,17 @@ function OrderDetailContent() {
                 </div>
                 <div className="flex justify-between border-t border-blue-200 pt-2 mt-1">
                   <span className="text-blue-700">Jumlah tepat</span>
-                  <span className="font-bold text-blue-900 tabular-nums">{formatIDR(payment.amount)}</span>
+                  <span className="font-bold text-blue-900 tabular-nums">{payment.amount_display}</span>
                 </div>
                 {payment.unique_code != null && payment.unique_code > 0 && (
                   <div className="flex justify-between text-xs text-blue-500 mt-0.5">
                     <span>Kode unik (sudah termasuk)</span>
-                    <span className="font-mono font-semibold">+{formatIDR(payment.unique_code)}</span>
+                    <span className="font-mono font-semibold">+{payment.unique_code_display}</span>
                   </div>
                 )}
-                {payment.expires_at && (
+                {payment.expires_at_display && (
                   <p className="text-xs text-red-600 mt-1">
-                    Batas pembayaran: {formatDate(payment.expires_at)}
+                    Batas pembayaran: {payment.expires_at_display}
                   </p>
                 )}
 
@@ -370,7 +354,7 @@ function OrderDetailContent() {
           {order.order_items?.map((item: OrderItemDTO) => {
             const isRejected = item.display_status === 'rejected';
             const isPendingRequest = item.display_status === 'pending_request';
-            const hidePrice = item.display_status === 'rejected' || item.display_status === 'zero_price';
+            const priceVisible = item.price_visible !== false;
             return (
               <div key={item.id} className={`flex items-center text-sm py-2.5 border-b border-[var(--border-subtle)] last:border-0 ${isRejected ? 'opacity-60' : ''}`}>
                 <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
@@ -390,10 +374,10 @@ function OrderDetailContent() {
                   )}
                 </div>
                 <span className="w-24 text-right tabular-nums text-[var(--text-body)]">
-                  {hidePrice ? <span className="text-[var(--text-muted)]">-</span> : formatIDR(item.unit_price)}
+                  {!priceVisible ? <span className="text-[var(--text-muted)]">-</span> : item.unit_price_display}
                 </span>
                 <span className="w-24 text-right ml-4 font-medium tabular-nums">
-                  {hidePrice ? <span className="text-[var(--text-muted)]">-</span> : <span className="text-[var(--foreground)]">{formatIDR(item.subtotal)}</span>}
+                  {!priceVisible ? <span className="text-[var(--text-muted)]">-</span> : <span className="text-[var(--foreground)]">{item.subtotal_display}</span>}
                 </span>
               </div>
             );
@@ -401,48 +385,41 @@ function OrderDetailContent() {
           <div className="pt-3 space-y-1.5 text-sm border-t border-[var(--border-subtle)]">
             <div className="flex justify-between text-[var(--text-body)]">
               <span>Subtotal Modul</span>
-              <span className="tabular-nums">{formatIDR(order.subtotal)}</span>
+              <span className="tabular-nums">{order.subtotal_display}</span>
             </div>
-            {([
-              { label: 'Ongkir',      field: order.shipping_cost, key: 'shipping' },
-              { label: 'Biaya Box',   field: order.box_fee,       key: 'box'      },
-              { label: 'Biaya Admin', field: order.admin_fee,     key: 'admin'    },
-            ] as { label: string; field: number; key: string }[]).map(({ label, field, key }) => {
-              const standardAmount = fees?.serviceFees.find(f => f.key === key)?.amount;
-              return (
-                <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
-                  <span>{label}</span>
-                  {order.is_salut_order ? (
-                    <span className="flex items-center gap-1.5">
-                      <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{standardAmount != null ? formatIDR(standardAmount) : '...'}</span>
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
-                    </span>
-                  ) : (
-                    <span className="tabular-nums">{formatIDR(field)}</span>
-                  )}
-                </div>
-              );
-            })}
+            {order.fee_lines?.map((line) => (
+              <div key={line.key} className="flex justify-between text-[var(--text-body)] items-center">
+                <span>{line.label}</span>
+                {line.is_waived ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{line.original_amount_display}</span>
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
+                  </span>
+                ) : (
+                  <span className="tabular-nums">{line.amount_display}</span>
+                )}
+              </div>
+            ))}
             {payment?.unique_code != null && payment.unique_code > 0 && (
               <div className="flex justify-between text-[var(--text-body)]">
                 <span>Kode Unik</span>
-                <span className="tabular-nums">+{formatIDR(payment.unique_code)}</span>
+                <span className="tabular-nums">+{payment.unique_code_display}</span>
               </div>
             )}
             <div className="flex justify-between font-bold text-[var(--foreground)] pt-2 border-t border-[var(--border-subtle)]">
               <span>Total</span>
-              <span className="text-indigo-700 tabular-nums">{formatIDR(payment?.amount ?? order.total_amount)}</span>
+              <span className="text-indigo-700 tabular-nums">{order.total_breakdown?.total_display ?? order.total_amount_display}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Delivery confirmation */}
-      {order.confirm_deadline && (
+      {order.confirm_deadline_display && (
         <div className="mb-4 bg-gradient-to-br from-purple-50 to-indigo-50/30 border border-purple-200 rounded-2xl p-6">
           <h2 className="font-semibold text-purple-900 text-base mb-1">Paket Sudah Sampai?</h2>
           <p className={`text-sm mb-5 ${order.confirm_deadline_is_urgent ? 'text-amber-700 font-medium' : 'text-purple-700'}`}>
-            Konfirmasi penerimaan sebelum <strong>{formatDate(order.confirm_deadline)}</strong>
+            Konfirmasi penerimaan sebelum <strong>{order.confirm_deadline_display}</strong>
             {order.confirm_deadline_is_urgent && ' Segera konfirmasi!'}
           </p>
           {showDeliveryConfirm ? (

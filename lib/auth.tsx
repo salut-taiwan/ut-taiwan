@@ -12,6 +12,11 @@ interface AuthUser {
   is_salut_active?: boolean;
   salut_status?: 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
   is_verified?: boolean;
+  // Backend-derived flags (Phase 1 additive)
+  is_member?: boolean;
+  is_pending?: boolean;
+  shipping_address_display?: string | null;
+  shipping_address_lines?: string[];
 }
 
 interface AuthContextType {

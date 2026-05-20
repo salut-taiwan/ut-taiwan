@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
-import { formatIDR } from '@/lib/utils';
 
 export default function AdminPackagesPage() {
   const { user, isLoading } = useAuth();
@@ -95,7 +94,7 @@ export default function AdminPackagesPage() {
               </div>
               <h3 className="font-semibold text-[var(--foreground)] mb-1">{pkg.name}</h3>
               {pkg.programs && <p className="text-xs text-[var(--text-body)] mb-3">{pkg.programs.name}</p>}
-              <p className="text-sm font-bold text-indigo-700">{formatIDR(pkg.totalPrice)}</p>
+              <p className="text-sm font-bold text-indigo-700">{pkg.totalPrice_display}</p>
               <p className="text-xs text-[var(--text-muted)]">{(pkg.package_modules || []).length} modul</p>
             </div>
           ))}

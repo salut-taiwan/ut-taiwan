@@ -3,8 +3,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ModuleSummaryDTO } from '@/types';
-import { formatIDR } from '@/lib/utils';
-import { storageUrl } from '@/lib/storage';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useState } from 'react';
@@ -49,7 +47,7 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
         <div className="bg-[var(--surface-sunken)] h-48 flex items-center justify-center overflow-hidden">
           {module.cover_image_url ? (
             <Image
-              src={storageUrl(module.cover_image_url)}
+              src={module.cover_image_url}
               alt={module.name}
               width={120}
               height={160}
@@ -75,7 +73,7 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
         </Link>
         <div className="mt-auto">
           <p className={`text-base font-bold mb-3 tabular-nums ${!module.price_student ? 'text-[var(--text-muted)]' : module.is_available ? 'text-indigo-700' : 'text-amber-600'}`}>
-            {module.price_student ? formatIDR(module.price_student) : 'Hubungi Kami'}
+            {module.price_student ? module.price_student_display : 'Hubungi Kami'}
           </p>
           <button
             onClick={handleAdd}

@@ -6,8 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { formatIDR } from '@/lib/utils';
-import { storageUrl } from '@/lib/storage';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
 
@@ -80,7 +78,7 @@ export default function ModuleDetailPage() {
           <div className="bg-[var(--surface-sunken)] flex items-center justify-center sm:w-72 min-h-64 flex-shrink-0">
             {module.cover_image_url ? (
               <Image
-                src={storageUrl(module.cover_image_url)}
+                src={module.cover_image_url}
                 alt={module.name}
                 width={180}
                 height={240}
@@ -133,10 +131,10 @@ export default function ModuleDetailPage() {
             <div className="mb-6 bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-100 rounded-2xl p-5">
               <p className="text-xs text-indigo-500 font-semibold uppercase tracking-wide mb-1">Harga Mahasiswa</p>
               <p className="text-3xl font-extrabold text-indigo-700 tabular-nums">
-                {module.price_student ? formatIDR(module.price_student) : 'Hubungi Kami'}
+                {module.price_student ? module.price_student_display : 'Hubungi Kami'}
               </p>
               {module.price_general && (
-                <p className="text-sm text-[var(--text-muted)] mt-1">Harga Umum: {formatIDR(module.price_general)}</p>
+                <p className="text-sm text-[var(--text-muted)] mt-1">Harga Umum: {module.price_general_display}</p>
               )}
             </div>
 

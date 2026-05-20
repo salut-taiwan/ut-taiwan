@@ -6,7 +6,6 @@ import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { AdminSalutApplicationDTO } from '@/types';
-import { formatDate } from '@/lib/utils';
 
 type Tab = 'pending' | 'all';
 
@@ -242,7 +241,7 @@ export default function SalutApplicationsPage() {
                     <td className="px-4 py-3 hidden md:table-cell text-[var(--text-body)] text-xs tabular-nums">
                       {app.salut_applied_fee_amount ? (
                         <>
-                          <span className="font-semibold">NT$ {Number(app.salut_applied_fee_amount).toLocaleString('zh-TW')}</span>
+                          <span className="font-semibold">{app.salut_applied_fee_amount_display}</span>
                           {app.salut_applied_semester != null && (
                             <span className="ml-1 text-[var(--text-muted)]">(sem {app.salut_applied_semester})</span>
                           )}
@@ -252,7 +251,7 @@ export default function SalutApplicationsPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell text-[var(--text-body)] text-xs">
-                      {formatDate(app.salut_applied_at)}
+                      {app.salut_applied_at_display}
                     </td>
                     <td className="px-4 py-3">
                       <button

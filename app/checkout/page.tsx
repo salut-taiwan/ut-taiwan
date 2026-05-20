@@ -3,11 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api, type FeesConfig } from '@/lib/api';
+import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import { CartDTO } from '@/types';
-import { formatIDR } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 
@@ -32,7 +31,7 @@ export default function CheckoutPage() {
   const { syncCartCount } = useCart();
   const { showToast } = useToast();
   const [cart, setCart] = useState<CartDTO | null>(null);
-  const [fees, setFees] = useState<FeesConfig | null>(null);
+  const [profileAddressLines, setProfileAddressLines] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [profileAddress, setProfileAddress] = useState<ProfileAddress | null>(null);
@@ -59,8 +58,6 @@ export default function CheckoutPage() {
     if (authLoading) return;
     if (!user) { router.push('/login'); return; }
 
-    api.config.getFees().then(setFees).catch(() => {});
-
     const stored = sessionStorage.getItem('cart_custom_items');
     if (stored) {
       try { setCustomItems(JSON.parse(stored)); } catch {}
@@ -83,6 +80,7 @@ export default function CheckoutPage() {
       const hasAddress = !!(addr.zh_city || addr.zh_road);
       if (hasAddress) {
         setProfileAddress(addr);
+        setProfileAddressLines(profileData.shipping_address_lines ?? null);
         setUseProfileAddress(true);
       }
     }).finally(() => setLoading(false));
@@ -96,35 +94,41 @@ export default function CheckoutPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const addressFields = useProfileAddress && profileAddress
+      // Submit structured Mandarin address fields; backend composes shippingAddress + shippingCity.
+      const src = useProfileAddress && profileAddress
         ? {
-            shippingName: profileAddress.name,
-            shippingAddress: [
-              profileAddress.zh_road,
-              profileAddress.zh_number ? profileAddress.zh_number + '號' : '',
-              profileAddress.zh_floor || '',
-            ].filter(Boolean).join(' '),
-            shippingCity: [profileAddress.zh_district, profileAddress.zh_city].filter(Boolean).join(''),
-            shippingProvince: profileAddress.zh_city,
-            shippingPostal: profileAddress.postal_code,
-            shippingCountry: profileAddress.country,
-            shippingPhone: profileAddress.phone,
+            name: profileAddress.name,
+            zh_road: profileAddress.zh_road,
+            zh_number: profileAddress.zh_number,
+            zh_floor: profileAddress.zh_floor,
+            zh_city: profileAddress.zh_city,
+            zh_district: profileAddress.zh_district,
+            postal: profileAddress.postal_code,
+            phone: profileAddress.phone,
+            country: profileAddress.country,
           }
         : {
-            shippingName: form.altName,
-            shippingAddress: [
-              form.altZhRoad,
-              form.altZhNumber ? form.altZhNumber + '號' : '',
-              form.altZhFloor || '',
-            ].filter(Boolean).join(' '),
-            shippingCity: [form.altZhDistrict, form.altZhCity].filter(Boolean).join(''),
-            shippingProvince: form.altZhCity,
-            shippingPostal: form.altPostal,
-            shippingCountry: 'Taiwan',
-            shippingPhone: form.altPhone,
+            name: form.altName,
+            zh_road: form.altZhRoad,
+            zh_number: form.altZhNumber,
+            zh_floor: form.altZhFloor,
+            zh_city: form.altZhCity,
+            zh_district: form.altZhDistrict,
+            postal: form.altPostal,
+            phone: form.altPhone,
+            country: 'Taiwan',
           };
       const { order } = await api.orders.checkout({
-        ...addressFields,
+        shipping_name: src.name,
+        shipping_zh_road: src.zh_road,
+        shipping_zh_number: src.zh_number,
+        shipping_zh_floor: src.zh_floor,
+        shipping_zh_city: src.zh_city,
+        shipping_zh_district: src.zh_district,
+        shipping_postal: src.postal,
+        shipping_phone: src.phone,
+        shippingProvince: src.zh_city,
+        shippingCountry: src.country,
         notes: form.notes,
         paymentMethod: form.paymentMethod,
         paymentBank: form.paymentBank,
@@ -208,22 +212,12 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Read-only profile address card */}
+              {/* Read-only profile address card — uses backend-composed lines */}
               {useProfileAddress && profileAddress ? (
                 <div className="bg-[var(--surface-sunken)] rounded-xl border border-[var(--border-subtle)] px-4 py-3 text-sm text-[var(--text-body)] space-y-0.5">
-                  <p className="font-semibold text-[var(--foreground)]">{profileAddress.name}</p>
-                  <p>
-                    {[profileAddress.zh_road,
-                      profileAddress.zh_number ? profileAddress.zh_number + '號' : '',
-                      profileAddress.zh_floor || ''
-                    ].filter(Boolean).join(' ')}
-                  </p>
-                  <p>
-                    {[profileAddress.zh_district, profileAddress.zh_city].filter(Boolean).join('')}
-                    {profileAddress.postal_code ? ` ${profileAddress.postal_code}` : ''}
-                  </p>
-                  <p>{profileAddress.country}</p>
-                  <p>{profileAddress.phone}</p>
+                  {(profileAddressLines ?? []).map((line, i) => (
+                    <p key={i} className={i === 0 ? 'font-semibold text-[var(--foreground)]' : ''}>{line}</p>
+                  ))}
                 </div>
               ) : (
                 /* Editable form — Chinese address fields */
@@ -307,7 +301,7 @@ export default function CheckoutPage() {
                       )}
                     </span>
                     <span className="text-[var(--foreground)] font-medium whitespace-nowrap tabular-nums">
-                      {item.isRequest && item.subtotal === 0 ? '-' : formatIDR(item.subtotal)}
+                      {item.isRequest && item.subtotal === 0 ? '-' : item.subtotalDisplay}
                     </span>
                   </div>
                 ))}
@@ -395,7 +389,7 @@ export default function CheckoutPage() {
                       <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span>Anggota SALUT hemat {fees ? formatIDR(fees.totalServiceFees) : '...'} di pesanan ini. <Link href="/salut" className="font-semibold underline">Pelajari →</Link></span>
+                      <span>Anggota SALUT hemat {cart.total_breakdown?.fee_lines.reduce((acc, l) => acc + (l.original_amount ?? l.amount), 0) ? '' : ''}<span className="font-semibold">{cart.total_breakdown && cart.total_breakdown.fee_lines.length > 0 ? cart.total_breakdown.fee_lines[0].original_amount_display ?? '' : ''}</span> di pesanan ini. <Link href="/salut" className="font-semibold underline">Pelajari →</Link></span>
                     </div>
                   )}
                 </div>
@@ -403,18 +397,18 @@ export default function CheckoutPage() {
               <div className="border-t border-[var(--border-subtle)] pt-3 mb-5 space-y-1.5 text-sm">
                 <div className="flex justify-between text-[var(--text-body)]">
                   <span>Subtotal Modul</span>
-                  <span className="tabular-nums">{formatIDR(cart.subtotal)}</span>
+                  <span className="tabular-nums">{cart.subtotal_display}</span>
                 </div>
-                {(fees?.serviceFees ?? []).map(({ label, amount }) => (
-                  <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
-                    <span>{label}</span>
-                    {user?.is_salut_active ? (
+                {cart.total_breakdown?.fee_lines.map((line) => (
+                  <div key={line.key} className="flex justify-between text-[var(--text-body)] items-center">
+                    <span>{line.label}</span>
+                    {line.is_waived ? (
                       <span className="flex items-center gap-1.5">
-                        <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{formatIDR(amount)}</span>
+                        <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{line.original_amount_display}</span>
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
                       </span>
                     ) : (
-                      <span className="tabular-nums">{formatIDR(amount)}</span>
+                      <span className="tabular-nums">{line.amount_display}</span>
                     )}
                   </div>
                 ))}
@@ -425,7 +419,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between font-bold items-end pt-2 border-t border-[var(--border-subtle)]">
                   <span className="text-[var(--foreground)]">Total Pesanan</span>
                   <span className="text-2xl font-extrabold text-indigo-700 tabular-nums">
-                    {fees ? formatIDR(cart.subtotal + (user?.is_salut_active ? 0 : fees.totalServiceFees)) : '...'}
+                    {cart.total_breakdown?.total_display ?? '...'}
                   </span>
                 </div>
               </div>

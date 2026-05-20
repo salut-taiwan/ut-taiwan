@@ -48,12 +48,11 @@ function ProgramPageContent() {
 
   useEffect(() => {
     setLoading(true);
-    const faculty = faculties.find(f => f.code === selectedFaculty);
-    const facultyId = faculty?.id;
-    api.catalog.getPrograms(facultyId)
+    // Backend resolves facultyCode -> facultyId, eliminating client-side join.
+    api.catalog.getPrograms(undefined, selectedFaculty || undefined)
       .then((data: any) => setPrograms(data))
       .finally(() => setLoading(false));
-  }, [selectedFaculty, faculties]);
+  }, [selectedFaculty]);
 
   return (
     <div>

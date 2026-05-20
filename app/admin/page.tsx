@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
-import { formatDate } from '@/lib/utils';
 import { ScraperRunDTO } from '@/types';
 
 const adminCards = [
@@ -38,7 +37,7 @@ const adminCards = [
   {
     href: '/admin/packages',
     title: 'Manajemen Paket',
-    desc: 'Buat dan kelola paket semester',
+    desc: 'Buat dan kelola paket modul',
     iconColor: 'text-amber-600',
     iconBg: 'bg-amber-50',
     icon: (
@@ -132,7 +131,7 @@ export default function AdminPage() {
             <p className="text-sm text-[var(--text-body)] mt-1">{card.desc}</p>
             {card.href === '/admin/scraper' && recentRun && (
               <p className="text-xs text-[var(--text-muted)] mt-2">
-                Terakhir: {formatDate(recentRun.started_at)} · {recentRun.status}
+                Terakhir: {recentRun.started_at_display} · {recentRun.status}
               </p>
             )}
           </Link>

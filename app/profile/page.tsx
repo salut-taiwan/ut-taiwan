@@ -3,10 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api, type FeesConfig } from '@/lib/api';
+import { api, type FeesConfig, type BankOption } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { NTD_BANKS, IDR_BANKS } from '@/lib/banks';
-import { formatIDR } from '@/lib/utils';
 
 const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
 const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
@@ -25,6 +23,8 @@ export default function ProfilePage() {
   const [fees, setFees] = useState<FeesConfig | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [programs, setPrograms] = useState<any[]>([]);
+  const [ntdBanks, setNtdBanks] = useState<BankOption[]>([]);
+  const [idrBanks, setIdrBanks] = useState<BankOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -35,6 +35,8 @@ export default function ProfilePage() {
     if (authLoading) return;
     if (!user) { router.push('/login?redirect=/profile'); return; }
     api.config.getFees().then(setFees).catch(() => {});
+    api.config.getBanks('NTD').then(r => setNtdBanks(r.banks)).catch(() => {});
+    api.config.getBanks('IDR').then(r => setIdrBanks(r.banks)).catch(() => {});
     Promise.all([api.auth.getMe(), api.catalog.getPrograms()]).then(([p, progs]: any[]) => {
       setProfile(p);
       setPrograms(progs);
@@ -65,11 +67,7 @@ export default function ProfilePage() {
     setForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
   }
 
-  function handleNtdBankChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const code = e.target.value;
-    const bank = NTD_BANKS.find(b => b.code === code);
-    setForm((f: any) => ({ ...f, bank_ntd_code: code, bank_ntd_name: bank ? bank.name : '' }));
-  }
+  // Backend resolves bank name from code on updateMe; frontend just submits code.
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -114,10 +112,10 @@ export default function ProfilePage() {
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-teal-800">Anggota SALUT Aktif</p>
-                <p className="text-sm text-teal-700 mt-0.5">Semua biaya layanan ({fees ? formatIDR(fees.totalServiceFees) : '...'}) dibebaskan untuk Anda.</p>
-                {profile?.salut_approved_at && (
+                <p className="text-sm text-teal-700 mt-0.5">Semua biaya layanan ({fees?.totalServiceFees_display ?? '...'}) dibebaskan untuk Anda.</p>
+                {profile?.salut_approved_at_display && (
                   <p className="text-xs text-teal-600 mt-1">
-                    Aktif sejak {new Date(profile.salut_approved_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    Aktif sejak {profile.salut_approved_at_display}
                   </p>
                 )}
               </div>
@@ -148,9 +146,9 @@ export default function ProfilePage() {
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-amber-800">Permohonan SALUT Sedang Diverifikasi</p>
-                {profile?.salut_applied_at && (
+                {profile?.salut_applied_at_display && (
                   <p className="text-sm text-amber-700 mt-0.5">
-                    Dikirim {new Date(profile.salut_applied_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    Dikirim {profile.salut_applied_at_display}
                   </p>
                 )}
                 <p className="text-xs text-amber-600 mt-1">Admin akan memverifikasi dalam 1–2 hari kerja.</p>
@@ -185,7 +183,7 @@ export default function ProfilePage() {
           </div>
           <div className="flex-1">
             <p className="font-semibold text-indigo-800">Belum Anggota SALUT</p>
-            <p className="text-sm text-indigo-700 mt-0.5">Hemat {fees ? formatIDR(fees.totalServiceFees) : '...'} biaya layanan per semester dengan bergabung SALUT.</p>
+            <p className="text-sm text-indigo-700 mt-0.5">Hemat {fees?.totalServiceFees_display ?? '...'} biaya layanan per semester dengan bergabung SALUT.</p>
             <Link href="/salut/apply" className="text-xs font-semibold text-indigo-700 hover:underline mt-2 inline-block">
               Daftar SALUT →
             </Link>
@@ -304,11 +302,11 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 <div>
                   <label className={labelClass}>Bank</label>
-                  <select value={form.bank_ntd_code} onChange={handleNtdBankChange}
+                  <select name="bank_ntd_code" value={form.bank_ntd_code} onChange={handleChange}
                     className={inputClass}>
                     <option value="">Pilih Bank NTD</option>
-                    {NTD_BANKS.map((b: any) => (
-                      <option key={b.code} value={b.code}>{b.code} - {b.name}</option>
+                    {ntdBanks.map(b => (
+                      <option key={b.code} value={b.code}>{b.display_label}</option>
                     ))}
                   </select>
                 </div>
@@ -329,8 +327,8 @@ export default function ProfilePage() {
                   <select name="bank_idr_name" value={form.bank_idr_name} onChange={handleChange}
                     className={inputClass}>
                     <option value="">Pilih Bank IDR</option>
-                    {IDR_BANKS.map((b: any) => (
-                      <option key={b} value={b}>{b}</option>
+                    {idrBanks.map(b => (
+                      <option key={b.code} value={b.code}>{b.display_label}</option>
                     ))}
                   </select>
                 </div>

@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import { NTD_BANKS, IDR_BANKS } from '@/lib/banks';
+import { api, type BankOption } from '@/lib/api';
 
 const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
 const selectClass = inputClass;
@@ -31,46 +30,26 @@ export default function RegisterPage() {
     bank_idr_name: '', bank_idr_account: '',
   });
   const [programs, setPrograms] = useState<any[]>([]);
+  const [ntdBanks, setNtdBanks] = useState<BankOption[]>([]);
+  const [idrBanks, setIdrBanks] = useState<BankOption[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     api.catalog.getPrograms().then((data: any) => setPrograms(data)).catch(() => {});
+    api.config.getBanks('NTD').then(r => setNtdBanks(r.banks)).catch(() => {});
+    api.config.getBanks('IDR').then(r => setIdrBanks(r.banks)).catch(() => {});
   }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   }
 
-  function handleNtdBankChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const code = e.target.value;
-    const bank = NTD_BANKS.find(b => b.code === code);
-    setForm(f => ({ ...f, bank_ntd_code: code, bank_ntd_name: bank ? bank.name : '' }));
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    if (form.password !== form.confirmPassword) {
-      setError('Password tidak cocok');
-      return;
-    }
-    if (form.password.length < 6) {
-      setError('Password minimal 6 karakter');
-      return;
-    }
-    const ntdComplete = form.bank_ntd_code && form.bank_ntd_account;
-    const idrComplete = form.bank_idr_name && form.bank_idr_account;
-    if (!ntdComplete && !idrComplete) {
-      setError('Wajib mengisi minimal satu rekening bank (NTD atau IDR)');
-      return;
-    }
-    const semester = Number(form.current_semester);
-    if (!Number.isInteger(semester) || semester < 1 || semester > 9) {
-      setError('Semester saat ini wajib diisi (1-9)');
-      return;
-    }
+    // All validation is server-side now. Backend rejects with structured error.
     setLoading(true);
     try {
       await api.auth.register({
@@ -90,7 +69,6 @@ export default function RegisterPage() {
         address_zh_floor: form.address_zh_floor || undefined,
         postal_code: form.postal_code,
         bank_ntd_code: form.bank_ntd_code || undefined,
-        bank_ntd_name: form.bank_ntd_name || undefined,
         bank_ntd_account: form.bank_ntd_account || undefined,
         bank_idr_name: form.bank_idr_name || undefined,
         bank_idr_account: form.bank_idr_account || undefined,
@@ -278,10 +256,10 @@ export default function RegisterPage() {
                     <div className="space-y-3">
                       <div>
                         <label className={labelClass}>Bank</label>
-                        <select value={form.bank_ntd_code} onChange={handleNtdBankChange} className={selectClass}>
+                        <select name="bank_ntd_code" value={form.bank_ntd_code} onChange={handleChange} className={selectClass}>
                           <option value="">Pilih Bank NTD</option>
-                          {NTD_BANKS.map(b => (
-                            <option key={b.code} value={b.code}>{b.code} - {b.name}</option>
+                          {ntdBanks.map(b => (
+                            <option key={b.code} value={b.code}>{b.display_label}</option>
                           ))}
                         </select>
                       </div>
@@ -299,8 +277,8 @@ export default function RegisterPage() {
                         <label className={labelClass}>Bank</label>
                         <select name="bank_idr_name" value={form.bank_idr_name} onChange={handleChange} className={selectClass}>
                           <option value="">Pilih Bank IDR</option>
-                          {IDR_BANKS.map(b => (
-                            <option key={b} value={b}>{b}</option>
+                          {idrBanks.map(b => (
+                            <option key={b.code} value={b.code}>{b.display_label}</option>
                           ))}
                         </select>
                       </div>

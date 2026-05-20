@@ -7,8 +7,6 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { CartDTO } from '@/types';
-import { formatIDR } from '@/lib/utils';
-import { storageUrl } from '@/lib/storage';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
 
@@ -57,7 +55,7 @@ export default function CartPage() {
   }
 
   async function handleUpdateQty(itemId: string, newQty: number) {
-    if (newQty < 1) return handleRemove(itemId);
+    // Backend handles qty<1 → remove (cartController.js:196). Frontend just submits.
     setUpdatingQty(itemId);
     try {
       const updated = await api.cart.updateItem(itemId, newQty) as CartDTO;
@@ -103,7 +101,7 @@ export default function CartPage() {
     setTncAgreed(false);
   }
 
-  const hasStale = cart?.hasStaleItems ?? false;
+  const hasStale = Boolean(cart?.hasStaleItems);
 
   if (loading) return (
     <div className="max-w-4xl">
@@ -182,7 +180,7 @@ export default function CartPage() {
               </div>
             ))}
             {cart.items.map(item => {
-              const isStale = item.isStale ?? (!item.isAvailable && !item.isRequest);
+              const isStale = Boolean(item.isStale);
               const busyItem = removing === item.id || updatingQty === item.id || converting === item.id;
               const displayName = item.itemType === 'merch' ? item.productNameSnapshot : item.moduleName;
               const isMerch = item.itemType === 'merch';
@@ -191,7 +189,7 @@ export default function CartPage() {
                   ${isStale ? 'border-red-200 bg-red-50/30' : item.isRequest ? 'border-amber-200 bg-amber-50/20' : 'border-[var(--border-subtle)]'}`}>
                   <div className="bg-[var(--surface-sunken)] rounded-xl w-16 h-20 flex-shrink-0 flex items-center justify-center overflow-hidden">
                     {item.coverImageUrl ? (
-                      <Image src={storageUrl(item.coverImageUrl)} alt={displayName ?? ''} width={56} height={isMerch ? 56 : 72}
+                      <Image src={item.coverImageUrl} alt={displayName ?? ''} width={56} height={isMerch ? 56 : 72}
                         className={isMerch ? 'object-cover w-full h-full' : 'object-contain'} unoptimized />
                     ) : (
                       <svg className="w-7 h-7 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.25}>
@@ -213,7 +211,7 @@ export default function CartPage() {
                     <p className="text-sm font-medium text-[var(--foreground)] truncate">{displayName}</p>
                     {item.isPricePending
                       ? <p className="text-xs text-[var(--text-muted)] italic">Harga menyusul</p>
-                      : <p className="text-sm text-[var(--text-body)] tabular-nums">{formatIDR(item.priceSnapshot)} / eks</p>
+                      : <p className="text-sm text-[var(--text-body)] tabular-nums">{item.priceSnapshotDisplay} / eks</p>
                     }
                     {isStale && (
                       <div className="mt-2 flex items-center gap-2 flex-wrap">
@@ -261,7 +259,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex flex-col items-end gap-2 flex-shrink-0">
                     <span className="text-sm font-semibold text-[var(--foreground)] tabular-nums">
-                      {item.isPricePending ? '-' : formatIDR(item.subtotal)}
+                      {item.isPricePending ? '-' : item.subtotalDisplay}
                     </span>
                     <button
                       onClick={() => handleRemove(item.id)}
@@ -290,7 +288,7 @@ export default function CartPage() {
               <div className="space-y-2 mb-4 text-sm">
                 <div className="flex justify-between text-[var(--text-body)]">
                   <span>{cart.itemCount} modul</span>
-                  <span className="tabular-nums">{formatIDR(cart.subtotal)}</span>
+                  <span className="tabular-nums">{cart.subtotal_display}</span>
                 </div>
                 <div className="flex justify-between text-[var(--text-body)]">
                   <span>Ongkos kirim</span>
@@ -300,7 +298,7 @@ export default function CartPage() {
               <div className="border-t border-[var(--border-subtle)] pt-4 mb-5">
                 <div className="flex justify-between items-end font-bold">
                   <span className="text-[var(--foreground)]">Subtotal</span>
-                  <span className="text-2xl font-bold text-indigo-700 tabular-nums">{formatIDR(cart.subtotal)}</span>
+                  <span className="text-2xl font-bold text-indigo-700 tabular-nums">{cart.subtotal_display}</span>
                 </div>
               </div>
               {hasStale && (

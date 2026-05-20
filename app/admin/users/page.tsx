@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
-import { formatDate } from '@/lib/utils';
 import { AdminUserDTO } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -311,7 +310,7 @@ export default function AdminUsersPage() {
                     </button>
                   </td>
                   <td className="px-4 py-3 text-[var(--text-muted)] text-xs hidden lg:table-cell">
-                    {formatDate(u.created_at)}
+                    {u.created_at_display}
                   </td>
                 </tr>
               ))}

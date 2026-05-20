@@ -27,6 +27,8 @@ export interface ModuleSummaryDTO {
   cover_image_url: string | null;
   price_student: number;
   is_available: boolean;
+  // Backend-formatted strings (Phase 1 additive)
+  price_student_display?: string | null;
 }
 
 export interface ModuleDTO extends ModuleSummaryDTO {
@@ -37,6 +39,7 @@ export interface ModuleDTO extends ModuleSummaryDTO {
   weight_grams: number | null;
   has_multimedia: boolean;
   tbo_url: string | null;
+  price_general_display?: string | null;
   subject_modules?: Array<{
     subjects: {
       id: string;
@@ -76,6 +79,12 @@ export interface PackageDTO {
     modules: ModuleSummaryDTO;
   }>;
   totalPrice: number;
+  // Backend-derived (Phase 1 additive)
+  available_count?: number;
+  request_count?: number;
+  total_modules?: number;
+  summary_label?: string;
+  totalPrice_display?: string;
 }
 
 export interface ProductImageDTO {
@@ -104,6 +113,7 @@ export interface ProductSKUDTO {
   tokopedia_sku_id: string | null;
   price: number;
   option_names: string[];
+  price_display?: string | null;
 }
 
 export interface ProductDTO {
@@ -118,6 +128,8 @@ export interface ProductDTO {
   product_images?: ProductImageDTO[];
   product_variant_types?: ProductVariantTypeDTO[];
   product_skus?: ProductSKUDTO[];
+  // Backend-formatted (Phase 1 additive)
+  base_price_display?: string | null;
 }
 
 export interface CartItemDTO {
@@ -140,6 +152,26 @@ export interface CartItemDTO {
   isRequest: boolean;
   isStale?: boolean;
   isPricePending?: boolean;
+  // Backend-formatted (Phase 1 additive)
+  priceSnapshotDisplay?: string | null;
+  subtotalDisplay?: string | null;
+}
+
+export interface FeeLine {
+  key: 'shipping' | 'box' | 'admin';
+  label: string;
+  amount: number;
+  amount_display: string;
+  is_waived: boolean;
+  original_amount?: number;
+  original_amount_display?: string;
+}
+
+export interface TotalBreakdown {
+  subtotal_display: string;
+  fee_lines: FeeLine[];
+  unique_code_display: string | null;
+  total_display: string;
 }
 
 export interface CartDTO {
@@ -149,6 +181,15 @@ export interface CartDTO {
   subtotal: number;
   itemCount: number;
   hasStaleItems?: boolean;
+  // Backend-formatted (Phase 1 additive)
+  subtotal_display?: string;
+  total_breakdown?: TotalBreakdown;
+}
+
+export interface OrderStep {
+  key: string;
+  label: string;
+  state: 'completed' | 'current' | 'pending';
 }
 
 export interface OrderDTO {
@@ -178,6 +219,21 @@ export interface OrderDTO {
   can_cancel?: boolean;
   confirm_deadline?: string;
   confirm_deadline_is_urgent?: boolean;
+  // Backend-formatted (Phase 1 additive)
+  status_label?: string;
+  subtotal_display?: string;
+  shipping_cost_display?: string;
+  box_fee_display?: string;
+  admin_fee_display?: string;
+  total_amount_display?: string;
+  created_at_display?: string;
+  shipped_at_display?: string | null;
+  confirm_deadline_display?: string | null;
+  progress_percent?: number;
+  steps?: OrderStep[];
+  shipping_address_lines?: string[];
+  fee_lines?: FeeLine[];
+  total_breakdown?: TotalBreakdown;
 }
 
 export interface OrderItemDTO {
@@ -192,6 +248,11 @@ export interface OrderItemDTO {
   sku_id?: string | null;
   variant_label?: string | null;
   display_status?: 'normal' | 'rejected' | 'pending_request' | 'zero_price';
+  // Backend-formatted (Phase 1 additive)
+  unit_price_display?: string;
+  subtotal_display?: string;
+  request_status_label?: string | null;
+  price_visible?: boolean;
 }
 
 export interface PaymentDTO {
@@ -212,6 +273,13 @@ export interface PaymentDTO {
   invoice_path?: string | null;
   proof_uploaded_at?: string | null;
   unique_code?: number;
+  // Backend-formatted (Phase 1 additive)
+  payment_status_label?: string | null;
+  amount_display?: string | null;
+  unique_code_display?: string | null;
+  expires_at_display?: string | null;
+  paid_at_display?: string | null;
+  proof_uploaded_at_display?: string | null;
 }
 
 export interface UserProfileDTO {
@@ -248,6 +316,14 @@ export interface UserProfileDTO {
   salut_rejection_reason?: string | null;
   salut_approved_at?: string | null;
   programs?: { code: string; name: string } | null;
+  // Backend-derived (Phase 1 additive)
+  is_member?: boolean;
+  is_pending?: boolean;
+  shipping_address_display?: string | null;
+  shipping_address_lines?: string[];
+  salut_approved_at_display?: string | null;
+  salut_applied_at_display?: string | null;
+  salut_applied_fee_amount_display?: string | null;
 }
 
 export interface AdminSalutApplicationDTO {
@@ -261,6 +337,9 @@ export interface AdminSalutApplicationDTO {
   salut_applied_fee_amount: string | null;
   salut_applied_semester: number | null;
   programs: { code: string; name: string } | null;
+  // Backend-formatted (Phase 1 additive)
+  salut_applied_at_display?: string | null;
+  salut_applied_fee_amount_display?: string | null;
 }
 
 export interface AdminUserDTO {
@@ -275,6 +354,8 @@ export interface AdminUserDTO {
   is_verified: boolean;
   created_at: string;
   programs?: { code: string; name: string } | null;
+  // Backend-formatted (Phase 1 additive)
+  created_at_display?: string | null;
 }
 
 export interface ScraperRunDTO {
@@ -287,6 +368,9 @@ export interface ScraperRunDTO {
   modules_removed: number;
   error_message: string | null;
   triggered_by: 'cron' | 'manual' | 'prefix-manual' | 'scheduled';
+  // Backend-formatted (Phase 1 additive)
+  started_at_display?: string | null;
+  finished_at_display?: string | null;
 }
 
 // Request types

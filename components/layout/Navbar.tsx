@@ -18,7 +18,7 @@ export default function Navbar() {
   const navLinks = [
     { href: '/modules', label: 'Semua Modul' },
     { href: '/program', label: 'Program Studi' },
-    { href: '/packages', label: 'Paket Semester' },
+    { href: '/packages', label: 'Paket Modul' },
     { href: '/panduan', label: 'Panduan' },
     { href: '/toko', label: 'Toko' },
     { href: '/salut', label: 'SALUT' },

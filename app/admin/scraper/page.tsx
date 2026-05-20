@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
-import { formatDate } from '@/lib/utils';
 import { ScraperRunDTO } from '@/types';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -121,7 +120,7 @@ export default function AdminScraperPage() {
                     </span>
                     <span className="text-xs text-[var(--text-body)]">{run.triggered_by}</span>
                   </div>
-                  <p className="text-sm text-[var(--text-body)]">{formatDate(run.started_at)}</p>
+                  <p className="text-sm text-[var(--text-body)]">{run.started_at_display}</p>
                   {run.error_message && (
                     <p className="text-xs text-red-500 mt-1 truncate">{run.error_message}</p>
                   )}
