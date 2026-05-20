@@ -207,6 +207,7 @@ export default function SalutApplicationsPage() {
                 <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)]">Nama</th>
                 <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)]">NIM</th>
                 <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)] hidden md:table-cell">Program</th>
+                <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)] hidden md:table-cell">Biaya</th>
                 <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)] hidden lg:table-cell">Tanggal Daftar</th>
                 <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)]">Bukti</th>
                 {tab === 'pending' && <th className="px-4 py-3 text-right font-semibold text-[var(--foreground)]">Aksi</th>}
@@ -237,6 +238,18 @@ export default function SalutApplicationsPage() {
                     <td className="px-4 py-3 hidden md:table-cell text-[var(--text-body)]">
                       {app.programs?.code ?? '-'}
                       {app.current_semester && <span className="ml-1 text-[var(--text-muted)]">Sem {app.current_semester}</span>}
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell text-[var(--text-body)] text-xs tabular-nums">
+                      {app.salut_applied_fee_amount ? (
+                        <>
+                          <span className="font-semibold">NT$ {Number(app.salut_applied_fee_amount).toLocaleString('zh-TW')}</span>
+                          {app.salut_applied_semester != null && (
+                            <span className="ml-1 text-[var(--text-muted)]">(sem {app.salut_applied_semester})</span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-[var(--text-muted)]">-</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell text-[var(--text-body)] text-xs">
                       {formatDate(app.salut_applied_at)}

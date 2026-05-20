@@ -258,6 +258,8 @@ export interface AdminSalutApplicationDTO {
   current_semester: number | null;
   salut_applied_at: string;
   salut_payment_proof_url: string;
+  salut_applied_fee_amount: string | null;
+  salut_applied_semester: number | null;
   programs: { code: string; name: string } | null;
 }
 
@@ -269,6 +271,7 @@ export interface AdminUserDTO {
   phone: string | null;
   current_semester: number | null;
   is_salut: boolean;
+  salut_status?: string;
   is_verified: boolean;
   created_at: string;
   programs?: { code: string; name: string } | null;

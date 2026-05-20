@@ -296,10 +296,18 @@ export default function AdminUsersPage() {
                         'text-xs font-semibold px-2.5 py-1 rounded-full border transition-[background-color,color,border-color,opacity] duration-150 disabled:opacity-50',
                         u.is_salut
                           ? 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100'
-                          : 'bg-[var(--surface-sunken)] text-[var(--text-muted)] border-[var(--border)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]'
+                          : u.salut_status === 'expired'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                            : 'bg-[var(--surface-sunken)] text-[var(--text-muted)] border-[var(--border)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]'
                       )}
                     >
-                      {toggling === u.id ? '...' : u.is_salut ? 'SALUT' : 'Non-SALUT'}
+                      {toggling === u.id
+                        ? '...'
+                        : u.is_salut
+                          ? 'SALUT'
+                          : u.salut_status === 'expired'
+                            ? 'Expired'
+                            : 'Non-SALUT'}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-[var(--text-muted)] text-xs hidden lg:table-cell">
