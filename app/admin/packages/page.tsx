@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import type { PackageDTO } from '@/types';
 
 export default function AdminPackagesPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [packages, setPackages] = useState<any[]>([]);
+  const [packages, setPackages] = useState<PackageDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ linked: number; packages: number } | null>(null);
@@ -21,7 +22,7 @@ export default function AdminPackagesPage() {
 
   useEffect(() => {
     if (user?.role !== 'admin') return;
-    api.packages.list().then((data: any) => setPackages(data)).finally(() => setLoading(false));
+    api.packages.list().then(data => setPackages(data)).finally(() => setLoading(false));
   }, [user]);
 
   async function handleSync() {
@@ -32,10 +33,10 @@ export default function AdminPackagesPage() {
       const result = await api.packages.sync();
       setSyncResult(result);
       // Reload package list
-      const data: any = await api.packages.list();
+      const data = await api.packages.list();
       setPackages(data);
-    } catch (e: any) {
-      setSyncError(e.message || 'Gagal sinkronisasi');
+    } catch (e: unknown) {
+      setSyncError(e instanceof Error ? e.message : 'Gagal sinkronisasi');
     } finally {
       setSyncing(false);
     }

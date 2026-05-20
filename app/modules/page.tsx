@@ -20,7 +20,7 @@ export default function ModulesPage() {
   useEffect(() => {
     setLoading(true);
     setError(false);
-    api.modules.list(page, LIMIT).then((data: any) => {
+    api.modules.list(page, LIMIT).then(data => {
       setModules(data.data || []);
       setTotal(data.total || 0);
     }).catch(() => setError(true)).finally(() => setLoading(false));
@@ -35,7 +35,7 @@ export default function ModulesPage() {
     }
     setSearching(true);
     searchTimeout.current = setTimeout(() => {
-      api.modules.search(q).then((data: any) => {
+      api.modules.search(q).then(data => {
         setSearchResults(data);
       }).catch(() => setSearchResults([])).finally(() => setSearching(false));
     }, 400);
@@ -72,7 +72,7 @@ export default function ModulesPage() {
         <div className="flex flex-col items-center gap-4 py-20 text-center">
           <p className="text-[var(--text-muted)]">Gagal memuat modul.</p>
           <button
-            onClick={() => { setPage(1); setError(false); setLoading(true); api.modules.list(1, LIMIT).then((data: any) => { setModules(data.data || []); setTotal(data.total || 0); }).catch(() => setError(true)).finally(() => setLoading(false)); }}
+            onClick={() => { setPage(1); setError(false); setLoading(true); api.modules.list(1, LIMIT).then(data => { setModules(data.data || []); setTotal(data.total || 0); }).catch(() => setError(true)).finally(() => setLoading(false)); }}
             className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
           >
             Coba lagi

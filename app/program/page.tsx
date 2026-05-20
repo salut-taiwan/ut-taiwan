@@ -43,14 +43,14 @@ function ProgramPageContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.catalog.getFaculties().then((data: any) => setFaculties(data)).catch(() => {});
+    api.catalog.getFaculties().then(data => setFaculties(data)).catch(() => {});
   }, []);
 
   useEffect(() => {
     setLoading(true);
     // Backend resolves facultyCode -> facultyId, eliminating client-side join.
     api.catalog.getPrograms(undefined, selectedFaculty || undefined)
-      .then((data: any) => setPrograms(data))
+      .then(data => setPrograms(data))
       .finally(() => setLoading(false));
   }, [selectedFaculty]);
 

@@ -23,7 +23,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const refreshCart = useCallback(async () => {
     if (!user) { setCartCount(0); return; }
-    const cart: any = await api.cart.get().catch(() => null);
+    const cart = await api.cart.get().catch(() => null);
     setCartCount(cart?.itemCount || 0);
   }, [user]);
 

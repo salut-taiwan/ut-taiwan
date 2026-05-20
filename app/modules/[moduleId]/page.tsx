@@ -8,10 +8,11 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
+import type { ModuleDTO } from '@/types';
 
 export default function ModuleDetailPage() {
   const { moduleId } = useParams<{ moduleId: string }>();
-  const [module, setModule] = useState<any>(null);
+  const [module, setModule] = useState<ModuleDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
@@ -28,6 +29,7 @@ export default function ModuleDetailPage() {
 
   async function handleAddToCart() {
     if (!user) { window.location.href = '/login'; return; }
+    if (!module) return;
     setAdding(true);
     try {
       await api.cart.addItem(module.id);
@@ -35,8 +37,8 @@ export default function ModuleDetailPage() {
       incrementCart(1);
       showToast(module.is_available ? 'Modul ditambahkan ke keranjang!' : 'Modul ditambahkan sebagai permintaan!');
       setTimeout(() => setAdded(false), 3000);
-    } catch (err: any) {
-      showToast(err.message || 'Gagal menambahkan ke keranjang', 'error');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Gagal menambahkan ke keranjang', 'error');
     } finally {
       setAdding(false);
     }
@@ -61,7 +63,7 @@ export default function ModuleDetailPage() {
   );
   if (!module) return <div className="text-center py-16 text-red-500">Modul tidak ditemukan</div>;
 
-  const usedInSubjects = (module.subject_modules || []).map((sm: any) => sm.subjects).filter(Boolean);
+  const usedInSubjects = (module.subject_modules || []).map(sm => sm.subjects).filter(Boolean);
 
   return (
     <div className="max-w-4xl">
@@ -183,7 +185,7 @@ export default function ModuleDetailPage() {
           <div className="border-t border-[var(--border-subtle)] px-6 py-5">
             <h2 className="font-semibold text-[var(--foreground)] mb-3">Digunakan untuk Mata Kuliah</h2>
             <div className="space-y-0">
-              {usedInSubjects.map((subject: any) => (
+              {usedInSubjects.map(subject => (
                 <div key={subject.id}
                   className="flex items-center justify-between text-sm py-2.5 border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--surface-sunken)] rounded-lg px-2 -mx-2 transition-colors duration-100">
                   <div className="flex items-center gap-2">

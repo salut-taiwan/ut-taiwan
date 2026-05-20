@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, type BankOption } from '@/lib/api';
+import type { ProgramDTO } from '@/types';
 
 const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
 const selectClass = inputClass;
@@ -29,7 +30,7 @@ export default function RegisterPage() {
     bank_ntd_code: '', bank_ntd_name: '', bank_ntd_account: '',
     bank_idr_name: '', bank_idr_account: '',
   });
-  const [programs, setPrograms] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<ProgramDTO[]>([]);
   const [ntdBanks, setNtdBanks] = useState<BankOption[]>([]);
   const [idrBanks, setIdrBanks] = useState<BankOption[]>([]);
   const [error, setError] = useState('');
@@ -37,7 +38,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    api.catalog.getPrograms().then((data: any) => setPrograms(data)).catch(() => {});
+    api.catalog.getPrograms().then(data => setPrograms(data)).catch(() => {});
     api.config.getBanks('NTD').then(r => setNtdBanks(r.banks)).catch(() => {});
     api.config.getBanks('IDR').then(r => setIdrBanks(r.banks)).catch(() => {});
   }, []);
@@ -74,8 +75,8 @@ export default function RegisterPage() {
         bank_idr_account: form.bank_idr_account || undefined,
       });
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.message || 'Gagal mendaftar');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Gagal mendaftar');
     } finally {
       setLoading(false);
     }
@@ -187,7 +188,7 @@ export default function RegisterPage() {
                     <select name="program_id" value={form.program_id} onChange={handleChange} required
                       className={selectClass}>
                       <option value="">Pilih Program Studi</option>
-                      {programs.map((p: any) => (
+                      {programs.map(p => (
                         <option key={p.id} value={p.id}>{p.name}</option>
                       ))}
                     </select>

@@ -5,6 +5,39 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, type FeesConfig, type BankOption } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import type { ProgramDTO, UserProfileDTO } from '@/types';
+
+interface ProfileForm {
+  name: string;
+  nim: string;
+  phone: string;
+  program_id: string;
+  current_semester: string;
+  birth_place: string;
+  birth_date: string;
+  address_zh_city: string;
+  address_zh_district: string;
+  address_zh_road: string;
+  address_zh_number: string;
+  address_zh_floor: string;
+  postal_code: string;
+  bank_ntd_code: string;
+  bank_ntd_name: string;
+  bank_ntd_account: string;
+  bank_idr_name: string;
+  bank_idr_account: string;
+}
+
+const EMPTY_FORM: ProfileForm = {
+  name: '', nim: '', phone: '',
+  program_id: '', current_semester: '',
+  birth_place: '', birth_date: '',
+  address_zh_city: '', address_zh_district: '',
+  address_zh_road: '', address_zh_number: '', address_zh_floor: '',
+  postal_code: '',
+  bank_ntd_code: '', bank_ntd_name: '', bank_ntd_account: '',
+  bank_idr_name: '', bank_idr_account: '',
+};
 
 const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
 const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
@@ -21,15 +54,15 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const [fees, setFees] = useState<FeesConfig | null>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [programs, setPrograms] = useState<any[]>([]);
+  const [profile, setProfile] = useState<UserProfileDTO | null>(null);
+  const [programs, setPrograms] = useState<ProgramDTO[]>([]);
   const [ntdBanks, setNtdBanks] = useState<BankOption[]>([]);
   const [idrBanks, setIdrBanks] = useState<BankOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [form, setForm] = useState<any>({});
+  const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
 
   useEffect(() => {
     if (authLoading) return;
@@ -37,7 +70,7 @@ export default function ProfilePage() {
     api.config.getFees().then(setFees).catch(() => {});
     api.config.getBanks('NTD').then(r => setNtdBanks(r.banks)).catch(() => {});
     api.config.getBanks('IDR').then(r => setIdrBanks(r.banks)).catch(() => {});
-    Promise.all([api.auth.getMe(), api.catalog.getPrograms()]).then(([p, progs]: any[]) => {
+    Promise.all([api.auth.getMe(), api.catalog.getPrograms()]).then(([p, progs]) => {
       setProfile(p);
       setPrograms(progs);
       setForm({
@@ -45,7 +78,7 @@ export default function ProfilePage() {
         nim: p.nim || '',
         phone: p.phone || '',
         program_id: p.program_id || '',
-        current_semester: p.current_semester || '',
+        current_semester: p.current_semester != null ? String(p.current_semester) : '',
         birth_place: p.birth_place || '',
         birth_date: p.birth_date || '',
         address_zh_city: p.address_zh_city || '',
@@ -64,7 +97,7 @@ export default function ProfilePage() {
   }, [authLoading, user, router]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
-    setForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
+    setForm(f => ({ ...f, [e.target.name as keyof ProfileForm]: e.target.value }));
   }
 
   // Backend resolves bank name from code on updateMe; frontend just submits code.
@@ -73,12 +106,13 @@ export default function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.auth.updateMe(form);
+      const payload: Record<string, unknown> = { ...form };
+      await api.auth.updateMe(payload);
       setSaved(true);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => setSaved(false), 3000);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Gagal menyimpan profil');
     } finally {
       setSaving(false);
     }
@@ -239,7 +273,7 @@ export default function ProfilePage() {
               <label className={labelClass}>Program Studi</label>
               <select name="program_id" value={form.program_id} onChange={handleChange} className={inputClass}>
                 <option value="">Pilih Program Studi</option>
-                {programs.map((p: any) => (
+                {programs.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>

@@ -21,7 +21,7 @@ export default function PackagesPage() {
   const { refreshCart } = useCart();
 
   useEffect(() => {
-    api.catalog.getPrograms().then((data: any) => setPrograms(data));
+    api.catalog.getPrograms().then(data => setPrograms(data));
   }, []);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function PackagesPage() {
     api.packages.list(
       selectedProgram || undefined,
       selectedSemester ? parseInt(selectedSemester) : undefined
-    ).then((data: any) => setPackages(data)).catch(() => setError(true)).finally(() => setLoading(false));
+    ).then(data => setPackages(data)).catch(() => setError(true)).finally(() => setLoading(false));
   }, [selectedProgram, selectedSemester]);
 
   async function handleAddPackage(pkg: PackageDTO) {
@@ -40,8 +40,8 @@ export default function PackagesPage() {
       await api.cart.addPackage(pkg.id);
       await refreshCart();
       showToast(`Paket ditambahkan. ${pkg.summary_label ?? ''}`);
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Gagal menambahkan paket', 'error');
     } finally {
       setAdding(null);
     }
@@ -95,7 +95,7 @@ export default function PackagesPage() {
         <div className="text-center py-16">
           <p className="text-[var(--text-muted)] mb-4">Gagal memuat paket. Coba lagi.</p>
           <button
-            onClick={() => { setError(false); setLoading(true); api.packages.list(selectedProgram || undefined, selectedSemester ? parseInt(selectedSemester) : undefined).then((data: any) => setPackages(data)).catch(() => setError(true)).finally(() => setLoading(false)); }}
+            onClick={() => { setError(false); setLoading(true); api.packages.list(selectedProgram || undefined, selectedSemester ? parseInt(selectedSemester) : undefined).then(data => setPackages(data)).catch(() => setError(true)).finally(() => setLoading(false)); }}
             className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
           >
             Muat Ulang

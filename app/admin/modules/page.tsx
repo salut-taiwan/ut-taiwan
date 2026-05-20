@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import type { ModuleDTO } from '@/types';
 
 const EMPTY_FORM = {
   tbo_code: '', name: '', price_student: '', price_general: '',
@@ -16,7 +17,7 @@ const EMPTY_FORM = {
 export default function AdminModulesPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [modules, setModules] = useState<any[]>([]);
+  const [modules, setModules] = useState<ModuleDTO[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -36,8 +37,8 @@ export default function AdminModulesPage() {
 
   function fetchModules() {
     setLoading(true);
-    api.modules.list(page, LIMIT).then((data: any) => {
-      setModules(data.data || []);
+    api.modules.list(page, LIMIT).then(data => {
+      setModules((data.data as ModuleDTO[]) || []);
       setTotal(data.total || 0);
     }).finally(() => setLoading(false));
   }

@@ -1,4 +1,18 @@
-import type { AdminSalutApplicationDTO, AdminUserDTO, CartDTO, OrderDTO, ProductDTO, ScraperRunDTO, UserProfileDTO } from '@/types';
+import type {
+  AdminSalutApplicationDTO,
+  AdminUserDTO,
+  CartDTO,
+  FacultyDTO,
+  ModuleDTO,
+  ModuleSummaryDTO,
+  OrderDTO,
+  PackageDTO,
+  ProductDTO,
+  ProgramDTO,
+  ScraperRunDTO,
+  SubjectDTO,
+  UserProfileDTO,
+} from '@/types';
 
 export interface RenewalPolicy {
   resetMonth: number;
@@ -188,24 +202,26 @@ export const api = {
       apiFetch('/auth/me', { method: 'PUT', body: JSON.stringify(body) }),
   },
   catalog: {
-    getFaculties: () => apiFetch('/catalog/faculties'),
-    getProgramsByFaculty: (facultyId: string) => apiFetch(`/catalog/faculties/${facultyId}/programs`),
+    getFaculties: () => apiFetch<FacultyDTO[]>('/catalog/faculties'),
+    getProgramsByFaculty: (facultyId: string) =>
+      apiFetch<ProgramDTO[]>(`/catalog/faculties/${facultyId}/programs`),
     getPrograms: (facultyId?: string, facultyCode?: string) => {
       const qs = new URLSearchParams();
       if (facultyId) qs.set('facultyId', facultyId);
       if (facultyCode) qs.set('facultyCode', facultyCode);
       const q = qs.toString();
-      return apiFetch(`/catalog/programs${q ? '?' + q : ''}`);
+      return apiFetch<ProgramDTO[]>(`/catalog/programs${q ? '?' + q : ''}`);
     },
-    getProgram: (id: string) => apiFetch(`/catalog/programs/${id}`),
+    getProgram: (id: string) => apiFetch<ProgramDTO>(`/catalog/programs/${id}`),
     getSubjects: (programId: string, semester?: number) =>
-      apiFetch(`/catalog/programs/${programId}/subjects${semester ? `?semester=${semester}` : ''}`),
-    getSubject: (id: string) => apiFetch(`/catalog/subjects/${id}`),
+      apiFetch<SubjectDTO[]>(`/catalog/programs/${programId}/subjects${semester ? `?semester=${semester}` : ''}`),
+    getSubject: (id: string) => apiFetch<SubjectDTO>(`/catalog/subjects/${id}`),
   },
   modules: {
-    list: (page = 1, limit = 20) => apiFetch(`/modules?page=${page}&limit=${limit}`),
-    search: (q: string) => apiFetch(`/modules/search?q=${encodeURIComponent(q)}`),
-    get: (id: string) => apiFetch(`/modules/${id}`),
+    list: (page = 1, limit = 20) =>
+      apiFetch<{ data: ModuleSummaryDTO[]; total: number }>(`/modules?page=${page}&limit=${limit}`),
+    search: (q: string) => apiFetch<ModuleSummaryDTO[]>(`/modules/search?q=${encodeURIComponent(q)}`),
+    get: (id: string) => apiFetch<ModuleDTO>(`/modules/${id}`),
     create: (body: object) => apiFetch('/modules', { method: 'POST', body: JSON.stringify(body) }),
   },
   packages: {
@@ -213,25 +229,25 @@ export const api = {
       const params = new URLSearchParams();
       if (programId) params.set('programId', programId);
       if (semester) params.set('semester', String(semester));
-      return apiFetch(`/packages?${params}`);
+      return apiFetch<PackageDTO[]>(`/packages?${params}`);
     },
-    get: (id: string) => apiFetch(`/packages/${id}`),
+    get: (id: string) => apiFetch<PackageDTO>(`/packages/${id}`),
     sync: () => apiFetch<{ linked: number; packages: number }>('/packages/sync', { method: 'POST' }),
   },
   cart: {
     get: () => apiFetch<CartDTO>('/cart'),
     addItem: (moduleId: string, quantity = 1) =>
-      apiFetch('/cart/items', { method: 'POST', body: JSON.stringify({ moduleId, quantity }) }),
+      apiFetch<CartDTO>('/cart/items', { method: 'POST', body: JSON.stringify({ moduleId, quantity }) }),
     addPackage: (packageId: string) =>
-      apiFetch('/cart/packages', { method: 'POST', body: JSON.stringify({ packageId }) }),
+      apiFetch<CartDTO>('/cart/packages', { method: 'POST', body: JSON.stringify({ packageId }) }),
     addMerch: (skuId: string, quantity = 1) =>
       apiFetch<CartDTO>('/cart/merch', { method: 'POST', body: JSON.stringify({ skuId, quantity }) }),
     updateItem: (itemId: string, quantity: number) =>
-      apiFetch(`/cart/items/${itemId}`, { method: 'PUT', body: JSON.stringify({ quantity }) }),
+      apiFetch<CartDTO>(`/cart/items/${itemId}`, { method: 'PUT', body: JSON.stringify({ quantity }) }),
     convertToRequest: (itemId: string) =>
       apiFetch<CartDTO>(`/cart/items/${itemId}/convert-to-request`, { method: 'PATCH' }),
     removeItem: (itemId: string) =>
-      apiFetch(`/cart/items/${itemId}`, { method: 'DELETE' }),
+      apiFetch<CartDTO>(`/cart/items/${itemId}`, { method: 'DELETE' }),
     clear: () => apiFetch('/cart', { method: 'DELETE' }),
   },
   orders: {
@@ -253,7 +269,7 @@ export const api = {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: fd,
       }).then(async r => {
-        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e as any).error || 'Upload gagal'); }
+        if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
       });
     },
     viewProof: async (orderId: string): Promise<string> => {
@@ -276,7 +292,7 @@ export const api = {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: fd,
       }).then(async r => {
-        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e as any).error || 'Upload gagal'); }
+        if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
         return r.json();
       });
     },
@@ -295,10 +311,10 @@ export const api = {
       apiFetch<{ currency: string; banks: BankOption[] }>(`/config/banks?currency=${currency}`),
   },
   scraper: {
-    run: () => apiFetch('/scraper/run', { method: 'POST' }),
-    runPrefixes: () => apiFetch('/scraper/run-prefixes', { method: 'POST' }),
+    run: () => apiFetch<{ runId: string }>('/scraper/run', { method: 'POST' }),
+    runPrefixes: () => apiFetch<{ runId: string }>('/scraper/run-prefixes', { method: 'POST' }),
     getRuns: () => apiFetch<ScraperRunDTO[]>('/scraper/runs'),
-    getRun: (id: string) => apiFetch(`/scraper/runs/${id}`),
+    getRun: (id: string) => apiFetch<ScraperRunDTO>(`/scraper/runs/${id}`),
   },
   admin: {
     listOrders: () => apiFetch<OrderDTO[]>('/orders/admin/all'),
@@ -322,7 +338,7 @@ export const api = {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: fd,
       }).then(async r => {
-        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e as any).error || 'Upload gagal'); }
+        if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
       });
     },
     viewInvoice: async (orderId: string): Promise<string> => {

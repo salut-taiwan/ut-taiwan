@@ -27,7 +27,7 @@ export default function AdminScraperPage() {
   }, [user, isLoading, router]);
 
   async function loadRuns() {
-    api.scraper.getRuns().then((data: any) => setRuns(data)).finally(() => setLoading(false));
+    api.scraper.getRuns().then(data => setRuns(data)).finally(() => setLoading(false));
   }
 
   useEffect(() => {
@@ -38,12 +38,12 @@ export default function AdminScraperPage() {
     setTriggering(true);
     setTriggerMessage('');
     try {
-      const result: any = await api.scraper.run();
+      const result = await api.scraper.run();
       setTriggerMessage(`Scraper dimulai! Run ID: ${result.runId}`);
       // Reload runs after a moment
       setTimeout(loadRuns, 2000);
-    } catch (err: any) {
-      setTriggerMessage(`Error: ${err.message}`);
+    } catch (err: unknown) {
+      setTriggerMessage(`Error: ${err instanceof Error ? err.message : 'Gagal memulai scraper'}`);
     } finally {
       setTriggering(false);
     }
@@ -53,11 +53,11 @@ export default function AdminScraperPage() {
     setTriggeringPrefix(true);
     setTriggerMessage('');
     try {
-      const result: any = await api.scraper.runPrefixes();
+      const result = await api.scraper.runPrefixes();
       setTriggerMessage(`Scraper prefix dimulai! Run ID: ${result.runId}`);
       setTimeout(loadRuns, 2000);
-    } catch (err: any) {
-      setTriggerMessage(`Error: ${err.message}`);
+    } catch (err: unknown) {
+      setTriggerMessage(`Error: ${err instanceof Error ? err.message : 'Gagal memulai scraper'}`);
     } finally {
       setTriggeringPrefix(false);
     }

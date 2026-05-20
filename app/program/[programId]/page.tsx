@@ -30,7 +30,7 @@ export default function ProgramDetailPage() {
     Promise.all([
       api.catalog.getProgram(programId),
       api.catalog.getSubjects(programId),
-    ]).then(([prog, subs]: any[]) => {
+    ]).then(([prog, subs]) => {
       setProgram(prog);
       setSubjects(subs);
     }).finally(() => setLoading(false));
@@ -73,7 +73,7 @@ export default function ProgramDetailPage() {
     if (!user) { window.location.href = '/login'; return; }
     setAddingModule(moduleId);
     try {
-      const cart = await api.cart.addItem(moduleId) as any;
+      const cart = await api.cart.addItem(moduleId);
       syncCartCount(cart.itemCount);
       showToast(isRequest ? 'Modul ditambahkan sebagai permintaan!' : 'Modul ditambahkan ke keranjang!');
     } catch (err) {

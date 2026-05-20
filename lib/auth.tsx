@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token) {
       if (expiresAt) scheduleTimers(Number(expiresAt));
       api.auth.getMe()
-        .then((profile: any) => setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, is_salut_active: profile.is_salut_active ?? false, salut_status: profile.salut_status ?? 'none', is_verified: profile.is_verified ?? false }))
+        .then(profile => setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, is_salut_active: profile.is_salut_active ?? false, salut_status: profile.salut_status ?? 'none', is_verified: profile.is_verified ?? false }))
         .catch(() => {
           localStorage.removeItem('ut_token');
           localStorage.removeItem('ut_refresh_token');
@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     pollRef.current = setInterval(async () => {
       try {
-        const profile: any = await api.auth.getMe();
+        const profile = await api.auth.getMe();
         const freshSalut = profile.is_salut ?? false;
         const freshActive = profile.is_salut_active ?? false;
         const freshStatus = profile.salut_status ?? 'none';
@@ -135,13 +135,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id]);
 
   async function login(email: string, password: string) {
-    const data = await api.auth.login({ email, password }) as any;
+    const data = await api.auth.login({ email, password });
     localStorage.setItem('ut_token', data.token);
     localStorage.setItem('ut_refresh_token', data.refreshToken);
     localStorage.setItem('ut_expires_at', String(data.expiresAt));
     scheduleTimers(data.expiresAt);
     try {
-      const profile: any = await api.auth.getMe();
+      const profile = await api.auth.getMe();
       setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, is_salut_active: profile.is_salut_active ?? false, salut_status: profile.salut_status ?? 'none', is_verified: profile.is_verified ?? false });
     } catch {
       localStorage.removeItem('ut_token');
