@@ -28,7 +28,12 @@ export default function CartPage() {
   const router = useRouter();
 
   async function loadCart() {
-    api.cart.get().then((data: any) => setCart(data)).catch(() => {}).finally(() => setLoading(false));
+    try {
+      const data = await api.cart.get();
+      setCart(data);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -86,8 +91,8 @@ export default function CartPage() {
     if (!confirm('Kosongkan semua isi keranjang?')) return;
     setClearing(true);
     try {
-      await api.cart.clear();
-      await loadCart();
+      const updated = await api.cart.clear() as CartDTO;
+      setCart(updated);
       await refreshCart();
     } catch {
       showToast('Gagal mengosongkan keranjang, coba lagi.', 'error');
