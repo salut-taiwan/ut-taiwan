@@ -15,11 +15,15 @@ export default function SalutPage() {
     api.config.getFees().then(setFees).catch(() => {});
   }, []);
 
+  const tierLabel = fees
+    ? `NT$ ${fees.salutMembership.new.toLocaleString('zh-TW')} (semester 1) atau NT$ ${fees.salutMembership.returning.toLocaleString('zh-TW')} (semester 2+)`
+    : '...';
+
   const steps = [
     {
       n: '1',
       title: 'Transfer Biaya Keanggotaan',
-      desc: `Transfer ${fees ? formatIDR(fees.membershipFee) : '...'} ke rekening atau QRIS SALUT di bawah.`,
+      desc: `Transfer ${tierLabel} ke rekening atau QRIS SALUT di bawah.`,
     },
     {
       n: '2',
@@ -34,7 +38,7 @@ export default function SalutPage() {
   ];
 
   const [qrisOpen, setQrisOpen] = useState(false);
-  const isMember = user?.is_salut;
+  const isMember = user?.is_salut_active;
   const isPending = !isMember && user?.salut_status === 'pending';
 
   return (
@@ -107,7 +111,17 @@ export default function SalutPage() {
           <div className="flex-1 space-y-3 text-sm">
             <div>
               <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Jumlah Transfer</p>
-              <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">{fees ? formatIDR(fees.membershipFee) : '...'}</p>
+              {fees ? (
+                <>
+                  <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">NT$ {fees.salutMembership.new.toLocaleString('zh-TW')}</p>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">Mahasiswa baru (semester 1)</p>
+                  <p className="text-2xl font-extrabold text-indigo-700 tabular-nums mt-2">NT$ {fees.salutMembership.returning.toLocaleString('zh-TW')}</p>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">Mahasiswa lama (semester 2+)</p>
+                  {fees.salutMembership.renewalPolicy.notice && (
+                    <p className="text-xs italic text-[var(--text-muted)] mt-3">{fees.salutMembership.renewalPolicy.notice}</p>
+                  )}
+                </>
+              ) : <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">...</p>}
             </div>
             <div>
               <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Berita / Catatan Transfer</p>

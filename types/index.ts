@@ -242,7 +242,8 @@ export interface UserProfileDTO {
   role: 'student' | 'admin';
   is_verified: boolean;
   is_salut?: boolean;
-  salut_status?: 'none' | 'pending' | 'approved' | 'rejected';
+  is_salut_active?: boolean;
+  salut_status?: 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
   salut_applied_at?: string | null;
   salut_rejection_reason?: string | null;
   salut_approved_at?: string | null;

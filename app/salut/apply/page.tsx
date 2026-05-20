@@ -16,9 +16,10 @@ export default function SalutApplyPage() {
   const router = useRouter();
 
   const [fees, setFees] = useState<FeesConfig | null>(null);
-  const [status, setStatus] = useState<'loading' | 'none' | 'pending' | 'approved' | 'rejected'>('loading');
+  const [status, setStatus] = useState<'loading' | 'none' | 'pending' | 'approved' | 'rejected' | 'expired'>('loading');
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [appliedAt, setAppliedAt] = useState<string | null>(null);
+  const [currentSemester, setCurrentSemester] = useState<number | ''>('');
 
   const [qrisOpen, setQrisOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -36,11 +37,23 @@ export default function SalutApplyPage() {
     }
     api.config.getFees().then(setFees).catch(() => {});
     api.salut.getStatus().then(s => {
-      setStatus((s.is_salut || s.salut_status === 'approved') ? 'approved' : (s.salut_status as 'none' | 'pending' | 'approved' | 'rejected') || 'none');
+      // Only block as 'approved' when the membership is currently active (not stale from a past cycle).
+      const eligibleStatus: 'none' | 'pending' | 'approved' | 'rejected' | 'expired' =
+        s.is_salut_active
+          ? 'approved'
+          : ((s.salut_status as 'none' | 'pending' | 'approved' | 'rejected' | 'expired') || 'none');
+      setStatus(eligibleStatus);
       setRejectionReason(s.salut_rejection_reason);
       setAppliedAt(s.salut_applied_at);
     }).catch(() => setStatus('none'));
+    api.auth.getMe().then((profile: { current_semester?: number | null }) => {
+      if (typeof profile.current_semester === 'number') setCurrentSemester(profile.current_semester);
+    }).catch(() => {});
   }, [user, isLoading, router]);
+
+  const tieredAmount = fees && currentSemester
+    ? (currentSemester === 1 ? fees.salutMembership.new : fees.salutMembership.returning)
+    : null;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     setFileError(null);
@@ -66,10 +79,14 @@ export default function SalutApplyPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!file) return;
+    if (!currentSemester) {
+      setFileError('Pilih semester saat ini terlebih dahulu.');
+      return;
+    }
     setUploading(true);
     try {
       const { url } = await api.salut.uploadProof(file);
-      await api.salut.apply(url);
+      await api.salut.apply(url, Number(currentSemester));
       setSubmitted(true);
       setStatus('pending');
     } catch (err) {
@@ -169,8 +186,30 @@ export default function SalutApplyPage() {
         <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 1: Lakukan Pembayaran</h2>
         <div className="space-y-3 text-sm mb-5">
           <div>
+            <label className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1 block" htmlFor="semester-select">Semester Saat Ini</label>
+            <select
+              id="semester-select"
+              value={currentSemester}
+              onChange={e => setCurrentSemester(e.target.value === '' ? '' : Number(e.target.value))}
+              required
+              className="w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm bg-[var(--surface)] focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]"
+            >
+              <option value="">Pilih semester</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+                <option key={n} value={n}>Semester {n}</option>
+              ))}
+            </select>
+          </div>
+          <div>
             <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Jumlah Transfer</p>
-            <p className="text-xl font-extrabold text-indigo-700 tabular-nums">{fees ? formatIDR(fees.membershipFee) : '...'}</p>
+            <p className="text-xl font-extrabold text-indigo-700 tabular-nums">
+              {tieredAmount !== null ? `NT$ ${tieredAmount.toLocaleString('zh-TW')}` : '...'}
+            </p>
+            {currentSemester !== '' && (
+              <p className="text-xs text-[var(--text-muted)] mt-1">
+                {currentSemester === 1 ? 'Mahasiswa baru (Semester 1)' : 'Mahasiswa lama (Semester 2+)'}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Berita Transfer</p>
@@ -195,6 +234,12 @@ export default function SalutApplyPage() {
           </button>
           <p className="text-xs text-[var(--text-muted)]">Klik gambar untuk memperbesar</p>
         </div>
+
+        {fees?.salutMembership.renewalPolicy.notice && (
+          <p className="text-xs italic text-[var(--text-muted)] mt-4 text-center">
+            {fees.salutMembership.renewalPolicy.notice}
+          </p>
+        )}
 
         {qrisOpen && (
           <div

@@ -1,9 +1,35 @@
 import type { AdminSalutApplicationDTO, AdminUserDTO, CartDTO, OrderDTO, ProductDTO, ScraperRunDTO, UserProfileDTO } from '@/types';
 
+export interface RenewalPolicy {
+  resetMonth: number;
+  resetDay: number;
+  timezone: string;
+  notice: string;
+}
+
 export interface FeesConfig {
-  membershipFee: number;
+  salutMembership: {
+    currency: 'NTD';
+    new: number;
+    returning: number;
+    rule: string;
+    renewalPolicy: RenewalPolicy;
+  };
   serviceFees: { label: string; key: string; amount: number }[];
   totalServiceFees: number;
+  serviceFeesCurrency: 'IDR';
+}
+
+export interface SalutStatus {
+  is_salut: boolean;
+  is_salut_active: boolean;
+  salut_status: string;
+  salut_applied_at: string | null;
+  salut_rejection_reason: string | null;
+  salut_approved_at: string | null;
+  salut_applied_fee_amount: string | null;
+  salut_applied_semester: number | null;
+  renewalPolicy: RenewalPolicy;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -107,6 +133,7 @@ export const api = {
       email: string; password: string; name: string; nim?: string; phone?: string;
       birth_place?: string; birth_date?: string;
       program_id: string;
+      current_semester: number;
       address_zh_city: string; address_zh_district: string; address_zh_road: string;
       address_zh_number: string; address_zh_floor?: string;
       postal_code?: string;
@@ -217,10 +244,9 @@ export const api = {
         return r.json();
       });
     },
-    apply: (proofUrl: string): Promise<void> =>
-      apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl }) }),
-    getStatus: () =>
-      apiFetch<{ is_salut: boolean; salut_status: string; salut_applied_at: string | null; salut_rejection_reason: string | null; salut_approved_at: string | null }>('/salut/status'),
+    apply: (proofUrl: string, currentSemester: number): Promise<{ message: string; fee: { amount: number; currency: 'NTD'; tier: 'new' | 'returning' }; nextExpiry: string; renewalPolicy: RenewalPolicy }> =>
+      apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl, current_semester: currentSemester }) }),
+    getStatus: () => apiFetch<SalutStatus>('/salut/status'),
   },
   products: {
     list: (category?: string) =>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
+import VerifyEmailBanner from "@/components/layout/VerifyEmailBanner";
 import MainContainer from "@/components/layout/MainContainer";
 import ConditionalFooter from "@/components/layout/ConditionalFooter";
 import { AuthProvider } from "@/lib/auth";
@@ -34,6 +35,7 @@ export default function RootLayout({
           <AuthProvider>
             <CartProvider>
               <ToastProvider>
+                <VerifyEmailBanner />
                 <Navbar />
                 <MainContainer>
                   {children}

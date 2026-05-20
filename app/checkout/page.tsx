@@ -374,7 +374,7 @@ export default function CheckoutPage() {
                 </div>
               )}
               {/* SALUT upsell / status banner */}
-              {!(user?.is_salut) && (
+              {!(user?.is_salut_active) && (
                 <div className="mb-3">
                   {user?.salut_status === 'pending' ? (
                     <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 text-xs text-amber-800">
@@ -408,7 +408,7 @@ export default function CheckoutPage() {
                 {(fees?.serviceFees ?? []).map(({ label, amount }) => (
                   <div key={label} className="flex justify-between text-[var(--text-body)] items-center">
                     <span>{label}</span>
-                    {user?.is_salut ? (
+                    {user?.is_salut_active ? (
                       <span className="flex items-center gap-1.5">
                         <span className="text-[var(--text-muted)] line-through tabular-nums text-xs">{formatIDR(amount)}</span>
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">SALUT</span>
@@ -425,7 +425,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between font-bold items-end pt-2 border-t border-[var(--border-subtle)]">
                   <span className="text-[var(--foreground)]">Total Pesanan</span>
                   <span className="text-2xl font-extrabold text-indigo-700 tabular-nums">
-                    {fees ? formatIDR(cart.subtotal + (user?.is_salut ? 0 : fees.totalServiceFees)) : '...'}
+                    {fees ? formatIDR(cart.subtotal + (user?.is_salut_active ? 0 : fees.totalServiceFees)) : '...'}
                   </span>
                 </div>
               </div>

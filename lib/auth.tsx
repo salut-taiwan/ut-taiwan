@@ -9,7 +9,9 @@ interface AuthUser {
   name?: string;
   role?: string;
   is_salut?: boolean;
-  salut_status?: 'none' | 'pending' | 'approved' | 'rejected';
+  is_salut_active?: boolean;
+  salut_status?: 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
+  is_verified?: boolean;
 }
 
 interface AuthContextType {
@@ -92,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token) {
       if (expiresAt) scheduleTimers(Number(expiresAt));
       api.auth.getMe()
-        .then((profile: any) => setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, salut_status: profile.salut_status ?? 'none' }))
+        .then((profile: any) => setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, is_salut_active: profile.is_salut_active ?? false, salut_status: profile.salut_status ?? 'none', is_verified: profile.is_verified ?? false }))
         .catch(() => {
           localStorage.removeItem('ut_token');
           localStorage.removeItem('ut_refresh_token');
@@ -113,11 +115,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const profile: any = await api.auth.getMe();
         const freshSalut = profile.is_salut ?? false;
+        const freshActive = profile.is_salut_active ?? false;
         const freshStatus = profile.salut_status ?? 'none';
+        const freshVerified = profile.is_verified ?? false;
         setUser(prev => {
           if (!prev) return prev;
-          if (prev.is_salut === freshSalut && prev.salut_status === freshStatus) return prev;
-          return { ...prev, is_salut: freshSalut, salut_status: freshStatus };
+          if (prev.is_salut === freshSalut && prev.is_salut_active === freshActive && prev.salut_status === freshStatus && prev.is_verified === freshVerified) return prev;
+          return { ...prev, is_salut: freshSalut, is_salut_active: freshActive, salut_status: freshStatus, is_verified: freshVerified };
         });
       } catch { /* ignore — token refresh handles re-auth */ }
     }, 30_000);
@@ -133,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     scheduleTimers(data.expiresAt);
     try {
       const profile: any = await api.auth.getMe();
-      setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, salut_status: profile.salut_status ?? 'none' });
+      setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, is_salut_active: profile.is_salut_active ?? false, salut_status: profile.salut_status ?? 'none', is_verified: profile.is_verified ?? false });
     } catch {
       localStorage.removeItem('ut_token');
       localStorage.removeItem('ut_refresh_token');

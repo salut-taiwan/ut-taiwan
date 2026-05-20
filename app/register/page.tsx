@@ -24,7 +24,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     email: '', password: '', confirmPassword: '', name: '', nim: '', phone: '',
     birth_place: '', birth_date: '',
-    program_id: '',
+    program_id: '', current_semester: '',
     address_zh_city: '', address_zh_district: '', address_zh_road: '',
     address_zh_number: '', address_zh_floor: '', postal_code: '',
     bank_ntd_code: '', bank_ntd_name: '', bank_ntd_account: '',
@@ -66,6 +66,11 @@ export default function RegisterPage() {
       setError('Wajib mengisi minimal satu rekening bank (NTD atau IDR)');
       return;
     }
+    const semester = Number(form.current_semester);
+    if (!Number.isInteger(semester) || semester < 1 || semester > 9) {
+      setError('Semester saat ini wajib diisi (1-9)');
+      return;
+    }
     setLoading(true);
     try {
       await api.auth.register({
@@ -77,6 +82,7 @@ export default function RegisterPage() {
         birth_place: form.birth_place,
         birth_date: form.birth_date,
         program_id: form.program_id,
+        current_semester: Number(form.current_semester),
         address_zh_city: form.address_zh_city,
         address_zh_district: form.address_zh_district,
         address_zh_road: form.address_zh_road,
@@ -197,13 +203,28 @@ export default function RegisterPage() {
 
               {/* Program Studi */}
               <SectionBox title="Program Studi *">
-                <select name="program_id" value={form.program_id} onChange={handleChange} required
-                  className={selectClass}>
-                  <option value="">Pilih Program Studi</option>
-                  {programs.map((p: any) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+                <div className="space-y-3">
+                  <div>
+                    <label className={labelClass}>Jurusan *</label>
+                    <select name="program_id" value={form.program_id} onChange={handleChange} required
+                      className={selectClass}>
+                      <option value="">Pilih Program Studi</option>
+                      {programs.map((p: any) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Semester Saat Ini *</label>
+                    <select name="current_semester" value={form.current_semester} onChange={handleChange} required
+                      className={selectClass}>
+                      <option value="">Pilih semester</option>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+                        <option key={n} value={n}>Semester {n}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </SectionBox>
 
               {/* Alamat Mandarin */}

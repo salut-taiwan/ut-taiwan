@@ -7,6 +7,15 @@ export function formatIDR(amount: number): string {
   }).format(amount);
 }
 
+export function formatNTD(amount: number): string {
+  return new Intl.NumberFormat('zh-TW', {
+    style: 'currency',
+    currency: 'TWD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export function formatDate(isoString: string): string {
   return new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',

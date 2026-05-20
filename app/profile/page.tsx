@@ -96,16 +96,16 @@ export default function ProfilePage() {
   );
 
   const salutStatus = profile?.salut_status ?? 'none';
-  const isSalut = profile?.is_salut ?? false;
+  const isSalut = profile?.is_salut_active ?? false;
 
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-bold text-[var(--foreground)] mb-6">Profil Saya</h1>
 
       {/* SALUT Membership card */}
-      {(isSalut || salutStatus !== 'none') ? (
+      {(isSalut || ['pending', 'rejected', 'expired'].includes(salutStatus)) ? (
         <>
-          {(isSalut || salutStatus === 'approved') && (
+          {isSalut && (
             <div className="bg-teal-50 border border-teal-200 rounded-2xl p-5 mb-6 flex items-start gap-4">
               <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shrink-0">
                 <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -120,6 +120,22 @@ export default function ProfilePage() {
                     Aktif sejak {new Date(profile.salut_approved_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 )}
+              </div>
+            </div>
+          )}
+          {!isSalut && salutStatus === 'expired' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6 flex items-start gap-4">
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-amber-800">Keanggotaan SALUT Telah Berakhir</p>
+                <p className="text-sm text-amber-700 mt-0.5">Perpanjang sekarang agar biaya layanan tetap dibebaskan.</p>
+                <Link href="/salut/apply" className="text-xs font-semibold text-amber-800 hover:underline mt-2 inline-block">
+                  Perpanjang SALUT →
+                </Link>
               </div>
             </div>
           )}
