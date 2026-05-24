@@ -29,7 +29,6 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
     setAdding(true);
     try {
       const cart = await api.cart.addItem(module.id);
-      console.log('[DIAG addItem response]', JSON.stringify({ itemCount: cart?.itemCount, items: cart?.items?.map(i => ({ id: i.id, moduleId: i.moduleId, skuId: i.skuId, quantity: i.quantity })) }));
       setAdded(true);
       syncCartCount(cart.itemCount);
       showToast(module.is_available ? 'Modul ditambahkan ke keranjang!' : 'Modul ditambahkan sebagai permintaan!');

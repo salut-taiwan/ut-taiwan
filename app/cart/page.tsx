@@ -92,7 +92,6 @@ export default function CartPage() {
     setClearing(true);
     try {
       const updated = await api.cart.clear() as CartDTO;
-      console.log('[DIAG clearCart response]', JSON.stringify(updated));
       setCart(updated);
       await refreshCart();
     } catch {
