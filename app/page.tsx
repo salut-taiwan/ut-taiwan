@@ -139,7 +139,7 @@ const steps = [
 const infoCards = [
   {
     title: 'Pengiriman ke Taiwan',
-    desc: 'Kami mengurus pengiriman langsung ke alamat Anda di Taiwan',
+    desc: 'Pengiriman langsung ke alamat Anda di Taiwan.',
     accent: 'border-l-indigo-400',
     iconBg: 'bg-indigo-50',
     iconColor: 'text-indigo-600',
@@ -154,7 +154,7 @@ const infoCards = [
   },
   {
     title: 'Harga Mahasiswa + SALUT',
-    desc: 'Harga khusus mahasiswa UT. Anggota SALUT mendapatkan biaya layanan gratis.',
+    desc: 'Harga khusus mahasiswa UT. Anggota SALUT: biaya layanan nol.',
     accent: 'border-l-amber-400',
     iconBg: 'bg-amber-50',
     iconColor: 'text-amber-600',
@@ -166,8 +166,8 @@ const infoCards = [
     ),
   },
   {
-    title: 'Data Selalu Update',
-    desc: 'Modul disinkronkan otomatis dari TBO Karunika setiap hari; stok toko diperbarui berkala',
+    title: 'Data selalu segar',
+    desc: 'Modul disinkronkan dari TBO Karunika setiap hari. Stok toko diperbarui berkala.',
     accent: 'border-l-emerald-400',
     iconBg: 'bg-emerald-50',
     iconColor: 'text-emerald-600',
@@ -214,14 +214,14 @@ export default async function Home() {
 
         <div className="relative max-w-3xl mx-auto text-center">
           <span className="inline-block text-xs font-semibold uppercase tracking-caps bg-white/15 border border-white/20 backdrop-blur-sm text-white/90 px-3 py-1 rounded-full mb-6">
-            Sentra Layanan Resmi UT Taiwan
+            Sentra Layanan Universitas Terbuka Taiwan
           </span>
           <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight leading-[1.1] text-white mb-5">
-            Semua kebutuhan akademik{' '}<br className="hidden sm:block" />
-            mahasiswa UT di Taiwan
+            Kuliah UT di Taiwan,{' '}<br className="hidden sm:block" />
+            beres dari satu tempat.
           </h1>
           <p className="text-lg text-indigo-100/90 max-w-2xl mx-auto mb-10">
-            Modul kuliah, paket per semester, merchandise resmi, dan keanggotaan SALUT — semua di satu tempat.
+            Modul, paket per semester, merchandise resmi, dan keanggotaan SALUT. Semua di sini.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -246,9 +246,7 @@ export default async function Home() {
       {/* Feature pillars */}
       <section className="mb-16">
         <div className="text-center mb-8">
-          <span className="text-xs font-semibold uppercase tracking-caps text-indigo-600">Apa yang kami sediakan</span>
-          <h2 className="text-3xl font-bold text-[var(--foreground)] mt-2 mb-2">Empat layanan utama</h2>
-          <p className="text-[var(--text-body)]">Pilih layanan yang Anda butuhkan</p>
+          <h2 className="text-3xl font-bold text-[var(--foreground)]">Layanan kami</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {featurePillars.map(p => (
@@ -270,9 +268,8 @@ export default async function Home() {
       {/* Faculty selection */}
       <section className="mb-16">
         <div className="text-center mb-8">
-          <span className="text-xs font-semibold uppercase tracking-caps text-indigo-600">Mulai dari sini</span>
-          <h2 className="text-3xl font-bold text-[var(--foreground)] mt-2 mb-2">Pilih Fakultas</h2>
-          <p className="text-[var(--text-body)]">Mulai dari fakultas Anda untuk menemukan modul yang tepat</p>
+          <h2 className="text-3xl font-bold text-[var(--foreground)] mb-2">Pilih fakultas</h2>
+          <p className="text-[var(--text-body)]">Mulai dari fakultas Anda untuk menemukan modul.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {faculties.map(f => (
@@ -297,7 +294,7 @@ export default async function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 items-center">
           <div>
             <span className="text-xs font-semibold uppercase tracking-caps text-teal-700">Keanggotaan eksklusif</span>
-            <h2 className="text-3xl font-bold text-teal-900 mt-2 mb-3">SALUT — Hemat biaya, dapat lebih</h2>
+            <h2 className="text-3xl font-bold text-teal-900 mt-2 mb-3">SALUT: hemat Rp 425.000 setiap pesanan.</h2>
             <ul className="space-y-2 mb-4">
               {salutBenefits.map(b => (
                 <li key={b} className="flex items-start gap-2 text-sm text-teal-900">
@@ -332,9 +329,7 @@ export default async function Home() {
       {/* Toko spotlight */}
       <section className="mb-16">
         <div className="text-center mb-6">
-          <span className="text-xs font-semibold uppercase tracking-caps text-indigo-600">Toko UT Taiwan</span>
-          <h2 className="text-3xl font-bold text-[var(--foreground)] mt-2 mb-2">Merchandise resmi</h2>
-          <p className="text-[var(--text-body)]">Jelajahi kategori favorit Anda</p>
+          <h2 className="text-3xl font-bold text-[var(--foreground)]">Merchandise resmi UT Taiwan</h2>
         </div>
         <div className="flex flex-wrap gap-2 justify-center mb-4">
           {TOKO_CATEGORIES.filter(c => c.key !== '').map(c => (
@@ -363,8 +358,7 @@ export default async function Home() {
       {/* How it works */}
       <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-8 mb-16">
         <div className="text-center mb-10">
-          <span className="text-xs font-semibold uppercase tracking-caps text-indigo-600">Proses mudah & cepat</span>
-          <h2 className="text-3xl font-bold text-[var(--foreground)] mt-2">Cara Pemesanan</h2>
+          <h2 className="text-3xl font-bold text-[var(--foreground)]">Cara pemesanan</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 text-center relative">
           <div className="hidden sm:block absolute top-7 left-[12.5%] right-[12.5%] border-t-2 border-dashed border-[var(--border)] pointer-events-none" />
@@ -402,10 +396,9 @@ export default async function Home() {
         <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/[0.04] rounded-full pointer-events-none" />
         <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wide text-indigo-200 mb-2 block">Sumber daya resmi</span>
-            <h2 className="text-2xl font-bold mb-2">Butuh Panduan UT?</h2>
+            <h2 className="text-2xl font-bold mb-2">Butuh panduan UT?</h2>
             <p className="text-indigo-100/90 text-sm max-w-md">
-              Login eCampus, registrasi mata kuliah, cara bayar SPP, hingga panduan ujian online — semua tersedia di sini.
+              Login eCampus, registrasi mata kuliah, cara bayar SPP, panduan ujian online. Semua di satu halaman.
             </p>
           </div>
           <Link
