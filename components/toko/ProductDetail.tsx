@@ -185,7 +185,14 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
 
           {/* CTA */}
           {isClaimGated ? (
-            <ClaimCtaButton cta={claimCta} loading={claimCtaLoading} adding={adding} onClaim={handleAddToCart} />
+            <ClaimCtaButton
+              cta={claimCta}
+              loading={claimCtaLoading}
+              adding={adding}
+              canAdd={canAdd}
+              hasVariants={variantTypes.length > 0}
+              onClaim={handleAddToCart}
+            />
           ) : (
             <button
               onClick={handleAddToCart}
@@ -231,11 +238,15 @@ function ClaimCtaButton({
   cta,
   loading,
   adding,
+  canAdd,
+  hasVariants,
   onClaim,
 }: {
   cta: ClaimCta | null;
   loading: boolean;
   adding: boolean;
+  canAdd: boolean;
+  hasVariants: boolean;
   onClaim: () => void;
 }) {
   if (loading) {
@@ -252,6 +263,11 @@ function ClaimCtaButton({
     );
   }
   if (cta.addToCart) {
+    // UI gate: when the product has variants, the user must select them all
+    // before the claim button activates. Prevents an accidental wrong-size claim.
+    if (hasVariants && !canAdd) {
+      return <button disabled className={CTA_BASE_CLASS}>Pilih ukuran/warna terlebih dahulu</button>;
+    }
     return (
       <button onClick={onClaim} disabled={adding} className={CTA_BASE_CLASS}>
         {adding ? (
