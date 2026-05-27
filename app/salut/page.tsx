@@ -137,12 +137,14 @@ export default function SalutPage() {
       {/* Perbandingan Benefit Anggota */}
       <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-6 mb-6">
         <h2 className="font-semibold text-[var(--foreground)] mb-4">Perbandingan Benefit Anggota</h2>
-        <div className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-3 sm:gap-4 text-sm">
+        <div className="divide-y divide-[var(--border-subtle)]">
           {/* Header */}
-          <div />
-          <div className="font-medium text-[var(--text-muted)]">Benefit</div>
-          <div className="font-medium text-[var(--text-muted)]">Non-SALUT</div>
-          <div className="font-semibold text-teal-700">SALUT</div>
+          <div className="grid grid-cols-[36px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.25fr)] gap-3 sm:gap-4 pb-3 text-sm">
+            <div />
+            <div className="font-medium text-[var(--text-muted)]">Benefit</div>
+            <div className="font-medium text-[var(--text-muted)]">Non-SALUT</div>
+            <div className="font-semibold text-teal-700">SALUT</div>
+          </div>
           {/* Rows */}
           {BENEFITS.map(b => (
             <BenefitRow key={b.title} icon={b.icon} title={b.title} nonSalut={b.nonSalut} salut={b.salut} />
@@ -170,7 +172,7 @@ export default function SalutPage() {
         </p>
         {fees?.salutMembership.renewalPolicy.notice && (
           <p className="text-xs italic text-[var(--text-muted)] mt-2">
-            {fees.salutMembership.renewalPolicy.notice}
+            <strong>Keanggotaan SALUT berakhir</strong> setiap <strong>1 Mei</strong> dan <strong>1 November</strong> pukul 00:00 (Asia/Taipei). Perpanjangan wajib dilakukan setiap semester.
           </p>
         )}
       </div>
@@ -334,15 +336,13 @@ export default function SalutPage() {
 
 function BenefitRow({ icon, title, nonSalut, salut }: { icon: BenefitIcon; title: string; nonSalut: string; salut: string }) {
   return (
-    <>
-      <div className="border-t border-[var(--border-subtle)] py-3 flex items-center">
-        <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
-          <BenefitIconSvg name={icon} />
-        </div>
+    <div className="grid grid-cols-[36px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.25fr)] gap-3 sm:gap-4 py-3.5 items-center text-sm">
+      <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 -ml-0.5">
+        <BenefitIconSvg name={icon} />
       </div>
-      <div className="border-t border-[var(--border-subtle)] py-3 text-[var(--foreground)] font-medium self-center">{title}</div>
-      <div className="border-t border-[var(--border-subtle)] py-3 text-[var(--text-body)] self-center">{nonSalut}</div>
-      <div className="border-t border-[var(--border-subtle)] py-3 text-teal-700 font-medium self-center">{salut}</div>
-    </>
+      <div className="font-semibold text-[var(--foreground)] leading-snug">{title}</div>
+      <div className="text-[var(--text-body)] leading-snug">{nonSalut}</div>
+      <div className="font-medium text-teal-700 leading-snug">{salut}</div>
+    </div>
   );
 }

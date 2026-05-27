@@ -217,7 +217,7 @@ export default function SalutApplyPage() {
 
         {fees?.salutMembership.renewalPolicy.notice && (
           <p className="text-xs italic text-[var(--text-muted)] mt-4 text-center">
-            {fees.salutMembership.renewalPolicy.notice}
+            <strong>Keanggotaan SALUT berakhir</strong> setiap <strong>1 Mei</strong> dan <strong>1 November</strong> pukul 00:00 (Asia/Taipei). Perpanjangan wajib dilakukan setiap semester.
           </p>
         )}
 
