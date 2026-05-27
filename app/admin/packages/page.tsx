@@ -11,6 +11,7 @@ export default function AdminPackagesPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [packages, setPackages] = useState<PackageDTO[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ linked: number; packages: number } | null>(null);
@@ -22,7 +23,9 @@ export default function AdminPackagesPage() {
 
   useEffect(() => {
     if (user?.role !== 'admin') return;
-    api.packages.list().then(data => setPackages(data)).finally(() => setLoading(false));
+    api.packages.list({ limit: '200' })
+      .then(data => { setPackages(data.rows); setTotal(data.total); })
+      .finally(() => setLoading(false));
   }, [user]);
 
   async function handleSync() {
@@ -33,8 +36,9 @@ export default function AdminPackagesPage() {
       const result = await api.packages.sync();
       setSyncResult(result);
       // Reload package list
-      const data = await api.packages.list();
-      setPackages(data);
+      const data = await api.packages.list({ limit: '200' });
+      setPackages(data.rows);
+      setTotal(data.total);
     } catch (e: unknown) {
       setSyncError(e instanceof Error ? e.message : 'Gagal sinkronisasi');
     } finally {
@@ -76,6 +80,12 @@ export default function AdminPackagesPage() {
         Paket dibuat manual oleh admin. Gunakan tombol &ldquo;Sinkronisasi Paket&rdquo; untuk menautkan modul ke paket
         berdasarkan data mata kuliah dan modul terkini di database.
       </div>
+
+      {!loading && total > packages.length && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm text-amber-800">
+          Menampilkan {packages.length} dari {total} paket. Daftar melebihi batas tampilan — tambahkan pagination jika perlu melihat sisanya.
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-12 text-[var(--text-muted)]">Memuat...</div>

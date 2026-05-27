@@ -358,6 +358,27 @@ export interface AdminUserDTO {
   created_at_display?: string | null;
 }
 
+export interface AdminUserListResponseDTO {
+  rows: AdminUserDTO[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ProductListResponseDTO {
+  rows: ProductDTO[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface PackageListResponseDTO {
+  rows: PackageDTO[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface ScraperRunDTO {
   id: string;
   started_at: string;

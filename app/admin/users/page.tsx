@@ -5,12 +5,39 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
-import { AdminUserDTO } from '@/types';
+import { AdminUserDTO, ProgramDTO } from '@/types';
 import { cn } from '@/lib/utils';
 
-type SalutFilter = 'all' | 'salut' | 'non';
-type SortCol = 'created_at' | 'name' | 'nim';
+type SortCol = 'name' | 'nim' | 'email' | 'created_at' | 'current_semester' | 'salut_status' | 'program';
 type SortDir = 'asc' | 'desc';
+type SalutStatusFilter = '' | 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
+type VerifiedFilter = '' | 'true' | 'false';
+
+interface Filters {
+  salut_status: SalutStatusFilter;
+  is_verified: VerifiedFilter;
+  program_id: string;
+  semester: string;
+}
+
+const EMPTY_FILTERS: Filters = { salut_status: '', is_verified: '', program_id: '', semester: '' };
+
+const SALUT_STATUS_OPTIONS: { value: SalutStatusFilter; label: string }[] = [
+  { value: '',         label: 'Semua status SALUT' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'pending',  label: 'Pending' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'expired',  label: 'Expired' },
+  { value: 'none',     label: 'None' },
+];
+
+const VERIFIED_OPTIONS: { value: VerifiedFilter; label: string }[] = [
+  { value: '',      label: 'Semua verifikasi' },
+  { value: 'true',  label: 'Terverifikasi' },
+  { value: 'false', label: 'Belum verifikasi' },
+];
+
+const PAGE_SIZES = [25, 50, 100];
 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   return (
@@ -24,19 +51,26 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   );
 }
 
+const SELECT_CLASS = 'px-3 py-2 text-sm border border-[var(--border-default)] rounded-lg bg-[var(--surface)] text-[var(--foreground)] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-[var(--ring-focus)] transition-[border-color,box-shadow] duration-150';
+
 export default function AdminUsersPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
   const [users, setUsers] = useState<AdminUserDTO[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [salutFilter, setSalutFilter] = useState<SalutFilter>('all');
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [sort, setSort] = useState<{ col: SortCol; dir: SortDir }>({ col: 'created_at', dir: 'desc' });
+  const [limit, setLimit] = useState(25);
+  const [offset, setOffset] = useState(0);
+  const [programs, setPrograms] = useState<ProgramDTO[]>([]);
   const [toggling, setToggling] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulking, setBulking] = useState(false);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'admin')) router.push('/');
@@ -44,29 +78,51 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     if (user?.role !== 'admin') return;
+    api.catalog.getPrograms().then(setPrograms).catch(() => {});
+  }, [user]);
+
+  // Any filter/search/sort/page-size change resets offset to 0.
+  useEffect(() => {
+    setOffset(0);
+  }, [search, filters, sort, limit]);
+
+  useEffect(() => {
+    if (user?.role !== 'admin') return;
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(() => fetchUsers(), search ? 400 : 0);
     return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, salutFilter, sort, user]);
+  }, [search, filters, sort, limit, offset, user]);
 
   async function fetchUsers() {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setSelectedIds(new Set());
     try {
-      const params: Record<string, string> = {
+      const params: Parameters<typeof api.admin.listUsers>[0] = {
         sort: sort.col,
         dir: sort.dir,
+        limit: String(limit),
+        offset: String(offset),
       };
       if (search.trim()) params.search = search.trim();
-      if (salutFilter === 'salut') params.salut = 'true';
-      if (salutFilter === 'non') params.salut = 'false';
-      const data = await api.admin.listUsers(params);
-      setUsers(data);
+      if (filters.salut_status) params.salut_status = filters.salut_status;
+      if (filters.is_verified) params.is_verified = filters.is_verified;
+      if (filters.program_id) params.program_id = filters.program_id;
+      if (filters.semester) params.semester = filters.semester;
+
+      const data = await api.admin.listUsers(params, controller.signal);
+      if (controller.signal.aborted) return;
+      setUsers(data.rows);
+      setTotal(data.total);
     } catch (err) {
+      if ((err as { name?: string }).name === 'AbortError') return;
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }
 
@@ -121,8 +177,20 @@ export default function AdminUsersPage() {
     }
   }
 
+  function resetAll() {
+    setSearch('');
+    setFilters(EMPTY_FILTERS);
+    setSort({ col: 'created_at', dir: 'desc' });
+  }
+
   const allSelected = users.length > 0 && selectedIds.size === users.length;
   const someSelected = selectedIds.size > 0 && !allSelected;
+  const hasActiveFilters = !!search || filters.salut_status || filters.is_verified || filters.program_id || filters.semester;
+
+  const rangeStart = total === 0 ? 0 : offset + 1;
+  const rangeEnd = Math.min(offset + users.length, total);
+  const canPrev = offset > 0;
+  const canNext = offset + limit < total;
 
   if (isLoading) return <div className="text-center py-16 text-[var(--text-muted)]">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
@@ -137,51 +205,83 @@ export default function AdminUsersPage() {
             <h1 className="text-2xl font-bold text-[var(--foreground)] mt-0.5">Manajemen Mahasiswa</h1>
           </div>
           {!loading && (
-            <span className="text-sm text-[var(--text-muted)]">{users.length} mahasiswa</span>
+            <span className="text-sm text-[var(--text-muted)]">{total.toLocaleString()} mahasiswa</span>
           )}
         </div>
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3 mb-5">
-        {/* Search */}
-        <div className="relative flex-1 min-w-56">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Cari nama, email, atau NIM..."
-            className="w-full pl-9 pr-4 py-2 text-sm border border-[var(--border-default)] rounded-lg bg-[var(--surface)] text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-[var(--ring-focus)] transition-[border-color,box-shadow] duration-150"
-          />
+      <div className="space-y-3 mb-5">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Search */}
+          <div className="relative flex-1 min-w-56">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Cari nama, email, NIM, telepon, atau program..."
+              className="w-full pl-9 pr-4 py-2 text-sm border border-[var(--border-default)] rounded-lg bg-[var(--surface)] text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-[var(--ring-focus)] transition-[border-color,box-shadow] duration-150"
+            />
+          </div>
+          {hasActiveFilters && (
+            <button
+              onClick={resetAll}
+              className="px-3 py-2 text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--foreground)] border border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-sunken)] transition-colors"
+            >
+              Reset
+            </button>
+          )}
         </div>
 
-        {/* SALUT filter */}
-        <div className="flex gap-1 bg-[var(--surface-sunken)] rounded-lg p-1">
-          {(['all', 'salut', 'non'] as SalutFilter[]).map(f => (
-            <button
-              key={f}
-              onClick={() => setSalutFilter(f)}
-              className={cn(
-                'px-3 py-1.5 rounded-md text-xs font-semibold transition-[background-color,color,box-shadow] duration-150',
-                salutFilter === f
-                  ? 'bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-xs)]'
-                  : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'
-              )}
-            >
-              {f === 'all' ? 'Semua' : f === 'salut' ? 'SALUT' : 'Non-SALUT'}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={filters.salut_status}
+            onChange={e => setFilters(f => ({ ...f, salut_status: e.target.value as SalutStatusFilter }))}
+            className={SELECT_CLASS}
+          >
+            {SALUT_STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+
+          <select
+            value={filters.is_verified}
+            onChange={e => setFilters(f => ({ ...f, is_verified: e.target.value as VerifiedFilter }))}
+            className={SELECT_CLASS}
+          >
+            {VERIFIED_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+
+          <select
+            value={filters.program_id}
+            onChange={e => setFilters(f => ({ ...f, program_id: e.target.value }))}
+            className={SELECT_CLASS}
+          >
+            <option value="">Semua program</option>
+            {programs.map(p => (
+              <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
+            ))}
+          </select>
+
+          <select
+            value={filters.semester}
+            onChange={e => setFilters(f => ({ ...f, semester: e.target.value }))}
+            className={SELECT_CLASS}
+          >
+            <option value="">Semua semester</option>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+              <option key={n} value={String(n)}>Semester {n}</option>
+            ))}
+          </select>
         </div>
       </div>
 
       {/* Bulk action bar */}
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 mb-3 px-4 py-2.5 bg-indigo-50 border border-indigo-200 rounded-xl text-sm">
-          <span className="font-semibold text-indigo-800 flex-1">{selectedIds.size} mahasiswa dipilih</span>
+          <span className="font-semibold text-indigo-800 flex-1">{selectedIds.size} mahasiswa dipilih (halaman ini)</span>
           <button
             onClick={() => handleBulkSalut(true)}
             disabled={bulking}
@@ -212,7 +312,7 @@ export default function AdminUsersPage() {
           <div className="text-center py-12 text-[var(--text-muted)]">Memuat...</div>
         ) : users.length === 0 ? (
           <div className="text-center py-16 text-[var(--text-muted)]">
-            {search || salutFilter !== 'all' ? 'Tidak ada mahasiswa yang cocok' : 'Belum ada mahasiswa terdaftar'}
+            {hasActiveFilters ? 'Tidak ada mahasiswa yang cocok' : 'Belum ada mahasiswa terdaftar'}
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -228,9 +328,14 @@ export default function AdminUsersPage() {
                   />
                 </th>
                 <th className="text-left px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold">
-                  <button onClick={() => toggleSort('name')} className="flex items-center hover:text-[var(--foreground)] transition-colors">
-                    Nama & Email <SortIcon active={sort.col === 'name'} dir={sort.dir} />
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => toggleSort('name')} className="flex items-center hover:text-[var(--foreground)] transition-colors">
+                      Nama <SortIcon active={sort.col === 'name'} dir={sort.dir} />
+                    </button>
+                    <button onClick={() => toggleSort('email')} className="flex items-center hover:text-[var(--foreground)] transition-colors">
+                      Email <SortIcon active={sort.col === 'email'} dir={sort.dir} />
+                    </button>
+                  </div>
                 </th>
                 <th className="text-left px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold">
                   <button onClick={() => toggleSort('nim')} className="flex items-center hover:text-[var(--foreground)] transition-colors">
@@ -238,10 +343,19 @@ export default function AdminUsersPage() {
                   </button>
                 </th>
                 <th className="text-left px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold hidden md:table-cell">
-                  Program / Semester
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => toggleSort('program')} className="flex items-center hover:text-[var(--foreground)] transition-colors">
+                      Program <SortIcon active={sort.col === 'program'} dir={sort.dir} />
+                    </button>
+                    <button onClick={() => toggleSort('current_semester')} className="flex items-center hover:text-[var(--foreground)] transition-colors">
+                      Semester <SortIcon active={sort.col === 'current_semester'} dir={sort.dir} />
+                    </button>
+                  </div>
                 </th>
                 <th className="text-center px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold">
-                  SALUT
+                  <button onClick={() => toggleSort('salut_status')} className="flex items-center mx-auto hover:text-[var(--foreground)] transition-colors">
+                    SALUT <SortIcon active={sort.col === 'salut_status'} dir={sort.dir} />
+                  </button>
                 </th>
                 <th className="text-left px-4 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wide font-semibold hidden lg:table-cell">
                   <button onClick={() => toggleSort('created_at')} className="flex items-center hover:text-[var(--foreground)] transition-colors">
@@ -270,6 +384,9 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3">
                     <p className="font-medium text-[var(--foreground)]">{u.name}</p>
                     <p className="text-xs text-[var(--text-muted)] mt-0.5">{u.email}</p>
+                    {u.is_verified === false && (
+                      <p className="text-[10px] text-amber-700 mt-0.5 uppercase tracking-wide">Belum verifikasi</p>
+                    )}
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-[var(--text-body)]">
                     {u.nim || <span className="text-[var(--text-muted)] not-italic">-</span>}
@@ -297,7 +414,11 @@ export default function AdminUsersPage() {
                           ? 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100'
                           : u.salut_status === 'expired'
                             ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                            : 'bg-[var(--surface-sunken)] text-[var(--text-muted)] border-[var(--border)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]'
+                            : u.salut_status === 'pending'
+                              ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                              : u.salut_status === 'rejected'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                                : 'bg-[var(--surface-sunken)] text-[var(--text-muted)] border-[var(--border)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]'
                       )}
                     >
                       {toggling === u.id
@@ -306,7 +427,11 @@ export default function AdminUsersPage() {
                           ? 'SALUT'
                           : u.salut_status === 'expired'
                             ? 'Expired'
-                            : 'Non-SALUT'}
+                            : u.salut_status === 'pending'
+                              ? 'Pending'
+                              : u.salut_status === 'rejected'
+                                ? 'Rejected'
+                                : 'Non-SALUT'}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-[var(--text-muted)] text-xs hidden lg:table-cell">
@@ -318,6 +443,41 @@ export default function AdminUsersPage() {
           </table>
         )}
       </div>
+
+      {/* Pagination footer */}
+      {!loading && total > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 px-1 text-sm text-[var(--text-muted)]">
+          <span>
+            Menampilkan <span className="font-semibold text-[var(--foreground)]">{rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()}</span> dari <span className="font-semibold text-[var(--foreground)]">{total.toLocaleString()}</span>
+          </span>
+          <div className="flex items-center gap-2">
+            <label className="text-xs">
+              Per halaman:
+              <select
+                value={limit}
+                onChange={e => setLimit(Number(e.target.value))}
+                className="ml-2 px-2 py-1 text-xs border border-[var(--border-default)] rounded-md bg-[var(--surface)] text-[var(--foreground)] focus:outline-none focus:border-indigo-400"
+              >
+                {PAGE_SIZES.map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+            <button
+              onClick={() => setOffset(o => Math.max(0, o - limit))}
+              disabled={!canPrev}
+              className="px-3 py-1.5 text-xs font-semibold border border-[var(--border-default)] rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-sunken)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={() => setOffset(o => o + limit)}
+              disabled={!canNext}
+              className="px-3 py-1.5 text-xs font-semibold border border-[var(--border-default)] rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-sunken)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

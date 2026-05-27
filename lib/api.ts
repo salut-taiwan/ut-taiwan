@@ -1,13 +1,16 @@
 import type {
   AdminSalutApplicationDTO,
   AdminUserDTO,
+  AdminUserListResponseDTO,
   CartDTO,
   FacultyDTO,
   ModuleDTO,
   ModuleSummaryDTO,
   OrderDTO,
   PackageDTO,
+  PackageListResponseDTO,
   ProductDTO,
+  ProductListResponseDTO,
   ProgramDTO,
   ScraperRunDTO,
   SubjectDTO,
@@ -17,6 +20,7 @@ import type {
 export interface RenewalPolicy {
   resetMonth: number;
   resetDay: number;
+  resetDates?: { month: number; day: number }[];
   timezone: string;
   notice: string;
 }
@@ -39,6 +43,11 @@ export interface FeesConfig {
   totalServiceFees: number;
   totalServiceFees_display?: string;
   serviceFeesCurrency: 'IDR';
+  paymentBank: {
+    bank: string;
+    account: string;
+    holder: string;
+  };
 }
 
 export type EffectiveSalutStatus = 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
@@ -225,11 +234,16 @@ export const api = {
     create: (body: object) => apiFetch('/modules', { method: 'POST', body: JSON.stringify(body) }),
   },
   packages: {
-    list: (programId?: string, semester?: number) => {
-      const params = new URLSearchParams();
-      if (programId) params.set('programId', programId);
-      if (semester) params.set('semester', String(semester));
-      return apiFetch<PackageDTO[]>(`/packages?${params}`);
+    list: (
+      params?: { programId?: string; semester?: string; search?: string; limit?: string; offset?: string },
+      signal?: AbortSignal,
+    ) => {
+      const qs = params
+        ? new URLSearchParams(
+            Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== '')) as Record<string, string>
+          ).toString()
+        : '';
+      return apiFetch<PackageListResponseDTO>(`/packages${qs ? '?' + qs : ''}`, { signal });
     },
     get: (id: string) => apiFetch<PackageDTO>(`/packages/${id}`),
     sync: () => apiFetch<{ linked: number; packages: number }>('/packages/sync', { method: 'POST' }),
@@ -301,8 +315,17 @@ export const api = {
     getStatus: () => apiFetch<SalutStatus>('/salut/status'),
   },
   products: {
-    list: (category?: string) =>
-      apiFetch<ProductDTO[]>(`/products${category ? `?category=${encodeURIComponent(category)}` : ''}`),
+    list: (
+      params?: { category?: string; limit?: string; offset?: string },
+      signal?: AbortSignal,
+    ) => {
+      const qs = params
+        ? new URLSearchParams(
+            Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== '')) as Record<string, string>
+          ).toString()
+        : '';
+      return apiFetch<ProductListResponseDTO>(`/products${qs ? '?' + qs : ''}`, { signal });
+    },
     get: (id: string) => apiFetch<ProductDTO>(`/products/${id}`),
   },
   config: {
@@ -350,9 +373,26 @@ export const api = {
       const blob = await res.blob();
       return URL.createObjectURL(blob);
     },
-    listUsers: (params?: { search?: string; sort?: string; dir?: string; salut?: string }) => {
-      const qs = params ? new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== ''))).toString() : '';
-      return apiFetch<AdminUserDTO[]>(`/users/admin/all${qs ? '?' + qs : ''}`);
+    listUsers: (
+      params?: {
+        search?: string;
+        sort?: 'name' | 'nim' | 'email' | 'created_at' | 'current_semester' | 'salut_status' | 'program';
+        dir?: 'asc' | 'desc';
+        salut_status?: 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
+        is_verified?: 'true' | 'false';
+        program_id?: string;
+        semester?: string;
+        limit?: string;
+        offset?: string;
+      },
+      signal?: AbortSignal,
+    ) => {
+      const qs = params
+        ? new URLSearchParams(
+            Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== '')) as Record<string, string>
+          ).toString()
+        : '';
+      return apiFetch<AdminUserListResponseDTO>(`/users/admin/all${qs ? '?' + qs : ''}`, { signal });
     },
     updateUserSalut: (userId: string, is_salut: boolean) =>
       apiFetch<AdminUserDTO>(`/users/admin/${userId}/salut`, {
