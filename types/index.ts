@@ -388,6 +388,44 @@ export interface PackageListResponseDTO {
   offset: number;
 }
 
+export type SksPaymentStatus = 'pending' | 'completed' | 'rejected';
+export type SksPaymentTone = 'warning' | 'success' | 'danger' | 'neutral';
+
+export interface SksPaymentDTO {
+  id: string;
+  nim: string;
+  name: string;
+  semester_period: string;
+  idr_amount: number;
+  ntd_amount: number;
+  rate_idr_per_ntd: number;
+  ut_slip_url: string;
+  transfer_proof_url: string;
+  status: SksPaymentStatus;
+  rejection_reason: string | null;
+  completed_at: string | null;
+  created_at: string;
+  idr_amount_display?: string;
+  ntd_amount_display?: string;
+  created_at_display?: string | null;
+  completed_at_display?: string | null;
+  status_label?: string;
+  status_tone?: SksPaymentTone;
+}
+
+export interface AdminSksPaymentDTO extends SksPaymentDTO {
+  email: string;
+}
+
+export interface SksPaymentQuoteDTO {
+  idr_amount: number;
+  ntd_amount: number;
+  idr_amount_display: string;
+  ntd_amount_display: string;
+  rate_label: string;
+  memo_hint: string;
+}
+
 export interface ScraperRunDTO {
   id: string;
   started_at: string;

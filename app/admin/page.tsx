@@ -89,6 +89,20 @@ const adminCards = [
       </svg>
     ),
   },
+  {
+    href: '/admin/sks-payments',
+    title: 'Pembayaran SKS',
+    desc: 'Verifikasi pembayaran registrasi mata kuliah',
+    iconColor: 'text-rose-600',
+    iconBg: 'bg-rose-50',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <path d="M2 10h20" />
+        <path d="M7 15h3" />
+      </svg>
+    ),
+  },
 ];
 
 export default function AdminPage() {

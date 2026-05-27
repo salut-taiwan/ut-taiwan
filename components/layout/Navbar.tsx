@@ -21,6 +21,7 @@ export default function Navbar() {
     { href: '/packages', label: 'Paket Modul' },
     { href: '/panduan', label: 'Panduan' },
     { href: '/toko', label: 'Toko' },
+    { href: '/sks-payment', label: 'Bantuan Bayar SKS' },
     { href: '/salut', label: 'SALUT' },
   ];
 

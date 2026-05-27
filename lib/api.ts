@@ -1,5 +1,6 @@
 import type {
   AdminSalutApplicationDTO,
+  AdminSksPaymentDTO,
   AdminUserDTO,
   AdminUserListResponseDTO,
   CartDTO,
@@ -14,6 +15,8 @@ import type {
   ProductListResponseDTO,
   ProgramDTO,
   ScraperRunDTO,
+  SksPaymentDTO,
+  SksPaymentQuoteDTO,
   SubjectDTO,
   UserProfileDTO,
 } from '@/types';
@@ -49,6 +52,9 @@ export interface FeesConfig {
     bank: string;
     account: string;
     holder: string;
+  };
+  sksPayment?: {
+    rate_label?: string;
   };
 }
 
@@ -316,6 +322,49 @@ export const api = {
       apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl, current_semester: currentSemester }) }),
     getStatus: () => apiFetch<SalutStatus>('/salut/status'),
   },
+  sksPayment: {
+    quote: (idr_amount: number, signal?: AbortSignal) =>
+      apiFetch<SksPaymentQuoteDTO>('/sks-payment/quote', {
+        method: 'POST',
+        body: JSON.stringify({ idr_amount }),
+        signal,
+      }),
+    uploadSlip: (file: File): Promise<{ url: string }> => {
+      const token = getToken();
+      const fd = new FormData();
+      fd.append('file', file);
+      return fetch(`${API_BASE}/sks-payment/upload-slip`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      }).then(async r => {
+        if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
+        return r.json();
+      });
+    },
+    uploadProof: (file: File): Promise<{ url: string }> => {
+      const token = getToken();
+      const fd = new FormData();
+      fd.append('file', file);
+      return fetch(`${API_BASE}/sks-payment/upload-proof`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      }).then(async r => {
+        if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
+        return r.json();
+      });
+    },
+    submit: (body: {
+      nim: string;
+      name: string;
+      semester_period: string;
+      idr_amount: number;
+      ut_slip_url: string;
+      transfer_proof_url: string;
+    }) => apiFetch<SksPaymentDTO>('/sks-payment', { method: 'POST', body: JSON.stringify(body) }),
+    listMine: () => apiFetch<SksPaymentDTO[]>('/sks-payment/mine'),
+  },
   products: {
     list: (
       params?: { category?: string; limit?: string; offset?: string },
@@ -416,5 +465,15 @@ export const api = {
       apiFetch(`/users/admin/${userId}/salut/approve`, { method: 'PATCH' }),
     rejectSalut: (userId: string, reason: string) =>
       apiFetch(`/users/admin/${userId}/salut/reject`, { method: 'PATCH', body: JSON.stringify({ reason }) }),
+    listSksPayments: (status?: 'pending' | 'all') =>
+      apiFetch<AdminSksPaymentDTO[]>(`/sks-payment/admin/all${status === 'all' ? '?status=all' : ''}`),
+    getSksSlipUrl: (id: string) =>
+      apiFetch<{ signedUrl: string }>(`/sks-payment/admin/${id}/slip-url`),
+    getSksProofUrl: (id: string) =>
+      apiFetch<{ signedUrl: string }>(`/sks-payment/admin/${id}/proof-url`),
+    completeSks: (id: string) =>
+      apiFetch<SksPaymentDTO>(`/sks-payment/admin/${id}/complete`, { method: 'PATCH' }),
+    rejectSks: (id: string, reason: string) =>
+      apiFetch<SksPaymentDTO>(`/sks-payment/admin/${id}/reject`, { method: 'PATCH', body: JSON.stringify({ reason }) }),
   },
 };
