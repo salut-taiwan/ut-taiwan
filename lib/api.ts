@@ -24,6 +24,7 @@ export interface RenewalPolicy {
   resetDates?: { month: number; day: number }[];
   timezone: string;
   notice: string;
+  next_renewal_date_display?: string | null;
 }
 
 export interface FeesConfig {

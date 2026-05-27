@@ -3,22 +3,14 @@ import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import type { ProductListResponseDTO } from '@/types';
+import { TOKO_CATEGORIES } from '@/lib/toko-categories';
 
 export const metadata: Metadata = {
   title: 'Toko UT Taiwan | Sentra Layanan Universitas Terbuka Taiwan',
   description: 'Belanja merchandise resmi Universitas Terbuka: jas almamater, jaket, kaos, tas, dan aksesoris UT Taiwan.',
 };
 
-const CATEGORIES: { key: string; label: string }[] = [
-  { key: '', label: 'Semua' },
-  { key: 'jas-almamater', label: 'Jas Almamater' },
-  { key: 'jaket', label: 'Jaket' },
-  { key: 'jersey', label: 'Jersey' },
-  { key: 'training-set', label: 'Training Set' },
-  { key: 'kaos', label: 'Kaos' },
-  { key: 'tas', label: 'Tas & Clutch' },
-  { key: 'aksesoris', label: 'Aksesoris' },
-];
+const CATEGORIES = TOKO_CATEGORIES;
 
 const PAGE_SIZE = 24;
 
