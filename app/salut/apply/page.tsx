@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { api, type FeesConfig, type ApplicableFee } from '@/lib/api';
+import { api, type FeesConfig } from '@/lib/api';
 
 export default function SalutApplyPage() {
   const { user, isLoading } = useAuth();
@@ -16,7 +16,6 @@ export default function SalutApplyPage() {
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [appliedAtDisplay, setAppliedAtDisplay] = useState<string | null>(null);
   const [currentSemester, setCurrentSemester] = useState<number | ''>('');
-  const [applicableFee, setApplicableFee] = useState<ApplicableFee | null>(null);
 
   const [qrisOpen, setQrisOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -38,7 +37,6 @@ export default function SalutApplyPage() {
       setStatus((s.effective_status as 'none' | 'pending' | 'approved' | 'rejected' | 'expired') || 'none');
       setRejectionReason(s.salut_rejection_reason);
       setAppliedAtDisplay(s.salut_applied_at_display ?? null);
-      setApplicableFee(s.applicable_fee ?? null);
       if (typeof s.salut_applied_semester === 'number') setCurrentSemester(s.salut_applied_semester);
     }).catch(() => setStatus('none'));
     api.auth.getMe().then((profile: { current_semester?: number | null }) => {
@@ -139,6 +137,12 @@ export default function SalutApplyPage() {
     );
   }
 
+  const feeDisplay = currentSemester === '' || !fees
+    ? null
+    : currentSemester === 1
+      ? { amount: fees.salutMembership.new_display, label: fees.salutMembership.new_label }
+      : { amount: fees.salutMembership.returning_display, label: fees.salutMembership.returning_label };
+
   return (
     <div className="max-w-lg mx-auto">
       <div className="mb-6">
@@ -183,11 +187,11 @@ export default function SalutApplyPage() {
           <div>
             <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Jumlah Transfer</p>
             <p className="text-xl font-extrabold text-indigo-700 tabular-nums">
-              {applicableFee?.amount_display ?? '...'}
+              {feeDisplay?.amount ?? '...'}
             </p>
-            {applicableFee?.tier_label && (
+            {feeDisplay?.label && (
               <p className="text-xs text-[var(--text-muted)] mt-1">
-                {applicableFee.tier_label}
+                {feeDisplay.label}
               </p>
             )}
           </div>
