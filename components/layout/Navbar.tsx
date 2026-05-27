@@ -55,7 +55,7 @@ function getInitials(name?: string | null, email?: string | null) {
 }
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const { cartCount } = useCart();
@@ -172,7 +172,12 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop user links */}
-            {user ? (
+            {isLoading ? (
+              <div className="hidden md:flex items-center gap-2" aria-hidden="true">
+                <div className="skeleton h-8 w-16 rounded-lg" />
+                <div className="skeleton h-8 w-16 rounded-lg" />
+              </div>
+            ) : user ? (
               <div className="hidden md:flex items-center gap-1">
                 <Link href="/orders" prefetch={true}
                   className={cn(
@@ -304,7 +309,12 @@ export default function Navbar() {
               );
             })}
             <div className="border-t border-[var(--border-subtle)] pt-2 mt-2 space-y-0.5">
-              {user ? (
+              {isLoading ? (
+                <div className="flex gap-2 px-3 pt-1" aria-hidden="true">
+                  <div className="skeleton h-9 flex-1 rounded-lg" />
+                  <div className="skeleton h-9 flex-1 rounded-lg" />
+                </div>
+              ) : user ? (
                 <>
                   <Link href="/orders" onClick={closeMobile} className={cn('block px-3 py-2.5 rounded-xl text-sm font-medium transition-[color,background-color] duration-150', pathname.startsWith('/orders') ? 'text-indigo-700 bg-indigo-50' : 'text-[var(--text-body)] hover:text-indigo-700 hover:bg-indigo-50')}>Pesanan</Link>
                   {user.role === 'admin' && (
