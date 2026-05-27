@@ -307,13 +307,15 @@ export default function SksPaymentApplyPage() {
         <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-5">
           <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 3: Transfer ke SALUT</h2>
           <div className="space-y-3 text-sm">
-            {fees?.paymentBank ? (
+            {fees?.sksPayment?.payment_bank ? (
               <div>
-                <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Rekening Tujuan</p>
-                <p className="text-[var(--foreground)] font-semibold">
-                  {fees.paymentBank.bank} · {fees.paymentBank.account}
+                <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Rekening Tujuan (NTD)</p>
+                <p className="text-[var(--foreground)] font-semibold">{fees.sksPayment.payment_bank.bank}</p>
+                <p className="font-mono text-[var(--foreground)] text-sm mt-0.5">{fees.sksPayment.payment_bank.account}</p>
+                <p className="text-[var(--text-body)] text-xs mt-0.5">a.n. {fees.sksPayment.payment_bank.holder}</p>
+                <p className="text-[10px] text-[var(--text-muted)] mt-1.5">
+                  Kode Bank: {fees.sksPayment.payment_bank.bank_code} · SWIFT: {fees.sksPayment.payment_bank.swift_code}
                 </p>
-                <p className="text-[var(--text-body)] text-xs">a.n. {fees.paymentBank.holder}</p>
               </div>
             ) : (
               <div className="h-10 rounded skeleton" />

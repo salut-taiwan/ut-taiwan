@@ -55,6 +55,14 @@ export interface FeesConfig {
   };
   sksPayment?: {
     rate_label?: string;
+    payment_bank?: {
+      bank: string;
+      account: string;
+      bank_code: string;
+      swift_code: string;
+      holder: string;
+      currency: 'NTD';
+    };
   };
 }
 
