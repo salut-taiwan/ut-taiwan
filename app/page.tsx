@@ -294,7 +294,7 @@ export default async function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 items-center">
           <div>
             <span className="text-xs font-semibold uppercase tracking-caps text-teal-700">Keanggotaan eksklusif</span>
-            <h2 className="text-3xl font-bold text-teal-900 mt-2 mb-3">SALUT: hemat Rp 425.000 setiap pesanan.</h2>
+            <h2 className="text-3xl font-bold text-teal-900 mt-2 mb-3">SALUT: bebas biaya layanan Rp 425.000 per pesanan.</h2>
             <ul className="space-y-2 mb-4">
               {salutBenefits.map(b => (
                 <li key={b} className="flex items-start gap-2 text-sm text-teal-900">
