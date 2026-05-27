@@ -102,7 +102,7 @@ export default function OrdersPage() {
               </span>
             </div>
             <div className="flex items-center justify-between text-sm text-[var(--text-body)]">
-              <span>{order.order_items?.length || 0} modul</span>
+              <span>{order.order_items?.length || 0} item</span>
               <div className="flex items-center gap-2">
                 {order.payments?.[0] && (
                   <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${PAYMENT_COLORS[order.payments[0].status] || 'bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text-body)]'}`}>

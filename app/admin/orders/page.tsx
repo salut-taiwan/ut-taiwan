@@ -321,7 +321,7 @@ export default function AdminOrdersPage() {
                         <div className="border border-blue-100 rounded-xl px-4 py-3 mt-1.5 text-xs space-y-1">
                           <p className="font-semibold text-[var(--text-body)] mb-2">Rincian Biaya</p>
                           <div className="flex justify-between text-[var(--text-body)]">
-                            <span>Subtotal Modul</span>
+                            <span>Subtotal Item</span>
                             <span className="tabular-nums">{order.subtotal_display}</span>
                           </div>
                           {order.fee_lines?.map((line) => (

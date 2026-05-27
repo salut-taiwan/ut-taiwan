@@ -9,6 +9,7 @@ import type {
   OrderDTO,
   PackageDTO,
   PackageListResponseDTO,
+  ClaimCta,
   ProductDTO,
   ProductListResponseDTO,
   ProgramDTO,
@@ -327,6 +328,8 @@ export const api = {
       return apiFetch<ProductListResponseDTO>(`/products${qs ? '?' + qs : ''}`, { signal });
     },
     get: (id: string) => apiFetch<ProductDTO>(`/products/${id}`),
+    getClaimCta: (id: string) =>
+      apiFetch<{ claim_cta: ClaimCta | null }>(`/products/${id}/claim-cta`),
   },
   config: {
     getFees: () => apiFetch<FeesConfig>('/config/fees'),

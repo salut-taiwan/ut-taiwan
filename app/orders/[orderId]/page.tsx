@@ -344,10 +344,10 @@ function OrderDetailContent() {
 
       {/* Order items */}
       <div className="mb-4 bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
-        <h2 className="font-semibold text-[var(--foreground)] mb-3">Daftar Modul</h2>
+        <h2 className="font-semibold text-[var(--foreground)] mb-3">Daftar Item</h2>
         <div className="space-y-0">
           <div className="flex items-center text-xs text-[var(--text-muted)] pb-2 border-b border-[var(--border-subtle)]">
-            <span className="flex-1">Modul</span>
+            <span className="flex-1">Item</span>
             <span className="w-24 text-right">Harga Satuan</span>
             <span className="w-24 text-right ml-4">Subtotal</span>
           </div>
@@ -384,7 +384,7 @@ function OrderDetailContent() {
           })}
           <div className="pt-3 space-y-1.5 text-sm border-t border-[var(--border-subtle)]">
             <div className="flex justify-between text-[var(--text-body)]">
-              <span>Subtotal Modul</span>
+              <span>Subtotal Item</span>
               <span className="tabular-nums">{order.subtotal_display}</span>
             </div>
             {order.fee_lines?.map((line) => (
@@ -425,7 +425,7 @@ function OrderDetailContent() {
           {showDeliveryConfirm ? (
             <div className="space-y-3">
               <p className="text-sm text-purple-800 bg-purple-100 rounded-xl px-4 py-3">
-                Pastikan Anda telah menerima semua modul sebelum mengkonfirmasi.
+                Pastikan Anda telah menerima semua item sebelum mengkonfirmasi.
               </p>
               <div className="flex gap-3">
                 <button
@@ -456,7 +456,7 @@ function OrderDetailContent() {
                 Sudah Diterima
               </button>
               <p className="text-xs text-purple-500 mt-2 text-center">
-                Klik tombol ini setelah Anda menerima semua modul yang dipesan.
+                Klik tombol ini setelah Anda menerima semua item yang dipesan.
               </p>
             </>
           )}

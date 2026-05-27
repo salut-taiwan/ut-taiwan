@@ -128,8 +128,17 @@ export interface ProductDTO {
   product_images?: ProductImageDTO[];
   product_variant_types?: ProductVariantTypeDTO[];
   product_skus?: ProductSKUDTO[];
+  claim_rule?: 'salut_sem1_once' | null;
   // Backend-formatted (Phase 1 additive)
   base_price_display?: string | null;
+}
+
+export interface ClaimCta {
+  state: 'need_login' | 'already_claimed' | 'need_salut' | 'not_sem1' | 'eligible';
+  label: string;
+  disabled: boolean;
+  href?: string;
+  addToCart?: boolean;
 }
 
 export interface CartItemDTO {

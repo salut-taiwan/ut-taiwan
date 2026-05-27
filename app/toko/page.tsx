@@ -129,6 +129,11 @@ export default async function TokoPage({
                       </svg>
                     </div>
                   )}
+                  {product.claim_rule === 'salut_sem1_once' && (
+                    <span className="absolute top-2 left-2 bg-teal-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shadow-sm">
+                      Khusus SALUT
+                    </span>
+                  )}
                 </div>
                 <div className="p-3">
                   <p className="text-xs text-indigo-600 font-semibold mb-1 capitalize">

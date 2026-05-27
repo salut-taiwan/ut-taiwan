@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -8,7 +8,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
-import type { ProductDTO, ProductSKUDTO } from '@/types';
+import type { ClaimCta, ProductDTO, ProductSKUDTO } from '@/types';
 
 
 export default function ProductDetail({ product }: { product: ProductDTO }) {
@@ -24,6 +24,25 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
   const [activeImage, setActiveImage] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState(false);
+
+  // Claim-gated products fetch their per-user CTA from the BE client-side
+  // (the SSR /products/:id response is shared across users and must not leak
+  // per-user state).
+  const isClaimGated = product.claim_rule === 'salut_sem1_once';
+  const [claimCta, setClaimCta] = useState<ClaimCta | null>(null);
+  const [claimCtaLoading, setClaimCtaLoading] = useState(isClaimGated);
+
+  useEffect(() => {
+    if (!isClaimGated) return;
+    let cancelled = false;
+    setClaimCtaLoading(true);
+    api.products.getClaimCta(product.id)
+      .then(res => { if (!cancelled) setClaimCta(res.claim_cta); })
+      .catch(() => { if (!cancelled) setClaimCta(null); })
+      .finally(() => { if (!cancelled) setClaimCtaLoading(false); });
+    return () => { cancelled = true; };
+    // Re-fetch when auth state flips (login/logout) so the CTA reflects the current user.
+  }, [isClaimGated, product.id, user?.id]);
 
   // Find the SKU that matches the current selection
   const resolvedSku: ProductSKUDTO | null = (() => {
@@ -111,8 +130,18 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
           <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">
             {product.category.replace(/-/g, ' ')}
           </span>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] mt-1 mb-1">{product.name}</h1>
-          <p className="text-2xl font-bold text-[var(--foreground)] tabular-nums mb-5">
+          <h1 className="text-2xl font-bold text-[var(--foreground)] mt-1 mb-2">{product.name}</h1>
+
+          {isClaimGated && (
+            <div className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full mb-3">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Khusus Anggota SALUT
+            </div>
+          )}
+
+          <p className={`text-2xl font-bold tabular-nums mb-5 ${isClaimGated ? 'text-teal-700' : 'text-[var(--foreground)]'}`}>
             {displayPriceLabel}
           </p>
 
@@ -154,28 +183,32 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
             </div>
           ))}
 
-          {/* Add to cart */}
-          <button
-            onClick={handleAddToCart}
-            disabled={!canAdd || adding}
-            className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-semibold text-sm hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]"
-          >
-            {adding ? (
-              <>
-                <span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" />
-                Menambahkan...
-              </>
-            ) : !canAdd && variantTypes.length > 0 ? (
-              'Pilih ukuran/warna terlebih dahulu'
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Tambah ke Keranjang
-              </>
-            )}
-          </button>
+          {/* CTA */}
+          {isClaimGated ? (
+            <ClaimCtaButton cta={claimCta} loading={claimCtaLoading} adding={adding} onClaim={handleAddToCart} />
+          ) : (
+            <button
+              onClick={handleAddToCart}
+              disabled={!canAdd || adding}
+              className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-semibold text-sm hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]"
+            >
+              {adding ? (
+                <>
+                  <span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" />
+                  Menambahkan...
+                </>
+              ) : !canAdd && variantTypes.length > 0 ? (
+                'Pilih ukuran/warna terlebih dahulu'
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  Tambah ke Keranjang
+                </>
+              )}
+            </button>
+          )}
 
           {/* Description */}
           {product.description && (
@@ -190,4 +223,47 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
       </div>
     </div>
   );
+}
+
+const CTA_BASE_CLASS = 'w-full mt-2 inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-semibold text-sm hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]';
+
+function ClaimCtaButton({
+  cta,
+  loading,
+  adding,
+  onClaim,
+}: {
+  cta: ClaimCta | null;
+  loading: boolean;
+  adding: boolean;
+  onClaim: () => void;
+}) {
+  if (loading) {
+    return <div className={CTA_BASE_CLASS + ' opacity-60'} role="status" aria-busy="true">…</div>;
+  }
+  if (!cta) {
+    return <button disabled className={CTA_BASE_CLASS}>Tidak tersedia</button>;
+  }
+  if (cta.href) {
+    return (
+      <Link href={cta.href} className={CTA_BASE_CLASS}>
+        {cta.label}
+      </Link>
+    );
+  }
+  if (cta.addToCart) {
+    return (
+      <button onClick={onClaim} disabled={adding} className={CTA_BASE_CLASS}>
+        {adding ? (
+          <>
+            <span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" />
+            Menambahkan...
+          </>
+        ) : (
+          cta.label
+        )}
+      </button>
+    );
+  }
+  return <button disabled className={CTA_BASE_CLASS}>{cta.label}</button>;
 }
