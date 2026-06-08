@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Plus_Jakarta_Sans, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import VerifyEmailBanner from "@/components/layout/VerifyEmailBanner";
@@ -13,9 +13,18 @@ import Providers from "@/components/ui/Providers";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const displayFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const bodyFont = Nunito_Sans({
+  subsets: ["latin"],
+  variable: "--font-body",
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -30,7 +39,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <body className={`${geistSans.variable} antialiased min-h-screen flex flex-col`}>
+      <body className={`${displayFont.variable} ${bodyFont.variable} antialiased min-h-screen flex flex-col`}>
         <Providers>
           <AuthProvider>
             <CartProvider>
