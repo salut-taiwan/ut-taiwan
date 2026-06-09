@@ -62,10 +62,10 @@ function LoginForm() {
           <span className="text-4xl font-bold block mb-2 tracking-tight">UT Taiwan</span>
           <span className="text-indigo-200/80 text-sm block mb-8">Sentra Layanan UT Taiwan</span>
           <p className="text-indigo-100/90 text-lg leading-relaxed mb-8">
-            Platform pembelian modul bahan ajar Universitas Terbuka untuk mahasiswa di Taiwan.
+            Satu platform untuk semua kebutuhan akademik mahasiswa Universitas Terbuka di Taiwan.
           </p>
           <div className="flex flex-col gap-3 text-sm text-indigo-200/90">
-            {['Harga khusus mahasiswa UT', 'Pengiriman langsung ke Taiwan', 'Data modul selalu terupdate'].map(item => (
+            {['Modul & paket bahan ajar UT', 'Bantuan bayar SKS dalam NTD', 'Toko & keanggotaan SALUT'].map(item => (
               <div key={item} className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

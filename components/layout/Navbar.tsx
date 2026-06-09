@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -73,9 +74,15 @@ export default function Navbar() {
     <nav className="bg-[var(--surface-overlay)] backdrop-blur-xl border-b border-[var(--border-subtle)] shadow-[var(--shadow-xs)] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" prefetch={true} className="flex items-center gap-2.5">
-            <span className="text-xl font-bold tracking-tight text-indigo-700">UT Taiwan</span>
-            <span className="text-xs text-[var(--text-muted)] hidden sm:block">Sentra Layanan UT Taiwan</span>
+          <Link href="/" prefetch={true} className="flex items-center shrink-0">
+            <Image
+              src="/LOGO SALUT UTT - NO BACKGROUND.png"
+              alt="SALUT UT Taiwan"
+              width={200}
+              height={63}
+              className="h-8 sm:h-11 w-auto object-contain"
+              priority
+            />
           </Link>
 
           {/* Desktop nav */}
@@ -312,7 +319,7 @@ export default function Navbar() {
               exit={{ height: 0, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               style={{ overflow: 'hidden' }}
-              className="md:hidden border-t border-[var(--border-subtle)]"
+              className="md:hidden border-t border-[var(--border-subtle)] px-[6px] -mx-[6px]"
             >
               <div className="py-3 space-y-0.5">
                 {[...modulLinks, ...flatLinks].map(link => {

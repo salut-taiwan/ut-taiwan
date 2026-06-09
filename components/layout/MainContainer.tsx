@@ -1,15 +1,18 @@
 'use client';
-
 import { usePathname } from 'next/navigation';
 
-const FULL_BLEED_PATHS = ['/login', '/register'];
+const FULL_BLEED_PATHS = ['/login', '/register', '/'];
 
 export default function MainContainer({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const fullBleed = FULL_BLEED_PATHS.includes(pathname);
   return (
-    <main className={fullBleed ? 'flex-1' : 'flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'}>
-      {children}
+    <main className="flex-1 overflow-x-clip">
+      {fullBleed ? children : (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {children}
+        </div>
+      )}
     </main>
   );
 }

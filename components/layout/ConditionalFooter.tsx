@@ -9,33 +9,42 @@ export default function ConditionalFooter() {
   const pathname = usePathname();
   if (NO_FOOTER_PATHS.includes(pathname)) return null;
   return (
-    <footer className="bg-[var(--surface)] border-t border-[var(--border)] mt-20 py-12">
+    <footer className="bg-[var(--surface)] border-t border-[var(--border)] mt-12 py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
           {/* Brand */}
           <div>
             <p className="text-base font-semibold text-[var(--foreground)]">UT Taiwan</p>
-            <p className="mt-0.5 text-sm text-[var(--text-body)]">Sentra Layanan Universitas Terbuka untuk Mahasiswa di Taiwan</p>
-            <p className="mt-0.5 text-xs text-[var(--text-muted)]">Sentra Layanan Universitas Terbuka (SALUT) Taiwan</p>
+            <p className="mt-1 text-sm text-[var(--text-body)] leading-snug">
+              Sentra Layanan Universitas Terbuka untuk Mahasiswa di Taiwan
+            </p>
           </div>
 
-          {/* Site nav */}
-          <nav className="flex flex-col gap-2 text-sm text-[var(--text-body)]">
-            <Link href="/modules"  className="hover:text-indigo-700 transition-colors duration-150">Semua Modul</Link>
-            <Link href="/program"  className="hover:text-indigo-700 transition-colors duration-150">Program Studi</Link>
-            <Link href="/packages" className="hover:text-indigo-700 transition-colors duration-150">Paket Modul</Link>
-            <Link href="/panduan"  className="hover:text-indigo-700 transition-colors duration-150">Panduan</Link>
-            <Link href="/toko"     className="hover:text-indigo-700 transition-colors duration-150">Toko</Link>
-            <Link href="/orders"   className="hover:text-indigo-700 transition-colors duration-150">Pesanan</Link>
-            <Link href="/salut"    className="hover:text-indigo-700 transition-colors duration-150">SALUT</Link>
-            <Link href="/profile"  className="hover:text-indigo-700 transition-colors duration-150">Profil</Link>
-          </nav>
+          {/* Beli */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-3">Beli</p>
+            <nav className="flex flex-col gap-2 text-sm text-[var(--text-body)]">
+              <Link href="/modules"  className="hover:text-indigo-700 transition-colors duration-150">Modul Kuliah</Link>
+              <Link href="/packages" className="hover:text-indigo-700 transition-colors duration-150">Paket Modul</Link>
+              <Link href="/toko"     className="hover:text-indigo-700 transition-colors duration-150">Toko</Link>
+            </nav>
+          </div>
+
+          {/* Info */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-3">Info</p>
+            <nav className="flex flex-col gap-2 text-sm text-[var(--text-body)]">
+              <Link href="/program"  className="hover:text-indigo-700 transition-colors duration-150">Program Studi</Link>
+              <Link href="/panduan"  className="hover:text-indigo-700 transition-colors duration-150">Panduan</Link>
+              <Link href="/salut"    className="hover:text-indigo-700 transition-colors duration-150">SALUT</Link>
+            </nav>
+          </div>
 
           {/* Contact & UT links */}
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-3">Hubungi Kami</p>
 
-            {/* Social icons */}
             <div className="flex items-center gap-3 mb-2">
               <a
                 href="https://www.instagram.com/univterbuka_taiwan/"
@@ -61,7 +70,6 @@ export default function ConditionalFooter() {
               </a>
             </div>
 
-            {/* Email */}
             <a
               href="mailto:pengurus.uttaiwan@gmail.com"
               className="text-sm text-[var(--text-body)] hover:text-indigo-700 transition-colors duration-150 break-all"
@@ -91,6 +99,11 @@ export default function ConditionalFooter() {
               </a>
             </div>
           </div>
+        </div>
+
+        {/* Copyright strip */}
+        <div className="border-t border-[var(--border-subtle)] mt-8 pt-4 text-xs text-[var(--text-muted)]">
+          © 2025 SALUT Taiwan
         </div>
       </div>
     </footer>

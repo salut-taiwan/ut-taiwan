@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import type { FeesConfig } from '@/lib/api'
 import { TOKO_CATEGORIES } from '@/lib/toko-categories'
+import { cn } from '@/lib/utils'
 
 // ─── Animation config ──────────────────────────────────────────────────────
 
@@ -95,6 +96,7 @@ const featurePillars = [
     iconColor: 'text-indigo-600',
     iconBg: 'bg-indigo-50',
     topBorder: '#0A4595',
+    colSpan: 'wide' as const,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
@@ -139,6 +141,8 @@ const featurePillars = [
     iconColor: 'text-teal-600',
     iconBg: 'bg-teal-50',
     topBorder: '#0D9488',
+    colSpan: 'wide' as const,
+    accentCard: true,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 2l3 6 6 1-4.5 4.5L18 21l-6-3-6 3 1.5-7.5L3 9l6-1 3-6z" />
@@ -165,7 +169,7 @@ const infoCards = [
   {
     title: 'Pengiriman ke Taiwan',
     desc: 'Pengiriman langsung ke alamat Anda di Taiwan.',
-    accent: 'border-l-indigo-400',
+    cardClass: 'bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] border-l-4 border-l-indigo-400 p-6 h-full',
     iconBg: 'bg-indigo-50',
     iconColor: 'text-indigo-600',
     icon: (
@@ -180,7 +184,7 @@ const infoCards = [
   {
     title: 'Harga Mahasiswa + SALUT',
     desc: 'Harga khusus mahasiswa UT. Anggota SALUT: biaya layanan nol.',
-    accent: 'border-l-amber-400',
+    cardClass: 'bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] border-t-4 border-t-amber-400 p-6 h-full',
     iconBg: 'bg-amber-50',
     iconColor: 'text-amber-600',
     icon: (
@@ -193,9 +197,9 @@ const infoCards = [
   {
     title: 'Data selalu segar',
     desc: 'Modul disinkronkan dari TBO Karunika setiap hari. Stok toko diperbarui berkala.',
-    accent: 'border-l-emerald-400',
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
+    cardClass: 'bg-emerald-50 rounded-2xl border border-emerald-200 p-6 h-full',
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-700',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
         <path d="M23 4v6h-6M1 20v-6h6" />
@@ -220,7 +224,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
     <div>
       {/* SALUT renewal banner */}
       {nextRenewalDisplay && (
-        <section className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 mb-8 bg-teal-50 border-y border-teal-200 px-4 sm:px-6 lg:px-8 py-3">
+        <section className="mb-8 bg-teal-50 border-y border-teal-200 px-4 sm:px-6 lg:px-8 py-3">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm">
             <p className="text-teal-800">
               <strong>Keanggotaan SALUT berakhir</strong> setiap <strong>1 Mei</strong> dan <strong>1 November</strong>. Perpanjangan berikutnya: <span className="font-semibold">{nextRenewalDisplay}</span>.
@@ -240,7 +244,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
 
       {/* ── Hero ── */}
       <section
-        className={`relative -mx-4 sm:-mx-6 lg:-mx-8 ${nextRenewalDisplay ? '' : '-mt-8'} mb-0 overflow-hidden text-white px-4 sm:px-6 lg:px-8 py-24`}
+        className="relative mb-0 overflow-hidden text-white px-4 sm:px-6 lg:px-8 py-24"
         style={{
           background: 'linear-gradient(135deg, #04204A 0%, #0A4595 25%, #1E3A8A 50%, #083A7E 75%, #062E66 100%)',
           backgroundSize: '400% 400%',
@@ -298,7 +302,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
       </section>
 
       {/* ── Stats strip ── */}
-      <section className="-mx-4 sm:-mx-6 lg:-mx-8 bg-amber-400 py-8 mb-16 px-4 sm:px-6 lg:px-8">
+      <section className="-mt-6 relative z-10 bg-amber-400 py-8 mb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto grid grid-cols-3 gap-4 text-center">
           {stats.map(({ num, label }, i) => (
             <motion.div
@@ -316,39 +320,44 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
       </section>
 
       {/* ── Feature pillars ── */}
-      <section className="mb-16">
+      <section className="mb-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
-          <h2 className="text-3xl font-bold text-[var(--foreground)]">Layanan kami</h2>
+          <h2 className="text-xl font-semibold text-[var(--text-body)]">Layanan kami</h2>
         </motion.div>
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-60px' }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           {featurePillars.map(p => (
             <motion.div
               key={p.href}
               variants={cardReveal}
               whileHover={{ y: -6, transition: { type: 'spring', stiffness: 400, damping: 28 } }}
-              className="hover-shadow-lift rounded-2xl"
+              className={cn("hover-shadow-lift rounded-2xl", p.colSpan === 'wide' && "sm:col-span-2")}
             >
               <Link
                 href={p.href}
-                className="group block bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] border-t-4 p-6 h-full"
+                className={cn(
+                  "group block rounded-2xl border border-[var(--border-subtle)] border-t-4 p-6 h-full",
+                  p.accentCard ? "bg-teal-50" : "bg-[var(--surface)]"
+                )}
                 style={{ borderTopColor: p.topBorder }}
               >
                 <div className={`w-12 h-12 ${p.iconBg} ${p.iconColor} rounded-xl flex items-center justify-center mb-4`}>
                   <span className="w-6 h-6">{p.icon}</span>
                 </div>
-                <div className="font-bold text-[var(--foreground)] mb-1.5">{p.title}</div>
+                <div className={cn("font-bold text-[var(--foreground)] mb-1.5", p.colSpan === 'wide' && "text-lg")}>
+                  {p.title}
+                </div>
                 <div className="text-sm text-[var(--text-body)] leading-snug">{p.desc}</div>
               </Link>
             </motion.div>
@@ -357,51 +366,56 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
       </section>
 
       {/* ── Faculty selection ── */}
-      <section className="mb-16">
+      <section className="mb-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
-          <h2 className="text-3xl font-bold text-[var(--foreground)] mb-2">Pilih fakultas</h2>
-          <p className="text-[var(--text-body)]">Mulai dari fakultas Anda untuk menemukan modul.</p>
+          <h2 className="text-2xl font-bold text-[var(--foreground)] mb-1">Pilih fakultas</h2>
+          <p className="text-sm text-[var(--text-body)]">Mulai dari fakultas Anda untuk menemukan modul.</p>
         </motion.div>
+        <div className="-mx-4 sm:-mx-6 lg:mx-0 overflow-x-clip">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-60px' }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          className="flex gap-3 overflow-x-auto pb-3 pt-2 px-4 sm:px-6 lg:px-0"
         >
           {faculties.map(f => (
             <motion.div
               key={f.code}
               variants={cardReveal}
-              whileHover={{ y: -6, transition: { type: 'spring', stiffness: 400, damping: 28 } }}
-              className="hover-shadow-lift rounded-2xl"
+              whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 28 } }}
+              className="hover-shadow-lift rounded-2xl flex-none w-36 sm:flex-1 sm:w-auto"
             >
               <Link
                 href={`/program?faculty=${f.code}`}
-                className="group block bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] border-t-4 p-6 text-center h-full"
+                className="group flex flex-col bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] border-t-4 p-5 h-full text-center"
                 style={{ borderTopColor: f.topBorder }}
               >
-                <div className={`w-12 h-12 ${f.iconBg} ${f.iconColor} rounded-xl flex items-center justify-center mx-auto mb-4`}>
-                  <span className="w-6 h-6">{f.icon}</span>
-                </div>
-                <div className="font-bold text-[var(--foreground)] text-sm mb-1">{f.code}</div>
-                <div className="font-semibold text-[var(--text-body)] mb-2 text-sm leading-snug">{f.name}</div>
-                <div className="text-xs text-[var(--text-muted)]">{f.programs}</div>
+                <div className={`text-3xl font-black ${f.iconColor} mb-1 leading-none`}>{f.code}</div>
+                <div className="font-semibold text-[var(--foreground)] text-xs leading-snug mb-1.5">{f.name}</div>
+                <div className="text-xs text-[var(--text-muted)] mt-auto">{f.programs}</div>
               </Link>
             </motion.div>
           ))}
         </motion.div>
+        </div>
       </section>
 
       {/* ── SALUT spotlight (bold redesign) ── */}
-      <section className="-mx-4 sm:-mx-6 lg:-mx-8 mb-16 bg-teal-600 px-4 sm:px-6 lg:px-8 py-16">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 items-center">
+      <section className="mb-16 bg-teal-600 px-4 sm:px-6 lg:px-8 py-16 relative overflow-hidden">
+        {/* Decorative watermark */}
+        <div className="absolute inset-y-0 right-0 flex items-center pointer-events-none select-none" aria-hidden="true">
+          <span className="text-[7rem] sm:text-[9rem] font-black text-white/[0.06] leading-none tracking-tight pr-6 translate-x-6">
+            SALUT
+          </span>
+        </div>
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 items-center relative">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -412,7 +426,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
               <span className="w-1.5 h-1.5 rounded-full bg-teal-700 inline-block" />
               400+ Anggota Aktif
             </span>
-            <h2 className="text-3xl font-bold text-white mt-2 mb-3">SALUT: layanan lebih mudah, per semester.</h2>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-2 mb-3">SALUT: layanan lebih mudah, per semester.</h2>
             <ul className="space-y-2 mb-4">
               {salutBenefits.map(b => (
                 <li key={b} className="flex items-start gap-2 text-sm text-teal-100">
@@ -455,7 +469,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
       </section>
 
       {/* ── Toko spotlight ── */}
-      <section className="mb-16">
+      <section className="mb-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -496,7 +510,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
       </section>
 
       {/* ── How it works ── */}
-      <section className="-mx-4 sm:-mx-6 lg:-mx-8 bg-[var(--surface-sunken)] px-4 sm:px-6 lg:px-8 py-16 mb-16">
+      <section className="bg-[var(--surface-sunken)] px-4 sm:px-6 lg:px-8 py-16 mb-12">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -504,7 +518,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="text-center mb-10"
         >
-          <h2 className="text-3xl font-bold text-[var(--foreground)]">Cara pemesanan</h2>
+          <h2 className="text-2xl font-bold text-[var(--foreground)]">Cara pemesanan</h2>
         </motion.div>
         <motion.div
           variants={staggerContainer}
@@ -532,15 +546,15 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-60px' }}
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16"
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
         {infoCards.map(item => (
           <motion.div
             key={item.title}
             variants={cardReveal}
-            className={`hover-shadow-lift rounded-2xl`}
+            className="hover-shadow-lift rounded-2xl"
           >
-            <div className={`bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] border-l-4 ${item.accent} p-6 h-full`}>
+            <div className={item.cardClass}>
               <div className={`w-10 h-10 ${item.iconBg} ${item.iconColor} rounded-xl flex items-center justify-center mb-4`}>
                 <span className="w-5 h-5">{item.icon}</span>
               </div>
@@ -552,6 +566,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
       </motion.section>
 
       {/* ── Panduan CTA ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <motion.section
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -579,6 +594,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
           </Link>
         </div>
       </motion.section>
+      </div>
     </div>
   )
 }
