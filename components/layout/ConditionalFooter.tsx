@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const NO_FOOTER_PATHS = ['/login', '/register'];
 
@@ -19,6 +20,13 @@ export default function ConditionalFooter() {
             <p className="mt-1 text-sm text-[var(--text-body)] leading-snug">
               Sentra Layanan Universitas Terbuka untuk Mahasiswa di Taiwan
             </p>
+            <Image
+              src="/images/Logo_UTT.png"
+              alt="Universitas Terbuka Taiwan"
+              width={72}
+              height={98}
+              className="mt-3 opacity-80"
+            />
           </div>
 
           {/* Beli */}
@@ -103,7 +111,7 @@ export default function ConditionalFooter() {
 
         {/* Copyright strip */}
         <div className="border-t border-[var(--border-subtle)] mt-8 pt-4 text-xs text-[var(--text-muted)]">
-          © 2025 SALUT Taiwan
+          © 2026 SALUT Taiwan
         </div>
       </div>
     </footer>
