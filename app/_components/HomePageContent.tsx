@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 import type { FeesConfig } from '@/lib/api'
 import { TOKO_CATEGORIES } from '@/lib/toko-categories'
@@ -245,12 +246,28 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
       {/* ── Hero ── */}
       <section
         className="relative mb-0 overflow-hidden text-white px-4 sm:px-6 lg:px-8 py-24"
-        style={{
-          background: 'linear-gradient(135deg, #04204A 0%, #0A4595 25%, #1E3A8A 50%, #083A7E 75%, #062E66 100%)',
-          backgroundSize: '400% 400%',
-          animation: 'aurora 14s ease infinite',
-        }}
+        style={{ background: '#04204A' }}
       >
+        {/* Campus photo base layer */}
+        <Image
+          fill
+          src="/images/Foto-gedung.jpg"
+          alt=""
+          className="object-cover object-center"
+          sizes="100vw"
+          priority
+        />
+        {/* Indigo gradient overlay — keeps text readable, especially on left */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#04204A] via-[#04204A]/95 to-[#0A4595]/80" />
+        {/* Aurora animation layer */}
+        <div
+          className="absolute inset-0 mix-blend-overlay opacity-60"
+          style={{
+            background: 'linear-gradient(135deg, #04204A 0%, #0A4595 25%, #1E3A8A 50%, #083A7E 75%, #062E66 100%)',
+            backgroundSize: '400% 400%',
+            animation: 'aurora 14s ease infinite',
+          }}
+        />
         {/* Subtle grain overlay */}
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
           backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'1\'/%3E%3C/svg%3E")',
@@ -448,6 +465,13 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
             transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
             className="flex flex-col gap-3 lg:min-w-56"
           >
+            {/* Community photo card */}
+            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] shadow-lg">
+              <Image fill src="/images/salut.jpg" alt="Komunitas SALUT UT Taiwan" className="object-cover object-top" sizes="(max-width: 1024px) 100vw, 280px" />
+              <div className="absolute bottom-3 right-3 bg-amber-400 text-indigo-900 text-xs font-bold px-3 py-1 rounded-full shadow">
+                400+ Anggota Aktif
+              </div>
+            </div>
             {/* Warm terracotta CTA — Von Restorff effect on teal background */}
             <Link
               href="/salut/apply"
@@ -478,6 +502,33 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
           className="text-center mb-6"
         >
           <h2 className="text-3xl font-bold text-[var(--foreground)]">Merchandise resmi UT Taiwan</h2>
+        </motion.div>
+        {/* Editorial image strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.35, ease: 'easeOut', delay: 0.1 }}
+          className="grid grid-cols-3 gap-3 mb-6"
+        >
+          {[
+            { src: '/images/foto-almamater.jpeg', label: 'Jas Almamater', href: '/toko?category=jas-almamater' },
+            { src: '/images/jaket.jpg',            label: 'Jaket Resmi',   href: '/toko?category=jaket' },
+            { src: '/images/aksesoris.webp',       label: 'Aksesoris',     href: '/toko?category=aksesoris' },
+          ].map(item => (
+            <Link key={item.href} href={item.href}>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="relative rounded-2xl overflow-hidden aspect-[3/4]"
+              >
+                <Image fill src={item.src} alt={item.label} className="object-cover" sizes="(max-width: 640px) 33vw, (max-width: 1280px) 25vw, 300px" />
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                  <span className="text-white font-semibold text-sm">{item.label}</span>
+                </div>
+              </motion.div>
+            </Link>
+          ))}
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 8 }}
