@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import Input from '@/components/ui/Input';
 
 const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
-const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
 
 function LoginForm() {
   const router = useRouter();
@@ -53,7 +53,6 @@ function LoginForm() {
     <div className="min-h-[calc(100vh-4rem)] flex">
       {/* Left decorative panel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-[var(--primary)] flex-col items-center justify-center p-12 text-white">
-        {/* Decorative blobs */}
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/[0.03] rounded-full pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-800/30 rounded-full pointer-events-none" />
         <div className="absolute top-1/3 right-8 w-40 h-40 bg-white/[0.02] rounded-full pointer-events-none" />
@@ -114,20 +113,17 @@ function LoginForm() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                id="login-email"
+                label="Email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                placeholder="email@example.com"
+              />
               <div>
-                <label htmlFor="login-email" className={labelClass}>Email</label>
-                <input
-                  id="login-email"
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  className={inputClass}
-                  placeholder="email@example.com"
-                />
-              </div>
-              <div>
-                <label htmlFor="login-password" className={labelClass}>Password</label>
+                <label htmlFor="login-password" className="block text-sm font-medium text-[var(--foreground)] mb-1.5">Password</label>
                 <div className="relative">
                   <input
                     id="login-password"

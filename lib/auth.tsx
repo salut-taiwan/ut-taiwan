@@ -2,6 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { api, setOnSessionExpired } from './api';
+import { STORAGE_KEYS } from './constants';
 
 interface AuthUser {
   id: string;
@@ -42,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const expiredTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const esRef = useRef<EventSource | null>(null);
 
   const clearTimers = useCallback(() => {
     if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
@@ -94,16 +95,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // On mount: restore session from localStorage
   useEffect(() => {
-    const token = localStorage.getItem('ut_token');
-    const expiresAt = localStorage.getItem('ut_expires_at');
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+    const expiresAt = localStorage.getItem(STORAGE_KEYS.EXPIRES_AT);
     if (token) {
       if (expiresAt) scheduleTimers(Number(expiresAt));
       api.auth.getMe()
-        .then(profile => setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, is_salut_active: profile.is_salut_active ?? false, salut_status: profile.salut_status ?? 'none', is_verified: profile.is_verified ?? false }))
+        .then(profile => setUser({
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+          role: profile.role,
+          is_salut: profile.is_salut ?? false,
+          is_salut_active: profile.is_salut_active ?? false,
+          salut_status: profile.salut_status ?? 'none',
+          is_verified: profile.is_verified ?? false,
+          is_member: profile.is_member,
+          is_pending: profile.is_pending,
+          shipping_address_display: profile.shipping_address_display,
+          shipping_address_lines: profile.shipping_address_lines,
+        }))
         .catch(() => {
-          localStorage.removeItem('ut_token');
-          localStorage.removeItem('ut_refresh_token');
-          localStorage.removeItem('ut_expires_at');
+          localStorage.removeItem(STORAGE_KEYS.TOKEN);
+          localStorage.removeItem(STORAGE_KEYS.REFRESH);
+          localStorage.removeItem(STORAGE_KEYS.EXPIRES_AT);
         })
         .finally(() => setIsLoading(false));
     } else {
@@ -113,40 +127,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return clearTimers;
   }, [scheduleTimers, clearTimers]);
 
-  // Poll for is_salut changes while logged in (admin may change status at any time)
+  // SSE: subscribe to real-time SALUT status updates while logged in
   useEffect(() => {
     if (!user) return;
-    pollRef.current = setInterval(async () => {
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+    if (!token) return;
+
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/sse/status?token=${encodeURIComponent(token)}`;
+    const es = new EventSource(url);
+    esRef.current = es;
+
+    es.onmessage = (e) => {
       try {
-        const profile = await api.auth.getMe();
-        const freshSalut = profile.is_salut ?? false;
-        const freshActive = profile.is_salut_active ?? false;
-        const freshStatus = profile.salut_status ?? 'none';
-        const freshVerified = profile.is_verified ?? false;
+        const data = JSON.parse(e.data) as {
+          is_salut: boolean;
+          is_salut_active: boolean;
+          salut_status: AuthUser['salut_status'];
+        };
         setUser(prev => {
           if (!prev) return prev;
-          if (prev.is_salut === freshSalut && prev.is_salut_active === freshActive && prev.salut_status === freshStatus && prev.is_verified === freshVerified) return prev;
-          return { ...prev, is_salut: freshSalut, is_salut_active: freshActive, salut_status: freshStatus, is_verified: freshVerified };
+          if (prev.is_salut === data.is_salut && prev.is_salut_active === data.is_salut_active && prev.salut_status === data.salut_status) return prev;
+          return { ...prev, ...data };
         });
-      } catch { /* ignore — token refresh handles re-auth */ }
-    }, 30_000);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+      } catch { /* ignore malformed events */ }
+    };
+
+    return () => {
+      es.close();
+      esRef.current = null;
+    };
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function login(email: string, password: string) {
     const data = await api.auth.login({ email, password });
-    localStorage.setItem('ut_token', data.token);
-    localStorage.setItem('ut_refresh_token', data.refreshToken);
-    localStorage.setItem('ut_expires_at', String(data.expiresAt));
+    localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+    localStorage.setItem(STORAGE_KEYS.REFRESH, data.refreshToken);
+    localStorage.setItem(STORAGE_KEYS.EXPIRES_AT, String(data.expiresAt));
     scheduleTimers(data.expiresAt);
     try {
       const profile = await api.auth.getMe();
-      setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role, is_salut: profile.is_salut ?? false, is_salut_active: profile.is_salut_active ?? false, salut_status: profile.salut_status ?? 'none', is_verified: profile.is_verified ?? false });
+      setUser({
+        id: profile.id,
+        email: profile.email,
+        name: profile.name,
+        role: profile.role,
+        is_salut: profile.is_salut ?? false,
+        is_salut_active: profile.is_salut_active ?? false,
+        salut_status: profile.salut_status ?? 'none',
+        is_verified: profile.is_verified ?? false,
+        is_member: profile.is_member,
+        is_pending: profile.is_pending,
+        shipping_address_display: profile.shipping_address_display,
+        shipping_address_lines: profile.shipping_address_lines,
+      });
     } catch {
-      localStorage.removeItem('ut_token');
-      localStorage.removeItem('ut_refresh_token');
-      localStorage.removeItem('ut_expires_at');
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH);
+      localStorage.removeItem(STORAGE_KEYS.EXPIRES_AT);
       throw new Error('Profil tidak ditemukan. Silakan daftar ulang atau hubungi admin.');
     }
   }
@@ -154,16 +191,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function logout() {
     clearTimers();
     await api.auth.logout().catch(() => {});
-    localStorage.removeItem('ut_token');
-    localStorage.removeItem('ut_refresh_token');
-    localStorage.removeItem('ut_expires_at');
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH);
+    localStorage.removeItem(STORAGE_KEYS.EXPIRES_AT);
     setUser(null);
     setShowExpiryWarning(false);
     setIsSessionExpired(false);
   }
 
   async function stayLoggedIn() {
-    const refreshToken = localStorage.getItem('ut_refresh_token');
+    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH);
     if (!refreshToken) {
       setShowExpiryWarning(false);
       setIsSessionExpired(true);
@@ -171,9 +208,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     try {
       const data = await api.auth.refresh({ refreshToken });
-      localStorage.setItem('ut_token', data.token);
-      localStorage.setItem('ut_refresh_token', data.refreshToken);
-      localStorage.setItem('ut_expires_at', String(data.expiresAt));
+      localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+      localStorage.setItem(STORAGE_KEYS.REFRESH, data.refreshToken);
+      localStorage.setItem(STORAGE_KEYS.EXPIRES_AT, String(data.expiresAt));
       setShowExpiryWarning(false);
       scheduleTimers(data.expiresAt);
     } catch {

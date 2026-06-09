@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 async function getPanduanCategories(): Promise<PanduanCategory[]> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/panduan`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 86400 },
     });
     if (!res.ok) return PANDUAN_CATEGORIES.map(cat => ({ ...cat, guides: [] }));
     const data: { id: string; guides: PanduanGuide[] }[] = await res.json();

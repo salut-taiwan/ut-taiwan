@@ -6,7 +6,7 @@ import ProductDetail from '@/components/toko/ProductDetail';
 async function fetchProduct(id: string): Promise<ProductDTO | null> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 86400 },
     });
     if (!res.ok) return null;
     return res.json();

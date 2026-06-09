@@ -359,7 +359,7 @@ export interface AdminUserDTO {
   phone: string | null;
   current_semester: number | null;
   is_salut: boolean;
-  salut_status?: string;
+  salut_status?: 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
   is_verified: boolean;
   created_at: string;
   programs?: { code: string; name: string } | null;

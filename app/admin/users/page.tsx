@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { AdminUserDTO, ProgramDTO } from '@/types';
 import { cn } from '@/lib/utils';
+import { useAdminTable } from '@/hooks/useAdminTable';
+import { useToast } from '@/components/ui/Toast';
 
 type SortCol = 'name' | 'nim' | 'email' | 'created_at' | 'current_semester' | 'salut_status' | 'program';
-type SortDir = 'asc' | 'desc';
 type SalutStatusFilter = '' | 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
 type VerifiedFilter = '' | 'true' | 'false';
 
@@ -39,7 +40,7 @@ const VERIFIED_OPTIONS: { value: VerifiedFilter; label: string }[] = [
 
 const PAGE_SIZES = [25, 50, 100];
 
-function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
+function SortIcon({ active, dir }: { active: boolean; dir: 'asc' | 'desc' }) {
   return (
     <svg className={cn('w-3 h-3 ml-1 inline-block transition-colors', active ? 'text-indigo-600' : 'text-[var(--border-default)]')}
       fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -56,21 +57,12 @@ const SELECT_CLASS = 'px-3 py-2 text-sm border border-[var(--border-default)] ro
 export default function AdminUsersPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const { showToast } = useToast();
 
-  const [users, setUsers] = useState<AdminUserDTO[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
-  const [sort, setSort] = useState<{ col: SortCol; dir: SortDir }>({ col: 'created_at', dir: 'desc' });
-  const [limit, setLimit] = useState(25);
-  const [offset, setOffset] = useState(0);
   const [programs, setPrograms] = useState<ProgramDTO[]>([]);
   const [toggling, setToggling] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulking, setBulking] = useState(false);
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'admin')) router.push('/');
@@ -81,59 +73,42 @@ export default function AdminUsersPage() {
     api.catalog.getPrograms().then(setPrograms).catch(() => {});
   }, [user]);
 
-  // Any filter/search/sort/page-size change resets offset to 0.
-  useEffect(() => {
-    setOffset(0);
-  }, [search, filters, sort, limit]);
+  const fetchRows = useCallback(async (
+    params: { search: string; filters: Filters; sort: { col: string; dir: 'asc' | 'desc' }; limit: number; offset: number },
+    signal: AbortSignal
+  ) => {
+    const apiParams: Parameters<typeof api.admin.listUsers>[0] = {
+      sort: params.sort.col as SortCol,
+      dir: params.sort.dir,
+      limit: String(params.limit),
+      offset: String(params.offset),
+    };
+    if (params.search.trim()) apiParams.search = params.search.trim();
+    if (params.filters.salut_status) apiParams.salut_status = params.filters.salut_status;
+    if (params.filters.is_verified) apiParams.is_verified = params.filters.is_verified;
+    if (params.filters.program_id) apiParams.program_id = params.filters.program_id;
+    if (params.filters.semester) apiParams.semester = params.filters.semester;
+    const data = await api.admin.listUsers(apiParams, signal);
+    return { rows: data.rows, total: data.total };
+  }, []);
 
-  useEffect(() => {
-    if (user?.role !== 'admin') return;
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => fetchUsers(), search ? 400 : 0);
-    return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, filters, sort, limit, offset, user]);
+  const { rows: users, total, loading, search, setSearch, filters, setFilters, sort, setSort, limit, setLimit, offset, setOffset, refetch } = useAdminTable<AdminUserDTO, Filters>({
+    fetchRows,
+    defaultFilters: EMPTY_FILTERS,
+    defaultSort: { col: 'created_at', dir: 'desc' },
+    onError: (err) => showToast(err.message || 'Gagal memuat data', 'error'),
+  });
 
-  async function fetchUsers() {
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    setLoading(true);
-    setSelectedIds(new Set());
-    try {
-      const params: Parameters<typeof api.admin.listUsers>[0] = {
-        sort: sort.col,
-        dir: sort.dir,
-        limit: String(limit),
-        offset: String(offset),
-      };
-      if (search.trim()) params.search = search.trim();
-      if (filters.salut_status) params.salut_status = filters.salut_status;
-      if (filters.is_verified) params.is_verified = filters.is_verified;
-      if (filters.program_id) params.program_id = filters.program_id;
-      if (filters.semester) params.semester = filters.semester;
-
-      const data = await api.admin.listUsers(params, controller.signal);
-      if (controller.signal.aborted) return;
-      setUsers(data.rows);
-      setTotal(data.total);
-    } catch (err) {
-      if ((err as { name?: string }).name === 'AbortError') return;
-      console.error(err);
-    } finally {
-      if (!controller.signal.aborted) setLoading(false);
-    }
-  }
+  // Clear row selection whenever the data set changes
+  useEffect(() => { setSelectedIds(new Set()); }, [users]);
 
   async function handleToggleSalut(u: AdminUserDTO) {
     setToggling(u.id);
-    setUsers(prev => prev.map(x => x.id === u.id ? { ...x, is_salut: !u.is_salut } : x));
     try {
       await api.admin.updateUserSalut(u.id, !u.is_salut);
+      refetch();
     } catch (err) {
-      setUsers(prev => prev.map(x => x.id === u.id ? { ...x, is_salut: u.is_salut } : x));
-      alert((err as Error).message);
+      alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
       setToggling(null);
     }
@@ -145,9 +120,9 @@ export default function AdminUsersPage() {
     setBulking(true);
     try {
       await api.admin.bulkUpdateUserSalut(ids, is_salut);
-      await fetchUsers();
+      refetch();
     } catch (err) {
-      alert((err as Error).message);
+      alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
       setBulking(false);
     }

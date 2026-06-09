@@ -45,11 +45,16 @@ export default function SksPaymentApplyPage() {
   // Prefill NIM + name from profile
   useEffect(() => {
     if (!user) return;
-    api.config.getFees().then(setFees).catch(() => {});
-    api.auth.getMe().then((profile: { nim?: string | null; name?: string | null }) => {
-      if (profile.nim) setNim(profile.nim);
-      if (profile.name) setName(profile.name);
-    }).catch(() => {});
+    Promise.all([
+      api.config.getFees().catch(() => null),
+      api.auth.getMe().catch(() => null),
+    ]).then(([fees, profile]) => {
+      if (fees) setFees(fees);
+      if (profile) {
+        if (profile.nim) setNim(profile.nim);
+        if (profile.name) setName(profile.name);
+      }
+    });
   }, [user]);
 
   // Debounced quote: whenever idrAmount changes, ask the BE for the canonical NTD

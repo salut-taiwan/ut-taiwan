@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { FeesConfig } from '@/lib/api'
@@ -198,9 +198,9 @@ const infoCards = [
   {
     title: 'Data selalu segar',
     desc: 'Modul disinkronkan dari TBO Karunika setiap hari. Stok toko diperbarui berkala.',
-    cardClass: 'bg-emerald-50 rounded-2xl border border-emerald-200 p-6 h-full',
-    iconBg: 'bg-emerald-100',
-    iconColor: 'text-emerald-700',
+    cardClass: 'bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] border-l-4 border-l-emerald-400 p-6 h-full',
+    iconBg: 'bg-emerald-50',
+    iconColor: 'text-emerald-600',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
         <path d="M23 4v6h-6M1 20v-6h6" />
@@ -225,7 +225,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
     <div>
       {/* SALUT renewal banner */}
       {nextRenewalDisplay && (
-        <section className="mb-8 bg-teal-50 border-y border-teal-200 px-4 sm:px-6 lg:px-8 py-3">
+        <section className="bg-teal-50 border-y border-teal-200 px-4 sm:px-6 lg:px-8 py-3">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm">
             <p className="text-teal-800">
               <strong>Keanggotaan SALUT berakhir</strong> setiap <strong>1 Mei</strong> dan <strong>1 November</strong>. Perpanjangan berikutnya: <span className="font-semibold">{nextRenewalDisplay}</span>.
@@ -337,49 +337,68 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
       </section>
 
       {/* ── Feature pillars ── */}
-      <section className="mb-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="text-center mb-6"
-        >
-          <h2 className="text-xl font-semibold text-[var(--text-body)]">Layanan kami</h2>
-        </motion.div>
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-60px' }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-        >
-          {featurePillars.map(p => (
-            <motion.div
-              key={p.href}
-              variants={cardReveal}
-              whileHover={{ y: -6, transition: { type: 'spring', stiffness: 400, damping: 28 } }}
-              className={cn("hover-shadow-lift rounded-2xl", p.colSpan === 'wide' && "sm:col-span-2")}
-            >
-              <Link
-                href={p.href}
-                className={cn(
-                  "group block rounded-2xl border border-[var(--border-subtle)] border-t-4 p-6 h-full",
-                  p.accentCard ? "bg-teal-50" : "bg-[var(--surface)]"
-                )}
-                style={{ borderTopColor: p.topBorder }}
+      <section className="bg-[var(--surface-sunken)] py-16 mb-16 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="text-center mb-12"
+          >
+            <span className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs font-bold uppercase tracking-[0.08em] px-4 py-1.5 rounded-full mb-4">
+              Platform kami
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--foreground)] mb-3">Layanan kami</h2>
+            <p className="text-base text-[var(--text-body)] max-w-xl mx-auto">Satu platform untuk semua kebutuhan kuliah UT di Taiwan.</p>
+          </motion.div>
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+          >
+            {featurePillars.map((p, i) => (
+              <motion.div
+                key={p.href}
+                variants={cardReveal}
+                whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 28 } }}
+                className={cn("hover-shadow-lift rounded-2xl", p.colSpan === 'wide' && "sm:col-span-2")}
               >
-                <div className={`w-12 h-12 ${p.iconBg} ${p.iconColor} rounded-xl flex items-center justify-center mb-4`}>
-                  <span className="w-6 h-6">{p.icon}</span>
-                </div>
-                <div className={cn("font-bold text-[var(--foreground)] mb-1.5", p.colSpan === 'wide' && "text-lg")}>
-                  {p.title}
-                </div>
-                <div className="text-sm text-[var(--text-body)] leading-snug">{p.desc}</div>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
+                <Link
+                  href={p.href}
+                  className={cn(
+                    "group block rounded-2xl border border-[var(--border-subtle)] border-t-[6px] p-7 h-full relative overflow-hidden",
+                    p.accentCard ? "bg-teal-50/80" : "bg-[var(--surface)]"
+                  )}
+                  style={{ borderTopColor: p.topBorder }}
+                >
+                  {/* Decorative number watermark */}
+                  <span className="absolute top-3 right-5 text-[5.5rem] font-black text-[var(--foreground)] opacity-[0.04] select-none pointer-events-none tabular-nums leading-none">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div className={`w-14 h-14 ${p.iconBg} ${p.iconColor} rounded-2xl flex items-center justify-center mb-5`}>
+                    <span className="w-7 h-7">{p.icon}</span>
+                  </div>
+                  <div className={cn("font-extrabold text-[var(--foreground)] mb-2", p.colSpan === 'wide' ? "text-xl" : "text-lg")}>
+                    {p.title}
+                  </div>
+                  <div className="text-sm text-[var(--text-body)] leading-relaxed mb-5">{p.desc}</div>
+                  <div
+                    className="flex items-center gap-1 text-xs font-bold opacity-0 group-hover:opacity-100 group-hover:gap-1.5 transition-all duration-200"
+                    style={{ color: p.topBorder }}
+                  >
+                    Lihat
+                    <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </section>
 
       {/* ── Faculty selection ── */}
@@ -623,7 +642,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-60px' }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
-        className="mb-16 bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-2xl p-8 text-white overflow-hidden relative"
+        className="bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-2xl p-8 text-white overflow-hidden relative"
       >
         <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/[0.04] rounded-full pointer-events-none" />
         <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/[0.04] rounded-full pointer-events-none" />

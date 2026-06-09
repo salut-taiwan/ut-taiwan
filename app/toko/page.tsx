@@ -10,8 +10,6 @@ export const metadata: Metadata = {
   description: 'Belanja merchandise resmi Universitas Terbuka: jas almamater, jaket, kaos, tas, dan aksesoris UT Taiwan.',
 };
 
-const CATEGORIES = TOKO_CATEGORIES;
-
 const PAGE_SIZE = 24;
 
 const EMPTY_RESPONSE: ProductListResponseDTO = { rows: [], total: 0, limit: PAGE_SIZE, offset: 0 };
@@ -22,7 +20,7 @@ async function getProducts(category: string | undefined, page: number): Promise<
     const qs = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) });
     if (category) qs.set('category', category);
     const url = `${process.env.NEXT_PUBLIC_API_URL}/products?${qs.toString()}`;
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    const res = await fetch(url, { next: { revalidate: 86400 } });
     if (!res.ok) return EMPTY_RESPONSE;
     return res.json();
   } catch {
@@ -72,7 +70,7 @@ export default async function TokoPage({
 
       {/* Category tabs */}
       <div className="flex flex-wrap gap-2 mb-8">
-        {CATEGORIES.map(cat => {
+        {TOKO_CATEGORIES.map(cat => {
           const isActive = (category ?? '') === cat.key;
           return (
             <Link

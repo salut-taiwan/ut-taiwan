@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { api, type BankOption } from '@/lib/api';
 import type { ProgramDTO } from '@/types';
+import Input from '@/components/ui/Input';
 
-const inputClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
-const selectClass = inputClass;
-const labelClass = "block text-sm font-medium text-[var(--foreground)] mb-1.5";
+const selectClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
 
 function SectionBox({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -20,7 +18,6 @@ function SectionBox({ title, children }: { title: string; children: React.ReactN
 }
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [form, setForm] = useState({
     email: '', password: '', confirmPassword: '', name: '', nim: '', phone: '',
     birth_place: '', birth_date: '',
@@ -38,9 +35,15 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    api.catalog.getPrograms().then(data => setPrograms(data)).catch(() => {});
-    api.config.getBanks('NTD').then(r => setNtdBanks(r.banks)).catch(() => {});
-    api.config.getBanks('IDR').then(r => setIdrBanks(r.banks)).catch(() => {});
+    Promise.all([
+      api.catalog.getPrograms().catch(() => null),
+      api.config.getBanks('NTD').catch(() => null),
+      api.config.getBanks('IDR').catch(() => null),
+    ]).then(([programs, ntdBanks, idrBanks]) => {
+      if (programs) setPrograms(programs);
+      if (ntdBanks) setNtdBanks(ntdBanks.banks);
+      if (idrBanks) setIdrBanks(idrBanks.banks);
+    });
   }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -50,7 +53,6 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    // All validation is server-side now. Backend rejects with structured error.
     setLoading(true);
     try {
       await api.auth.register({
@@ -132,51 +134,27 @@ export default function RegisterPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className={labelClass}>Nama Lengkap *</label>
-                <input name="name" value={form.name} onChange={handleChange} required
-                  className={inputClass} placeholder="Nama lengkap sesuai KTP" />
-              </div>
-              <div>
-                <label className={labelClass}>Email *</label>
-                <input name="email" type="email" value={form.email} onChange={handleChange} required
-                  className={inputClass} placeholder="email@example.com" />
-              </div>
-              <div>
-                <label className={labelClass}>NIM *</label>
-                <input name="nim" value={form.nim} onChange={handleChange} required
-                  className={inputClass} placeholder="Nomor Induk Mahasiswa UT" />
-              </div>
-              <div>
-                <label className={labelClass}>Nomor WhatsApp Aktif *</label>
-                <input name="phone" type="tel" value={form.phone} onChange={handleChange} required
-                  className={inputClass} placeholder="+886 xxx xxx xxx" />
-                <p className="text-xs text-[var(--text-muted)] mt-1">Gunakan nomor yang aktif di WhatsApp</p>
-              </div>
-              <div>
-                <label className={labelClass}>Password *</label>
-                <input name="password" type="password" value={form.password} onChange={handleChange} required
-                  className={inputClass} placeholder="Minimal 6 karakter" />
-              </div>
-              <div>
-                <label className={labelClass}>Konfirmasi Password *</label>
-                <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} required
-                  className={inputClass} placeholder="Ulangi password" />
-              </div>
+              <Input label="Nama Lengkap *" name="name" value={form.name} onChange={handleChange} required placeholder="Nama lengkap sesuai KTP" />
+              <Input label="Email *" name="email" type="email" value={form.email} onChange={handleChange} required placeholder="email@example.com" />
+              <Input label="NIM *" name="nim" value={form.nim} onChange={handleChange} required placeholder="Nomor Induk Mahasiswa UT" />
+              <Input
+                label="Nomor WhatsApp Aktif *"
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleChange}
+                required
+                placeholder="+886 xxx xxx xxx"
+                hint="Gunakan nomor yang aktif di WhatsApp"
+              />
+              <Input label="Password *" name="password" type="password" value={form.password} onChange={handleChange} required placeholder="Minimal 6 karakter" />
+              <Input label="Konfirmasi Password *" name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} required placeholder="Ulangi password" />
 
               {/* Data Kelahiran */}
               <SectionBox title="Data Kelahiran *">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className={labelClass}>Tempat Lahir *</label>
-                    <input name="birth_place" value={form.birth_place} onChange={handleChange} required
-                      className={inputClass} placeholder="Kota/kabupaten tempat lahir" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Tanggal Lahir *</label>
-                    <input name="birth_date" type="date" value={form.birth_date} onChange={handleChange} required
-                      className={inputClass} />
-                  </div>
+                  <Input label="Tempat Lahir *" name="birth_place" value={form.birth_place} onChange={handleChange} required placeholder="Kota/kabupaten tempat lahir" />
+                  <Input label="Tanggal Lahir *" name="birth_date" type="date" value={form.birth_date} onChange={handleChange} required />
                 </div>
               </SectionBox>
 
@@ -184,9 +162,8 @@ export default function RegisterPage() {
               <SectionBox title="Program Studi *">
                 <div className="space-y-3">
                   <div>
-                    <label className={labelClass}>Jurusan *</label>
-                    <select name="program_id" value={form.program_id} onChange={handleChange} required
-                      className={selectClass}>
+                    <label className="block text-sm font-medium text-[var(--foreground)] mb-1.5">Jurusan *</label>
+                    <select name="program_id" value={form.program_id} onChange={handleChange} required className={selectClass}>
                       <option value="">Pilih Program Studi</option>
                       {programs.map(p => (
                         <option key={p.id} value={p.id}>{p.name}</option>
@@ -194,9 +171,8 @@ export default function RegisterPage() {
                     </select>
                   </div>
                   <div>
-                    <label className={labelClass}>Semester Saat Ini *</label>
-                    <select name="current_semester" value={form.current_semester} onChange={handleChange} required
-                      className={selectClass}>
+                    <label className="block text-sm font-medium text-[var(--foreground)] mb-1.5">Semester Saat Ini *</label>
+                    <select name="current_semester" value={form.current_semester} onChange={handleChange} required className={selectClass}>
                       <option value="">Pilih semester</option>
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
                         <option key={n} value={n}>Semester {n}</option>
@@ -210,39 +186,15 @@ export default function RegisterPage() {
               <SectionBox title="Alamat Rumah (中文地址) *">
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelClass}>縣市 *</label>
-                      <input name="address_zh_city" value={form.address_zh_city} onChange={handleChange} required
-                        className={inputClass} placeholder="台北市" />
-                    </div>
-                    <div>
-                      <label className={labelClass}>區 *</label>
-                      <input name="address_zh_district" value={form.address_zh_district} onChange={handleChange} required
-                        className={inputClass} placeholder="信義區" />
-                    </div>
+                    <Input label="縣市 *" name="address_zh_city" value={form.address_zh_city} onChange={handleChange} required placeholder="台北市" />
+                    <Input label="區 *" name="address_zh_district" value={form.address_zh_district} onChange={handleChange} required placeholder="信義區" />
                   </div>
-                  <div>
-                    <label className={labelClass}>路/街 *</label>
-                    <input name="address_zh_road" value={form.address_zh_road} onChange={handleChange} required
-                      className={inputClass} placeholder="信義路五段" />
-                  </div>
+                  <Input label="路/街 *" name="address_zh_road" value={form.address_zh_road} onChange={handleChange} required placeholder="信義路五段" />
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelClass}>號 *</label>
-                      <input name="address_zh_number" value={form.address_zh_number} onChange={handleChange} required
-                        className={inputClass} placeholder="7號" />
-                    </div>
-                    <div>
-                      <label className={labelClass}>樓/室 (選填)</label>
-                      <input name="address_zh_floor" value={form.address_zh_floor} onChange={handleChange}
-                        className={inputClass} placeholder="3樓" />
-                    </div>
+                    <Input label="號 *" name="address_zh_number" value={form.address_zh_number} onChange={handleChange} required placeholder="7號" />
+                    <Input label="樓/室 (選填)" name="address_zh_floor" value={form.address_zh_floor} onChange={handleChange} placeholder="3樓" />
                   </div>
-                  <div>
-                    <label className={labelClass}>郵遞區號 *</label>
-                    <input name="postal_code" value={form.postal_code} onChange={handleChange} required
-                      className={inputClass} placeholder="106" />
-                  </div>
+                  <Input label="郵遞區號 *" name="postal_code" value={form.postal_code} onChange={handleChange} required placeholder="106" />
                 </div>
               </SectionBox>
 
@@ -256,7 +208,7 @@ export default function RegisterPage() {
                   <SectionBox title="Rekening NTD (Taiwan)">
                     <div className="space-y-3">
                       <div>
-                        <label className={labelClass}>Bank</label>
+                        <label className="block text-sm font-medium text-[var(--foreground)] mb-1.5">Bank</label>
                         <select name="bank_ntd_code" value={form.bank_ntd_code} onChange={handleChange} className={selectClass}>
                           <option value="">Pilih Bank NTD</option>
                           {ntdBanks.map(b => (
@@ -264,18 +216,14 @@ export default function RegisterPage() {
                           ))}
                         </select>
                       </div>
-                      <div>
-                        <label className={labelClass}>Nomor Rekening</label>
-                        <input name="bank_ntd_account" value={form.bank_ntd_account} onChange={handleChange}
-                          className={inputClass} placeholder="Nomor rekening NTD" />
-                      </div>
+                      <Input label="Nomor Rekening" name="bank_ntd_account" value={form.bank_ntd_account} onChange={handleChange} placeholder="Nomor rekening NTD" />
                     </div>
                   </SectionBox>
 
                   <SectionBox title="Rekening IDR (Indonesia)">
                     <div className="space-y-3">
                       <div>
-                        <label className={labelClass}>Bank</label>
+                        <label className="block text-sm font-medium text-[var(--foreground)] mb-1.5">Bank</label>
                         <select name="bank_idr_name" value={form.bank_idr_name} onChange={handleChange} className={selectClass}>
                           <option value="">Pilih Bank IDR</option>
                           {idrBanks.map(b => (
@@ -283,11 +231,7 @@ export default function RegisterPage() {
                           ))}
                         </select>
                       </div>
-                      <div>
-                        <label className={labelClass}>Nomor Rekening</label>
-                        <input name="bank_idr_account" value={form.bank_idr_account} onChange={handleChange}
-                          className={inputClass} placeholder="Nomor rekening IDR" />
-                      </div>
+                      <Input label="Nomor Rekening" name="bank_idr_account" value={form.bank_idr_account} onChange={handleChange} placeholder="Nomor rekening IDR" />
                     </div>
                   </SectionBox>
                 </div>
