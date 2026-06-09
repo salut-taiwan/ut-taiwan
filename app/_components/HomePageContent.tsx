@@ -319,7 +319,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
       </section>
 
       {/* ── Stats strip ── */}
-      <section className="-mt-6 relative z-10 bg-amber-400 py-8 mb-20 px-4 sm:px-6 lg:px-8">
+      <section className="-mt-6 relative z-10 bg-amber-400 py-8 mb-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto grid grid-cols-3 gap-4 text-center">
           {stats.map(({ num, label }, i) => (
             <motion.div
@@ -337,7 +337,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
       </section>
 
       {/* ── Feature pillars ── */}
-      <section className="bg-[var(--surface-sunken)] py-16 mb-16 relative overflow-hidden">
+      <section className="pt-4 pb-8 mb-10 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -346,9 +346,6 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
             transition={{ duration: 0.3, ease: 'easeOut' }}
             className="text-center mb-12"
           >
-            <span className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs font-bold uppercase tracking-[0.08em] px-4 py-1.5 rounded-full mb-4">
-              Platform kami
-            </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--foreground)] mb-3">Layanan kami</h2>
             <p className="text-base text-[var(--text-body)] max-w-xl mx-auto">Satu platform untuk semua kebutuhan kuliah UT di Taiwan.</p>
           </motion.div>
