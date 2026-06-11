@@ -63,6 +63,8 @@ export function useChatSocket(options: UseChatSocketOptions = {}): ChatSocket {
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
   const onErrorRef = useRef(onError);
+  // connect schedules itself for reconnects; the ref breaks the self-reference.
+  const connectRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     onErrorRef.current = onError;
@@ -140,7 +142,17 @@ export function useChatSocket(options: UseChatSocketOptions = {}): ChatSocket {
     }
 
     setStatus((prev) => (prev === 'reconnecting' ? prev : 'connecting'));
-    const socket = new WebSocket(`${WS_BASE}/ws/chat?token=${encodeURIComponent(token)}`);
+    // The token rides in the Sec-WebSocket-Protocol header (["bearer", <jwt>])
+    // instead of the URL so it never lands in proxy or access logs. The
+    // constructor throws if a tampered token has characters illegal in
+    // subprotocols; treat that like a missing token.
+    let socket: WebSocket;
+    try {
+      socket = new WebSocket(`${WS_BASE}/ws/chat`, ['bearer', token]);
+    } catch {
+      setStatus('expired');
+      return;
+    }
     socketRef.current = socket;
 
     socket.onopen = () => {
@@ -184,7 +196,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}): ChatSocket {
       const delay = RECONNECT_DELAYS_MS[reconnectAttemptsRef.current] ?? 16_000;
       reconnectAttemptsRef.current += 1;
       setStatus('reconnecting');
-      reconnectTimerRef.current = setTimeout(connect, delay);
+      reconnectTimerRef.current = setTimeout(() => connectRef.current(), delay);
     };
 
     // onerror is followed by onclose; closing there drives the single reconnect path.
@@ -192,6 +204,10 @@ export function useChatSocket(options: UseChatSocketOptions = {}): ChatSocket {
       socket.close();
     };
   }, [clearTimers, flushOutbox, handleServerMessage]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   const send = useCallback(
     (content: string) => {

@@ -1,15 +1,20 @@
 'use client';
 
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useChat } from '@/components/chat/ChatProvider';
 import ChatPanel from '@/components/chat/ChatPanel';
 
 // Floating launcher anchored bottom-right. cs.png on a clean surface circle with
 // a golden-yellow ring and a green online dot. Hidden while the panel is open so
-// the panel close button is the single dismiss control.
+// the panel close button is the single dismiss control. On /chat the full page
+// already is the chat, so the widget stays out of the way entirely.
 export default function ChatLauncher() {
   const { isOpen, open } = useChat();
+  const pathname = usePathname();
+
+  if (pathname === '/chat') return null;
 
   return (
     <>

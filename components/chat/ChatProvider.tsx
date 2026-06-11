@@ -9,6 +9,10 @@ interface ChatContextValue extends ChatSocket {
   open: () => void;
   close: () => void;
   toggle: () => void;
+  /** True when /chat was reached via the panel's expand button, so the
+   *  previous history entry is an in-app page that minimize can return to. */
+  expandedInApp: boolean;
+  setExpandedInApp: (v: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -19,6 +23,7 @@ const ChatContext = createContext<ChatContextValue | null>(null);
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedInApp, setExpandedInApp] = useState(false);
 
   const socket = useChatSocket({
     onError: useCallback((_code: string, message: string) => showToast(message, 'error'), [showToast]),
@@ -29,8 +34,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const toggle = useCallback(() => setIsOpen((v) => !v), []);
 
   const value = useMemo<ChatContextValue>(
-    () => ({ ...socket, isOpen, open, close, toggle }),
-    [socket, isOpen, open, close, toggle],
+    () => ({ ...socket, isOpen, open, close, toggle, expandedInApp, setExpandedInApp }),
+    [socket, isOpen, open, close, toggle, expandedInApp],
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

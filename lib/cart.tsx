@@ -35,7 +35,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCartCount(count);
   }, []);
 
-  useEffect(() => { refreshCart(); }, [refreshCart]);
+  useEffect(() => {
+    let cancelled = false;
+    (user ? api.cart.get().catch(() => null) : Promise.resolve(null)).then((cart) => {
+      if (!cancelled) setCartCount(cart?.itemCount || 0);
+    });
+    return () => { cancelled = true; };
+  }, [user]);
 
   return (
     <CartContext.Provider value={{ cartCount, incrementCart, syncCartCount, refreshCart }}>

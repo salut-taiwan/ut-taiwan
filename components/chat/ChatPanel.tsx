@@ -46,7 +46,7 @@ function PanelHeader({ onExpand, onClose }: { onExpand: () => void; onClose: () 
 
 export default function ChatPanel() {
   const router = useRouter();
-  const { isOpen, close } = useChat();
+  const { isOpen, close, setExpandedInApp } = useChat();
   const reduceMotion = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -91,6 +91,7 @@ export default function ChatPanel() {
 
   const expand = () => {
     close();
+    setExpandedInApp(true);
     router.push('/chat');
   };
 
