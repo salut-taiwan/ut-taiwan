@@ -172,6 +172,16 @@ a { text-underline-offset: 3px; }
   50%       { box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12); }
 }
 
+/* Chat typing indicator dots */
+@keyframes chatBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+  40%           { transform: translateY(-3px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[chatBounce_1\.2s_ease-in-out_infinite\] { animation: none; }
+}
+
 /* View Transitions API - free cross-page fade */
 @view-transition { navigation: auto; }
 

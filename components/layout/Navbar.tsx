@@ -74,7 +74,7 @@ export default function Navbar() {
     <nav className="bg-[var(--surface-overlay)] backdrop-blur-xl border-b border-[var(--border-subtle)] shadow-[var(--shadow-xs)] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" prefetch={true} className="flex items-center shrink-0">
+          <Link href="/" className="flex items-center shrink-0">
             <Image
               src="/LOGO SALUT UTT - NO BACKGROUND.png"
               alt="SALUT UT Taiwan"
@@ -151,7 +151,6 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  prefetch={true}
                   className={cn(
                     'relative font-medium rounded-md px-2.5 py-1.5 transition-colors duration-150',
                     isActive
@@ -179,7 +178,6 @@ export default function Navbar() {
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} transition={{ duration: 0.15 }}>
             <Link
               href="/cart"
-              prefetch={true}
               aria-label={`Keranjang${cartCount > 0 ? `, ${cartCount} item` : ''}`}
               className="relative rounded-lg p-2 text-[var(--text-body)] hover:text-indigo-700 hover:bg-[var(--surface-sunken)] transition-[color,background-color] duration-150 flex items-center justify-center"
             >
@@ -203,7 +201,7 @@ export default function Navbar() {
               </div>
             ) : user ? (
               <div className="hidden md:flex items-center gap-1">
-                <Link href="/orders" prefetch={true}
+                <Link href="/orders"
                   className={cn(
                     'text-sm font-medium rounded-md px-2.5 py-1.5 transition-[color,background-color] duration-150',
                     pathname.startsWith('/orders')
@@ -213,7 +211,7 @@ export default function Navbar() {
                   Pesanan
                 </Link>
                 {user.role === 'admin' && (
-                  <Link href="/admin" prefetch={true}
+                  <Link href="/admin" prefetch={false}
                     className={cn(
                       'text-sm font-medium rounded-md px-2.5 py-1.5 transition-[color,background-color] duration-150',
                       pathname.startsWith('/admin')
@@ -278,11 +276,11 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-2">
-                <Link href="/login" prefetch={true}
+                <Link href="/login"
                   className="text-sm border border-indigo-300 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 px-3 py-1.5 rounded-lg transition-[color,background-color,border-color] duration-150 font-medium">
                   Masuk
                 </Link>
-                <Link href="/register" prefetch={true}
+                <Link href="/register"
                   className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 hover:-translate-y-px font-semibold transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)]">
                   Daftar
                 </Link>
