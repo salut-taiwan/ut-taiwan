@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (msUntilWarning > 0) {
       warningTimerRef.current = setTimeout(() => setShowExpiryWarning(true), msUntilWarning);
     } else if (msUntilExpiry > 0) {
-      // Already within warning window — show immediately
+      // Already within warning window - show immediately
       setShowExpiryWarning(true);
     }
 

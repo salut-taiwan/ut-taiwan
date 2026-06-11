@@ -287,7 +287,7 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Hamburger — mobile only */}
+            {/* Hamburger - mobile only */}
             <button
               onClick={() => setMobileOpen(o => !o)}
               aria-label="Buka menu navigasi"
@@ -307,7 +307,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile menu panel — AnimatePresence for smooth open/close */}
+        {/* Mobile menu panel - AnimatePresence for smooth open/close */}
         <AnimatePresence>
           {mobileOpen && (
             <motion.div

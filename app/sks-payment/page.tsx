@@ -18,7 +18,7 @@ function StatusBadge({ tone, label }: { tone?: SksPaymentTone; label?: string })
   const cls = TONE_CLASSES[tone || 'neutral'];
   return (
     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${cls}`}>
-      {label || '—'}
+      {label || '-'}
     </span>
   );
 }

@@ -33,7 +33,7 @@
   --warm-hover: #C94F1F;
   --warm-subtle: #FEF0E9;
 
-  /* Shadow scale — all tinted with brand blue */
+  /* Shadow scale - all tinted with brand blue */
   --shadow-xs:    0 1px 2px rgba(10,69,149,0.04);
   --shadow-sm:    0 1px 3px rgba(10,69,149,0.06), 0 2px 6px rgba(10,69,149,0.04);
   --shadow-md:    0 2px 6px rgba(10,69,149,0.06), 0 6px 18px rgba(10,69,149,0.08);
@@ -135,7 +135,7 @@ a { text-underline-offset: 3px; }
 .tabular-nums { font-variant-numeric: tabular-nums; }
 .tracking-caps { letter-spacing: 0.08em; }
 
-/* Shimmer skeleton — replaces animate-pulse */
+/* Shimmer skeleton - replaces animate-pulse */
 .skeleton {
   background: linear-gradient(90deg, var(--surface-sunken) 25%, var(--border) 50%, var(--surface-sunken) 75%);
   background-size: 200% 100%;
@@ -192,7 +192,7 @@ a { text-underline-offset: 3px; }
   100% { background-position: 0% 50%; }
 }
 
-/* Card hover shadow via ::after opacity — avoids expensive box-shadow repaint */
+/* Card hover shadow via ::after opacity - avoids expensive box-shadow repaint */
 .hover-shadow-lift {
   position: relative;
   box-shadow:

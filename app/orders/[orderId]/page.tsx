@@ -163,7 +163,7 @@ function OrderDetailContent() {
       {order.status !== 'cancelled' && steps.length > 0 && (
         <div className="mb-5 bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-5">
           <div className="flex items-center justify-between relative">
-            {/* Gradient connector — uses progress_percent from backend */}
+            {/* Gradient connector - uses progress_percent from backend */}
             <div
               className="absolute top-4 left-0 right-0 h-0.5 -z-0"
               style={{

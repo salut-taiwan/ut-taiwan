@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
+import AssistantSpotlight from '@/app/_components/AssistantSpotlight'
 import type { FeesConfig } from '@/lib/api'
 import { TOKO_CATEGORIES } from '@/lib/toko-categories'
 import { cn } from '@/lib/utils'
@@ -257,7 +258,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
           sizes="100vw"
           priority
         />
-        {/* Indigo gradient overlay — keeps text readable, especially on left */}
+        {/* Indigo gradient overlay - keeps text readable, especially on left */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#04204A] via-[#04204A]/95 to-[#0A4595]/80" />
         {/* Aurora animation layer */}
         <div
@@ -488,7 +489,7 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
                 400+ Anggota Aktif
               </div>
             </div>
-            {/* Warm terracotta CTA — Von Restorff effect on teal background */}
+            {/* Warm terracotta CTA - Von Restorff effect on teal background */}
             <Link
               href="/salut/apply"
               className="inline-flex items-center justify-center gap-2 text-white font-semibold px-6 py-3 rounded-xl transition-[background-color] duration-200 shadow-[var(--shadow-sm)] active:scale-[0.98]"
@@ -606,6 +607,9 @@ export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
           ))}
         </motion.div>
       </section>
+
+      {/* ── Assistant spotlight ── */}
+      <AssistantSpotlight />
 
       {/* ── Info cards ── */}
       <motion.section

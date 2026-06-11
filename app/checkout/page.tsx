@@ -182,7 +182,7 @@ export default function CheckoutPage() {
             <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-sm)] p-6">
               <h2 className="font-semibold text-[var(--foreground)] mb-4">Alamat Pengiriman</h2>
 
-              {/* Pill toggle — only show if profile has an address */}
+              {/* Pill toggle - only show if profile has an address */}
               {profileAddress && (
                 <div className="flex gap-1 bg-[var(--surface-sunken)] rounded-xl p-1 mb-5">
                   <button
@@ -212,7 +212,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Read-only profile address card — uses backend-composed lines */}
+              {/* Read-only profile address card - uses backend-composed lines */}
               {useProfileAddress && profileAddress ? (
                 <div className="bg-[var(--surface-sunken)] rounded-xl border border-[var(--border-subtle)] px-4 py-3 text-sm text-[var(--text-body)] space-y-0.5">
                   {(profileAddressLines ?? []).map((line, i) => (
@@ -220,7 +220,7 @@ export default function CheckoutPage() {
                   ))}
                 </div>
               ) : (
-                /* Editable form — Chinese address fields */
+                /* Editable form - Chinese address fields */
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
                     <label className={labelClass}>Nama Penerima *</label>
@@ -257,7 +257,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Notes — always visible */}
+              {/* Notes - always visible */}
               <div className="mt-4">
                 <label className={labelClass}>Catatan (opsional)</label>
                 <textarea name="notes" value={form.notes} onChange={handleChange} rows={2}

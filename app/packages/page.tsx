@@ -227,7 +227,7 @@ export default function PackagesPage() {
             ))}
           </div>
 
-          {/* Pagination — only render when there's more than one page worth of results */}
+          {/* Pagination - only render when there's more than one page worth of results */}
           {total > limit && (
           <div className="flex flex-wrap items-center justify-between gap-3 mt-8 px-1 text-sm text-[var(--text-muted)]">
             <span>

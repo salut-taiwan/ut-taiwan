@@ -1,5 +1,5 @@
 // ============================================================
-// Shared DTOs — mirrors the Express backend contracts
+// Shared DTOs - mirrors the Express backend contracts
 // ============================================================
 
 export interface FacultyDTO {

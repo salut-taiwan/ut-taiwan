@@ -113,7 +113,7 @@ export default function RegisterPage() {
           <span className="text-4xl font-bold block mb-2 tracking-tight">UT Taiwan</span>
           <span className="text-indigo-200/80 text-sm block mb-8">Sentra Layanan UT Taiwan</span>
           <p className="text-indigo-100/90 text-lg leading-relaxed">
-            Daftar dan nikmati layanan lengkap UT Taiwan — dari modul kuliah, bayar SKS, hingga keanggotaan SALUT.
+            Daftar dan nikmati layanan lengkap UT Taiwan - dari modul kuliah, bayar SKS, hingga keanggotaan SALUT.
           </p>
         </div>
       </div>

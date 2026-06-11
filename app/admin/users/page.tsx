@@ -236,7 +236,7 @@ export default function AdminUsersPage() {
           >
             <option value="">Semua program</option>
             {programs.map(p => (
-              <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
+              <option key={p.id} value={p.id}>{p.code} - {p.name}</option>
             ))}
           </select>
 

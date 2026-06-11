@@ -45,7 +45,7 @@ export default function SalutApplyPage() {
   }, [user, isLoading, router]);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    // No client-side MIME/size validation — backend rejects with structured error.
+    // No client-side MIME/size validation - backend rejects with structured error.
     setFileError(null);
     const f = e.target.files?.[0];
     if (!f) return;

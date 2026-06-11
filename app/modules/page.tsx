@@ -110,7 +110,7 @@ export default function ModulesPage() {
             </div>
           )}
 
-          {/* Pagination — only show when not searching */}
+          {/* Pagination - only show when not searching */}
           {searchResults === null && totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-8">
               <button

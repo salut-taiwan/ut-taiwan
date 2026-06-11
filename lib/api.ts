@@ -66,6 +66,15 @@ export interface FeesConfig {
   };
 }
 
+export interface ChatWidgetConfig {
+  greeting: {
+    enabled: boolean;
+    text: string;
+    showDelayMs: number;
+    autoHideMs: number;
+  };
+}
+
 export type EffectiveSalutStatus = 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
 
 export interface ApplicableFee {
@@ -162,7 +171,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
   if (res.status === 401) {
     if (!token) {
-      // No active session — treat as a regular API error (e.g., wrong credentials)
+      // No active session - treat as a regular API error (e.g., wrong credentials)
       const err = await res.json().catch(() => ({ error: res.statusText }));
       throw new Error(err.error || `HTTP ${res.status}`);
     }
@@ -393,6 +402,7 @@ export const api = {
     getFees: () => apiFetch<FeesConfig>('/config/fees'),
     getBanks: (currency: 'NTD' | 'IDR') =>
       apiFetch<{ currency: string; banks: BankOption[] }>(`/config/banks?currency=${currency}`),
+    getChatWidget: () => apiFetch<ChatWidgetConfig>('/config/chat-widget'),
   },
   scraper: {
     run: () => apiFetch<{ runId: string }>('/scraper/run', { method: 'POST' }),

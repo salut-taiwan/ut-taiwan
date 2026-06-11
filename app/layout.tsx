@@ -31,7 +31,7 @@ const bodyFont = Nunito_Sans({
 
 export const metadata: Metadata = {
   title: "Sentra Layanan Universitas Terbuka Taiwan",
-  description: "Pusat layanan mahasiswa Universitas Terbuka di Taiwan — panduan, modul kuliah, dan SALUT.",
+  description: "Pusat layanan mahasiswa Universitas Terbuka di Taiwan - panduan, modul kuliah, dan SALUT.",
 };
 
 export default function RootLayout({

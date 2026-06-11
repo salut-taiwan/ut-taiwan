@@ -145,7 +145,7 @@ export default function AdminSksPaymentsPage() {
                   <p className="text-xs text-[var(--text-muted)] mt-0.5">{r.email} · {r.semester_period} · {r.created_at_display}</p>
                 </div>
                 <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${TONE_CLASSES[r.status_tone || 'neutral']}`}>
-                  {r.status_label || '—'}
+                  {r.status_label || '-'}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm mb-3">

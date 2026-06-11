@@ -11,7 +11,7 @@ export interface PanduanCategory {
   guides: PanduanGuide[];
 }
 
-// UI-only metadata (labels, icons, descriptions) — guides populated at runtime from /api/panduan
+// UI-only metadata (labels, icons, descriptions) - guides populated at runtime from /api/panduan
 export const PANDUAN_CATEGORIES: Omit<PanduanCategory, 'guides'>[] = [
   {
     id: 'mahasiswa-baru',

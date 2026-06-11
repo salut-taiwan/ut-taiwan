@@ -83,7 +83,7 @@ export default function AdminPackagesPage() {
 
       {!loading && total > packages.length && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm text-amber-800">
-          Menampilkan {packages.length} dari {total} paket. Daftar melebihi batas tampilan — tambahkan pagination jika perlu melihat sisanya.
+          Menampilkan {packages.length} dari {total} paket. Daftar melebihi batas tampilan - tambahkan pagination jika perlu melihat sisanya.
         </div>
       )}
 

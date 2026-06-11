@@ -12,7 +12,7 @@ export default function ChatPage() {
   const { open, expandedInApp, setExpandedInApp } = useChat();
 
   // Reverse of the panel's expand: hand the conversation back to the floating
-  // panel and leave the page. Only go back when expand brought us here —
+  // panel and leave the page. Only go back when expand brought us here -
   // direct visits would otherwise back out of the app entirely.
   const minimize = () => {
     open();
