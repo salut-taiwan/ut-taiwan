@@ -30,6 +30,13 @@ export function useAdminTable<TRow, TFilters>({
   const abortRef = useRef<AbortController | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Callers may pass inline callbacks; track them in refs so an unstable
+  // reference can't recreate refetch and re-trigger the fetch effect.
+  const fetchRowsRef = useRef(fetchRows);
+  fetchRowsRef.current = fetchRows;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   // Reset to page 1 when anything filter-like changes
   useEffect(() => { setOffset(0); }, [search, filters, sort, limit]);
 
@@ -41,18 +48,18 @@ export function useAdminTable<TRow, TFilters>({
       abortRef.current = ctrl;
       setLoading(true);
       try {
-        const result = await fetchRows({ search, filters, sort, limit, offset }, ctrl.signal);
+        const result = await fetchRowsRef.current({ search, filters, sort, limit, offset }, ctrl.signal);
         if (ctrl.signal.aborted) return;
         setRows(result.rows);
         setTotal(result.total);
       } catch (e) {
         if (e instanceof Error && e.name === 'AbortError') return;
-        if (e instanceof Error) onError?.(e);
+        if (e instanceof Error) onErrorRef.current?.(e);
       } finally {
         if (!ctrl.signal.aborted) setLoading(false);
       }
     }, search ? 400 : 0);
-  }, [search, filters, sort, limit, offset, fetchRows, onError]);
+  }, [search, filters, sort, limit, offset]);
 
   useEffect(() => {
     refetch();
