@@ -92,9 +92,176 @@ describe('splitting jackets from modules', () => {
 });
 
 describe('moving an order along', () => {
-  test('confirming a payment asks first', async () => {
-    vi.mocked(globalThis.confirm).mockReturnValueOnce(false);
-    await show();
+  // The status matrix: which action each state offers, and nothing else.
+  const at = (status: string) => [fx.order({ status: status as never })];
+
+  test('an order awaiting stock confirmation offers only that', async () => {
+    await show(at('pending'));
+    await expandFirstRow();
+
+    expect(screen.getByRole('button', { name: 'Konfirmasi Karunika' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Proses' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Kirim' })).not.toBeInTheDocument();
+  });
+
+  test('an order awaiting payment offers confirming it', async () => {
+    await show(at('awaiting_payment'));
+    await expandFirstRow();
+
+    expect(screen.getByRole('button', { name: 'Konfirmasi Bayar' })).toBeInTheDocument();
+  });
+
+  test('a paid order can be processed or shipped', async () => {
+    await show(at('paid'));
+    await expandFirstRow();
+
+    expect(screen.getByRole('button', { name: 'Proses' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Kirim' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Terima' })).not.toBeInTheDocument();
+  });
+
+  test('an order being processed can only be shipped', async () => {
+    await show(at('processing'));
+    await expandFirstRow();
+
+    expect(screen.getByRole('button', { name: 'Kirim' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Proses' })).not.toBeInTheDocument();
+  });
+
+  test('a shipped order can only be marked received', async () => {
+    await show(at('shipped'));
+    await expandFirstRow();
+
+    expect(screen.getByRole('button', { name: 'Terima' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Kirim' })).not.toBeInTheDocument();
+  });
+
+  test('a delivered order offers no further transitions', async () => {
+    await show(at('delivered'));
+    await expandFirstRow();
+
+    for (const name of ['Proses', 'Kirim', 'Terima', 'Konfirmasi Bayar']) {
+      expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
+    }
+  });
+
+  test('a cancelled order offers none either', async () => {
+    await show(at('cancelled'));
+    await expandFirstRow();
+
+    for (const name of ['Proses', 'Kirim', 'Terima', 'Konfirmasi Karunika']) {
+      expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
+    }
+  });
+
+  test('shipping sends the new status and updates the row', async () => {
+    await show(at('paid'));
+    let body: { status?: string } | undefined;
+    server.use(
+      http.patch(url('/orders/admin/:id/status'), async ({ request }) => {
+        body = (await request.json()) as { status?: string };
+        return HttpResponse.json({ message: 'ok' });
+      }),
+    );
+    await expandFirstRow();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Kirim' }));
+
+    await waitFor(() => expect(body?.status).toBe('shipped'));
+    // The row moves on without a refetch, so "Kirim" is gone.
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Kirim' })).not.toBeInTheDocument(),
+    );
+  });
+
+  test('every transition asks first', async () => {
+    vi.mocked(globalThis.confirm).mockReturnValue(false);
+    await show(at('paid'));
+    let called = false;
+    server.use(
+      http.patch(url('/orders/admin/:id/status'), () => {
+        called = true;
+        return HttpResponse.json({ message: 'ok' });
+      }),
+    );
+    await expandFirstRow();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Kirim' }));
+
+    expect(called).toBe(false);
+    vi.mocked(globalThis.confirm).mockReturnValue(true);
+  });
+
+  test('a refused transition is reported and the row stays put', async () => {
+    await show(at('paid'));
+    server.use(
+      http.patch(url('/orders/admin/:id/status'), () =>
+        HttpResponse.json({ error: 'Transisi status tidak valid' }, { status: 409 }),
+      ),
+    );
+    await expandFirstRow();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Kirim' }));
+
+    expect(await screen.findByText(/tidak valid/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Kirim' })).toBeInTheDocument();
+  });
+});
+
+describe('confirming Karunika stock', () => {
+  test('it warns that the customer gets payment instructions', async () => {
+    // Doing this by accident tells a student to pay for stock nobody checked.
+    vi.mocked(globalThis.confirm).mockReturnValue(false);
+    await show([fx.order({ status: 'pending' })]);
+    await expandFirstRow();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Konfirmasi Karunika' }));
+
+    expect(vi.mocked(globalThis.confirm)).toHaveBeenCalledWith(
+      expect.stringMatching(/[Ee]mail/),
+    );
+    vi.mocked(globalThis.confirm).mockReturnValue(true);
+  });
+
+  test('confirming moves the order to awaiting payment', async () => {
+    await show([fx.order({ status: 'pending' })]);
+    let confirmed = false;
+    server.use(
+      http.post(url('/orders/admin/:id/confirm-karunika'), () => {
+        confirmed = true;
+        return HttpResponse.json({ message: 'ok' });
+      }),
+    );
+    await expandFirstRow();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Konfirmasi Karunika' }));
+
+    await waitFor(() => expect(confirmed).toBe(true));
+    expect(await screen.findByRole('button', { name: 'Konfirmasi Bayar' })).toBeInTheDocument();
+  });
+
+  test('a failure is reported rather than moving the order on', async () => {
+    await show([fx.order({ status: 'pending' })]);
+    server.use(
+      http.post(url('/orders/admin/:id/confirm-karunika'), () =>
+        HttpResponse.json({ error: 'Stok belum tersedia' }, { status: 409 }),
+      ),
+    );
+    await expandFirstRow();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Konfirmasi Karunika' }));
+
+    expect(await screen.findByText(/Stok belum tersedia/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Konfirmasi Karunika' })).toBeInTheDocument();
+  });
+});
+
+describe('confirming a payment', () => {
+  const awaiting = () => [fx.order({ status: 'awaiting_payment' })];
+
+  test('it asks first', async () => {
+    vi.mocked(globalThis.confirm).mockReturnValue(false);
+    await show(awaiting());
     let confirmed = false;
     server.use(
       http.post(url('/payments/:orderId/confirm'), () => {
@@ -104,41 +271,95 @@ describe('moving an order along', () => {
     );
     await expandFirstRow();
 
-    const button = screen.queryByRole('button', { name: /Konfirmasi Pembayaran/i });
-    if (button) await userEvent.click(button);
+    await userEvent.click(screen.getByRole('button', { name: 'Konfirmasi Bayar' }));
 
     expect(confirmed).toBe(false);
+    vi.mocked(globalThis.confirm).mockReturnValue(true);
   });
 
-  test('confirming Karunika stock warns that it emails the customer', async () => {
-    // It sends payment instructions; doing it by accident tells a student to
-    // pay for stock nobody has checked.
-    await show(fx.order({ status: 'pending' }) ? [fx.order({ status: 'pending' })] : []);
+  test('confirming marks the order paid and says so', async () => {
+    await show(awaiting());
     await expandFirstRow();
 
-    const button = screen.queryByRole('button', { name: /Konfirmasi Karunika/i });
-    if (button) {
-      await userEvent.click(button);
-      expect(vi.mocked(globalThis.confirm)).toHaveBeenCalledWith(
-        expect.stringMatching(/[Ee]mail/),
-      );
-    }
+    await userEvent.click(screen.getByRole('button', { name: 'Konfirmasi Bayar' }));
+
+    expect(await screen.findByText('Pembayaran dikonfirmasi')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Proses' })).toBeInTheDocument();
   });
 
-  test('a refused status change is reported rather than silently ignored', async () => {
-    await show();
+  test('a double confirmation is reported rather than silently ignored', async () => {
+    await show(awaiting());
     server.use(
-      http.patch(url('/orders/admin/:id/status'), () =>
-        HttpResponse.json({ error: 'Transisi status tidak valid' }, { status: 409 }),
+      http.post(url('/payments/:orderId/confirm'), () =>
+        HttpResponse.json({ error: 'Pembayaran sudah dikonfirmasi' }, { status: 409 }),
       ),
     );
     await expandFirstRow();
 
-    const button = screen.queryAllByRole('button').find((b) => /Kirim|Proses|Ubah/i.test(b.textContent ?? ''));
-    if (button) {
-      await userEvent.click(button);
-      expect(await screen.findByText(/tidak valid/)).toBeInTheDocument();
-    }
+    await userEvent.click(screen.getByRole('button', { name: 'Konfirmasi Bayar' }));
+
+    expect(await screen.findByText(/sudah dikonfirmasi/)).toBeInTheDocument();
+  });
+});
+
+describe('the Karunika invoice', () => {
+  const invoiceInput = () =>
+    document.querySelector('input[type="file"]') as HTMLInputElement | null;
+  const file = () => new File(['pdf'], 'invoice.pdf', { type: 'application/pdf' });
+
+  test('an admin can upload one', async () => {
+    await show([fx.order({ status: 'awaiting_payment' })]);
+    let uploaded = false;
+    server.use(
+      http.post(url('/payments/:orderId/invoice'), () => {
+        uploaded = true;
+        return HttpResponse.json({ message: 'ok' });
+      }),
+    );
+    await expandFirstRow();
+
+    await userEvent.upload(invoiceInput()!, file());
+
+    await waitFor(() => expect(uploaded).toBe(true));
+  });
+
+  test('once uploaded the row offers to view it instead', async () => {
+    await show([fx.order({ status: 'awaiting_payment' })]);
+    await expandFirstRow();
+
+    await userEvent.upload(invoiceInput()!, file());
+
+    expect(await screen.findByText('Lihat Invoice')).toBeInTheDocument();
+  });
+
+  test('a rejected upload says why', async () => {
+    await show([fx.order({ status: 'awaiting_payment' })]);
+    server.use(
+      http.post(url('/payments/:orderId/invoice'), () =>
+        HttpResponse.json({ error: 'File terlalu besar' }, { status: 400 }),
+      ),
+    );
+    await expandFirstRow();
+
+    await userEvent.upload(invoiceInput()!, file());
+
+    expect(await screen.findByText(/File terlalu besar/)).toBeInTheDocument();
+  });
+
+  test('an already-uploaded invoice can be viewed', async () => {
+    await show([
+      fx.order({
+        status: 'awaiting_payment',
+        payments: [fx.payment({ invoice_path: 'u/invoice.pdf' })],
+      }),
+    ]);
+    const open = vi.fn();
+    vi.stubGlobal('open', open);
+    await expandFirstRow();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Lihat Invoice' }));
+
+    await waitFor(() => expect(open).toHaveBeenCalled());
   });
 });
 

@@ -4,6 +4,7 @@ import { HttpResponse, http } from 'msw';
 import AdminModulesPage from './page';
 import { server } from '@/test/setup/msw';
 import { signedInAs, url } from '@/test/msw/handlers';
+import { push } from '@/test/utils/routerMock';
 import { renderPage, screen, waitFor } from '@/test/utils/renderWithProviders';
 import * as fx from '@/test/fixtures';
 
@@ -26,6 +27,8 @@ async function show(data = [fx.moduleSummary()], total = 1) {
   );
   renderPage(<AdminModulesPage />, { as: 'admin' });
   await screen.findByRole('heading', { name: 'Manajemen Modul' });
+  // The table and its paging arrive after the heading.
+  if (data.length > 0) await screen.findByText(data[0].tbo_code);
 }
 
 describe('the module catalogue an admin sees', () => {
@@ -75,5 +78,84 @@ describe('the module catalogue an admin sees', () => {
     await show([], 0);
 
     expect(screen.getByRole('heading', { name: 'Manajemen Modul' })).toBeInTheDocument();
+  });
+
+  test('a student is turned away', async () => {
+    server.use(signedInAs(fx.profile()));
+
+    renderPage(<AdminModulesPage />, { as: 'student' });
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/'));
+  });
+
+  test('the optional fields are sent when filled', async () => {
+    // edition, author and publisher are optional; sending them blank rather
+    // than omitting them would overwrite real data with empty strings.
+    await show();
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.post(url('/modules'), async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ id: 'm-2' });
+      }),
+    );
+
+    await fillNewModule();
+    await userEvent.type(screen.getByPlaceholderText('1'), '2');
+    await userEvent.type(screen.getByPlaceholderText('Nama pengarang'), 'Tim UT');
+    await userEvent.click(saveButton());
+
+    await waitFor(() => expect(body).toBeDefined());
+    expect(body!.edition).toBe('2');
+    expect(body!.author).toBe('Tim UT');
+  });
+
+  test('optional fields left blank are omitted, not sent empty', async () => {
+    await show();
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.post(url('/modules'), async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ id: 'm-2' });
+      }),
+    );
+
+    await fillNewModule();
+    await userEvent.click(saveButton());
+
+    await waitFor(() => expect(body).toBeDefined());
+    expect(body!.edition).toBeUndefined();
+    expect(body!.author).toBeUndefined();
+  });
+});
+
+describe('paging the catalogue', () => {
+  test('a single page offers no paging', async () => {
+    await show([fx.moduleSummary()], 1);
+
+    expect(screen.queryByRole('button', { name: 'Selanjutnya' })).not.toBeInTheDocument();
+  });
+
+  test('a large catalogue can be paged', async () => {
+    const pages: string[] = [];
+    server.use(
+      signedInAs(fx.adminProfile()),
+      http.get(url('/modules'), ({ request }) => {
+        pages.push(new URL(request.url).searchParams.get('page') ?? '');
+        return HttpResponse.json({ data: [fx.moduleSummary()], total: 200 });
+      }),
+    );
+    renderPage(<AdminModulesPage />, { as: 'admin' });
+    await screen.findByText('MKDU4109');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Selanjutnya' }));
+
+    await waitFor(() => expect(pages).toContain('2'));
+  });
+
+  test('the first page cannot go back', async () => {
+    await show([fx.moduleSummary()], 200);
+
+    expect(screen.getByRole('button', { name: 'Sebelumnya' })).toBeDisabled();
   });
 });

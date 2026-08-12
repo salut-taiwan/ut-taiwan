@@ -1,10 +1,11 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import AdminUsersPage from './page';
 import { server } from '@/test/setup/msw';
 import { signedInAs, url } from '@/test/msw/handlers';
 import { push } from '@/test/utils/routerMock';
+import { within } from '@testing-library/react';
 import { renderPage, screen, waitFor } from '@/test/utils/renderWithProviders';
 import * as fx from '@/test/fixtures';
 import type { AdminUserDTO } from '@/types';
@@ -31,6 +32,10 @@ function trackQueries(rows: AdminUserDTO[] = [student()]) {
   const queries: URLSearchParams[] = [];
   server.use(
     signedInAs(fx.adminProfile()),
+    // The programme filter is populated from the catalogue.
+    http.get(url('/catalog/programs'), () =>
+      HttpResponse.json([{ id: 'pr-1', code: 'S1SI', name: 'Sistem Informasi' }]),
+    ),
     http.get(url('/users/admin/all'), ({ request }) => {
       queries.push(new URL(request.url).searchParams);
       return HttpResponse.json({ rows, total: rows.length, limit: 25, offset: 0 });
@@ -160,23 +165,174 @@ describe('granting and revoking membership', () => {
     await waitFor(() => expect(body?.is_salut).toBe(false));
   });
 
-  test('several students can be changed at once', async () => {
-    await show([student(), student({ id: 'u-10', name: 'Andi Wijaya' })]);
-    let body: { userIds?: string[] } | undefined;
+  test('a refused change is reported rather than looking applied', async () => {
+    await show();
+    server.use(
+      http.patch(url('/users/admin/:id/salut'), () =>
+        HttpResponse.json({ error: 'Mahasiswa belum terverifikasi' }, { status: 400 }),
+      ),
+    );
+
+    await userEvent.click(screen.getByTitle('Klik untuk tandai sebagai SALUT'));
+
+    await waitFor(() =>
+      expect(vi.mocked(globalThis.alert)).toHaveBeenCalledWith(
+        expect.stringContaining('belum terverifikasi'),
+      ),
+    );
+  });
+});
+
+describe('working on several students at once', () => {
+  const two = () => [student(), student({ id: 'u-10', name: 'Andi Wijaya' })];
+
+  test('nothing is offered until rows are selected', async () => {
+    await show(two());
+
+    expect(screen.queryByRole('button', { name: 'Tandai SALUT' })).not.toBeInTheDocument();
+  });
+
+  test('selecting all selects every row on the page', async () => {
+    await show(two());
+
+    const [selectAll] = screen.getAllByRole('checkbox');
+    await userEvent.click(selectAll);
+
+    expect(screen.getByText(/2 mahasiswa dipilih/)).toBeInTheDocument();
+  });
+
+  test('selecting all again clears the selection', async () => {
+    await show(two());
+    const [selectAll] = screen.getAllByRole('checkbox');
+    await userEvent.click(selectAll);
+
+    await userEvent.click(selectAll);
+
+    expect(screen.queryByText(/mahasiswa dipilih/)).not.toBeInTheDocument();
+  });
+
+  test('a single row can be picked out on its own', async () => {
+    await show(two());
+
+    const [, firstRow] = screen.getAllByRole('checkbox');
+    await userEvent.click(firstRow);
+
+    expect(screen.getByText(/1 mahasiswa dipilih/)).toBeInTheDocument();
+  });
+
+  test('clicking a selected row again deselects it', async () => {
+    await show(two());
+    const [, firstRow] = screen.getAllByRole('checkbox');
+    await userEvent.click(firstRow);
+
+    await userEvent.click(firstRow);
+
+    expect(screen.queryByText(/mahasiswa dipilih/)).not.toBeInTheDocument();
+  });
+
+  test('the whole selection is granted membership in one request', async () => {
+    // One request, not one per student — the backend caps the batch and this
+    // is the only place that contract is exercised.
+    await show(two());
+    let body: { userIds?: string[]; is_salut?: boolean } | undefined;
     server.use(
       http.patch(url('/users/admin/salut/bulk'), async ({ request }) => {
-        body = (await request.json()) as { userIds?: string[] };
+        body = (await request.json()) as { userIds?: string[]; is_salut?: boolean };
         return HttpResponse.json({ updated: 2 });
       }),
     );
 
     const [selectAll] = screen.getAllByRole('checkbox');
     await userEvent.click(selectAll);
-    const bulk = screen.getAllByRole('button').find((b) => /\d/.test(b.textContent ?? '') && /SALUT/i.test(b.textContent ?? ''));
-    if (bulk) {
-      await userEvent.click(bulk);
-      await waitFor(() => expect(body?.userIds?.length).toBe(2));
-    }
+    await userEvent.click(screen.getByRole('button', { name: 'Tandai SALUT' }));
+
+    await waitFor(() => expect(body?.userIds?.sort()).toEqual(['u-10', 'u-9']));
+    expect(body?.is_salut).toBe(true);
+  });
+
+  test('the selection can be revoked in bulk too', async () => {
+    await show(two());
+    let body: { is_salut?: boolean } | undefined;
+    server.use(
+      http.patch(url('/users/admin/salut/bulk'), async ({ request }) => {
+        body = (await request.json()) as { is_salut?: boolean };
+        return HttpResponse.json({ updated: 2 });
+      }),
+    );
+
+    const [selectAll] = screen.getAllByRole('checkbox');
+    await userEvent.click(selectAll);
+    await userEvent.click(screen.getByRole('button', { name: 'Cabut SALUT' }));
+
+    await waitFor(() => expect(body?.is_salut).toBe(false));
+  });
+
+  test('a failed bulk change is reported', async () => {
+    await show(two());
+    server.use(
+      http.patch(url('/users/admin/salut/bulk'), () =>
+        HttpResponse.json({ error: 'Maksimal 200 mahasiswa' }, { status: 400 }),
+      ),
+    );
+
+    const [selectAll] = screen.getAllByRole('checkbox');
+    await userEvent.click(selectAll);
+    await userEvent.click(screen.getByRole('button', { name: 'Tandai SALUT' }));
+
+    await waitFor(() =>
+      expect(vi.mocked(globalThis.alert)).toHaveBeenCalledWith(
+        expect.stringContaining('Maksimal 200'),
+      ),
+    );
+  });
+});
+
+describe('narrowing and resetting', () => {
+  test('the programme filter is sent', async () => {
+    const queries = await show();
+
+    const select = await screen.findByDisplayValue('Semua program');
+    await waitFor(() =>
+      expect(within(select as HTMLSelectElement).getByRole('option', { name: /Sistem Informasi/ })).toBeInTheDocument(),
+    );
+    await userEvent.selectOptions(select, 'pr-1');
+
+    await waitFor(() => expect(queries.some((q) => q.get('program_id') === 'pr-1')).toBe(true));
+  });
+
+  test('the semester filter is sent', async () => {
+    const queries = await show();
+
+    const select = screen.getByDisplayValue('Semua semester');
+    await userEvent.selectOptions(select, '3');
+
+    await waitFor(() => expect(queries.some((q) => q.get('semester') === '3')).toBe(true));
+  });
+
+  test('reset is only offered once something is filtered', async () => {
+    await show();
+
+    expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument();
+  });
+
+  test('reset clears the search and every filter at once', async () => {
+    const queries = await show();
+    await userEvent.type(searchBox(), 'rina');
+    await waitFor(
+      () => expect(queries.some((q) => q.get('search') === 'rina')).toBe(true),
+      { timeout: 3000 },
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Reset' }));
+
+    await waitFor(
+      () => {
+        const last = queries[queries.length - 1];
+        expect(last.get('search')).toBeNull();
+        expect(last.get('salut_status')).toBeNull();
+      },
+      { timeout: 3000 },
+    );
   });
 });
 
@@ -187,9 +343,25 @@ describe('paging', () => {
     const sizeSelect = screen.getAllByRole('combobox').find((s) =>
       Array.from((s as HTMLSelectElement).options).some((o) => o.value === '50'),
     );
-    if (sizeSelect) {
-      await userEvent.selectOptions(sizeSelect, '50');
-      await waitFor(() => expect(queries.some((q) => q.get('limit') === '50')).toBe(true));
-    }
+    if (!sizeSelect) throw new Error('no page-size select');
+    await userEvent.selectOptions(sizeSelect, '50');
+
+    await waitFor(() => expect(queries.some((q) => q.get('limit') === '50')).toBe(true));
+  });
+
+  test('moving to the next page shifts the offset', async () => {
+    const queries = trackQueries([student()]);
+    server.use(
+      http.get(url('/users/admin/all'), ({ request }) => {
+        queries.push(new URL(request.url).searchParams);
+        return HttpResponse.json({ rows: [student()], total: 200, limit: 25, offset: 0 });
+      }),
+    );
+    renderPage(<AdminUsersPage />, { as: 'admin' });
+    await screen.findByText('Rina Putri');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next →' }));
+
+    await waitFor(() => expect(queries.some((q) => q.get('offset') === '25')).toBe(true));
   });
 });
