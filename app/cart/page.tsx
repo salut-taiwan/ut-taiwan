@@ -176,6 +176,7 @@ export default function CartPage() {
                 </div>
                 <button
                   onClick={() => setCustomItems(prev => prev.filter((_, i) => i !== idx))}
+                  aria-label={`Hapus permintaan ${ci.code}`}
                   className="text-[var(--border-default)] hover:text-red-400 hover:bg-red-50 transition-[color,background-color] duration-150 p-1 rounded-md flex-shrink-0"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -242,6 +243,7 @@ export default function CartPage() {
                       <button
                         onClick={() => handleUpdateQty(item.id, item.quantity - 1)}
                         disabled={busyItem}
+                        aria-label={`Kurangi jumlah ${displayName}`}
                         className="w-8 h-8 rounded-lg border border-[var(--border)] flex items-center justify-center text-[var(--text-body)] hover:bg-[var(--surface-sunken)] hover:text-[var(--foreground)] disabled:opacity-40 transition-[background-color,color] duration-150 active:scale-[0.98]"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -254,6 +256,7 @@ export default function CartPage() {
                       <button
                         onClick={() => handleUpdateQty(item.id, item.quantity + 1)}
                         disabled={busyItem}
+                        aria-label={`Tambah jumlah ${displayName}`}
                         className="w-8 h-8 rounded-lg border border-[var(--border)] flex items-center justify-center text-[var(--text-body)] hover:bg-[var(--surface-sunken)] hover:text-[var(--foreground)] disabled:opacity-40 transition-[background-color,color] duration-150 active:scale-[0.98]"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -269,6 +272,7 @@ export default function CartPage() {
                     <button
                       onClick={() => handleRemove(item.id)}
                       disabled={busyItem}
+                      aria-label={`Hapus ${displayName} dari keranjang`}
                       className="text-[var(--border-default)] hover:text-red-400 hover:bg-red-50 disabled:opacity-40 transition-[color,background-color] duration-150 p-1 rounded-md"
                     >
                       {removing === item.id
