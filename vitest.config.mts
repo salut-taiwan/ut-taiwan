@@ -43,7 +43,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      include: ['lib/**', 'components/**', 'hooks/**'],
+      include: ['lib/**', 'components/**', 'hooks/**', 'app/**'],
       exclude: [
         '**/*.test.*', 'test/**',
         'lib/panduan.ts', 'lib/toko-categories.ts', 'lib/chat/types.ts',
