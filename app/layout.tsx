@@ -11,7 +11,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import SessionExpiryModal from "@/components/ui/SessionExpiryModal";
 import Providers from "@/components/ui/Providers";
 import { ChatProvider } from "@/components/chat/ChatProvider";
-import ChatLauncher from "@/components/chat/ChatLauncher";
+import ChatLauncher from "@/components/chat/ChatLauncherLazy";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 

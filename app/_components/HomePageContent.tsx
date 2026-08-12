@@ -1,12 +1,17 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
-import AssistantSpotlight from '@/app/_components/AssistantSpotlight'
 import type { FeesConfig } from '@/lib/api'
 import { TOKO_CATEGORIES } from '@/lib/toko-categories'
 import { cn } from '@/lib/utils'
+
+// Below-the-fold marketing band. Split into its own chunk so it does not weigh
+// down the landing entry bundle; SSR stays on so the section is still in the
+// initial HTML (no layout shift, still indexable).
+const AssistantSpotlight = dynamic(() => import('@/app/_components/AssistantSpotlight'))
 
 // ─── Animation config ──────────────────────────────────────────────────────
 

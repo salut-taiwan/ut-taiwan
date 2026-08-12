@@ -45,24 +45,38 @@ export default function ChatLauncher() {
     let cancelled = false;
     let showTimer: ReturnType<typeof setTimeout>;
     let hideTimer: ReturnType<typeof setTimeout>;
-    api.config
-      .getChatWidget()
-      .then((cfg) => cfg.greeting)
-      .catch(() => GREETING_FALLBACK)
-      .then((greeting) => {
-        if (cancelled || !greeting.enabled) return;
-        setGreetingText(greeting.text);
-        showTimer = setTimeout(() => {
-          setShowGreeting(true);
-          try {
-            sessionStorage.setItem(GREETING_SHOWN_KEY, '1');
-          } catch {}
-          // Auto-hide without muting: the greeting may still appear in a future session.
-          hideTimer = setTimeout(() => setShowGreeting(false), greeting.autoHideMs);
-        }, greeting.showDelayMs);
-      });
+
+    const fetchGreeting = () => {
+      api.config
+        .getChatWidget()
+        .then((cfg) => cfg.greeting)
+        .catch(() => GREETING_FALLBACK)
+        .then((greeting) => {
+          if (cancelled || !greeting.enabled) return;
+          setGreetingText(greeting.text);
+          showTimer = setTimeout(() => {
+            setShowGreeting(true);
+            try {
+              sessionStorage.setItem(GREETING_SHOWN_KEY, '1');
+            } catch {}
+            // Auto-hide without muting: the greeting may still appear in a future session.
+            hideTimer = setTimeout(() => setShowGreeting(false), greeting.autoHideMs);
+          }, greeting.showDelayMs);
+        });
+    };
+
+    // The greeting is never needed for first paint, so keep its request off the
+    // critical path and let it land once the browser is idle. Safari <17 has no
+    // requestIdleCallback, so fall back to a timeout there.
+    const hasIdle = typeof window.requestIdleCallback === 'function';
+    const idleHandle = hasIdle
+      ? window.requestIdleCallback(fetchGreeting, { timeout: 3000 })
+      : window.setTimeout(fetchGreeting, 1000);
+
     return () => {
       cancelled = true;
+      if (hasIdle) window.cancelIdleCallback(idleHandle);
+      else clearTimeout(idleHandle);
       clearTimeout(showTimer);
       clearTimeout(hideTimer);
     };
