@@ -170,3 +170,7 @@ export const handlers = [
   // the URL must still resolve if anything reaches for it.
   http.get(url('/sse/status'), () => new HttpResponse(null, { status: 204 })),
 ];
+
+/** Answer /auth/me with a specific profile — admin pages gate on role. */
+export const signedInAs = (profile: unknown) =>
+  http.get(url('/auth/me'), () => HttpResponse.json(profile as never));
