@@ -225,7 +225,7 @@ const stats = [
 // ─── Component ─────────────────────────────────────────────────────────────
 
 export default function HomePageContent({ fees }: { fees: FeesConfig | null }) {
-  const nextRenewalDisplay = fees?.salutMembership.renewalPolicy.next_renewal_date_display ?? null
+  const nextRenewalDisplay = fees?.salutMembership?.renewalPolicy?.next_renewal_date_display ?? null
 
   return (
     <div>

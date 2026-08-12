@@ -4,7 +4,7 @@ import { HttpResponse, http } from 'msw';
 import AdminPackagesPage from './page';
 import { server } from '@/test/setup/msw';
 import { signedInAs, url } from '@/test/msw/handlers';
-import { renderPage, screen, waitFor } from '@/test/utils/renderWithProviders';
+import { renderPage, screen } from '@/test/utils/renderWithProviders';
 import * as fx from '@/test/fixtures';
 
 const pkg = (over = {}) => ({
