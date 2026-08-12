@@ -223,44 +223,44 @@ export default function CheckoutPage() {
                 /* Editable form - Chinese address fields */
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <label className={labelClass}>Nama Penerima *</label>
-                    <input name="altName" value={form.altName} onChange={handleChange} required className={inputClass} />
+                    <label htmlFor="altName" className={labelClass}>Nama Penerima *</label>
+                    <input id="altName" name="altName" value={form.altName} onChange={handleChange} required className={inputClass} />
                   </div>
                   <div>
-                    <label className={labelClass}>縣市 *</label>
-                    <input name="altZhCity" value={form.altZhCity} onChange={handleChange} required className={inputClass} placeholder="台北市" />
+                    <label htmlFor="altZhCity" className={labelClass}>縣市 *</label>
+                    <input id="altZhCity" name="altZhCity" value={form.altZhCity} onChange={handleChange} required className={inputClass} placeholder="台北市" />
                   </div>
                   <div>
-                    <label className={labelClass}>區 *</label>
-                    <input name="altZhDistrict" value={form.altZhDistrict} onChange={handleChange} required className={inputClass} placeholder="信義區" />
+                    <label htmlFor="altZhDistrict" className={labelClass}>區 *</label>
+                    <input id="altZhDistrict" name="altZhDistrict" value={form.altZhDistrict} onChange={handleChange} required className={inputClass} placeholder="信義區" />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className={labelClass}>路/街 *</label>
-                    <input name="altZhRoad" value={form.altZhRoad} onChange={handleChange} required className={inputClass} placeholder="信義路五段" />
+                    <label htmlFor="altZhRoad" className={labelClass}>路/街 *</label>
+                    <input id="altZhRoad" name="altZhRoad" value={form.altZhRoad} onChange={handleChange} required className={inputClass} placeholder="信義路五段" />
                   </div>
                   <div>
-                    <label className={labelClass}>號 *</label>
-                    <input name="altZhNumber" value={form.altZhNumber} onChange={handleChange} required className={inputClass} placeholder="7號" />
+                    <label htmlFor="altZhNumber" className={labelClass}>號 *</label>
+                    <input id="altZhNumber" name="altZhNumber" value={form.altZhNumber} onChange={handleChange} required className={inputClass} placeholder="7號" />
                   </div>
                   <div>
-                    <label className={labelClass}>樓/室 (選填)</label>
-                    <input name="altZhFloor" value={form.altZhFloor} onChange={handleChange} className={inputClass} placeholder="3樓" />
+                    <label htmlFor="altZhFloor" className={labelClass}>樓/室 (選填)</label>
+                    <input id="altZhFloor" name="altZhFloor" value={form.altZhFloor} onChange={handleChange} className={inputClass} placeholder="3樓" />
                   </div>
                   <div>
-                    <label className={labelClass}>郵遞區號 *</label>
-                    <input name="altPostal" value={form.altPostal} onChange={handleChange} required className={inputClass} />
+                    <label htmlFor="altPostal" className={labelClass}>郵遞區號 *</label>
+                    <input id="altPostal" name="altPostal" value={form.altPostal} onChange={handleChange} required className={inputClass} />
                   </div>
                   <div>
-                    <label className={labelClass}>Nomor Telepon *</label>
-                    <input name="altPhone" value={form.altPhone} onChange={handleChange} required type="tel" className={inputClass} />
+                    <label htmlFor="altPhone" className={labelClass}>Nomor Telepon *</label>
+                    <input id="altPhone" name="altPhone" value={form.altPhone} onChange={handleChange} required type="tel" className={inputClass} />
                   </div>
                 </div>
               )}
 
               {/* Notes - always visible */}
               <div className="mt-4">
-                <label className={labelClass}>Catatan (opsional)</label>
-                <textarea name="notes" value={form.notes} onChange={handleChange} rows={2}
+                <label htmlFor="notes" className={labelClass}>Catatan (opsional)</label>
+                <textarea id="notes" name="notes" value={form.notes} onChange={handleChange} rows={2}
                   placeholder="Instruksi khusus untuk pengiriman"
                   className={inputClass} />
               </div>

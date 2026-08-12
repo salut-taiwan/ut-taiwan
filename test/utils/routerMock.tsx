@@ -20,8 +20,13 @@ export function setPathname(next: string) { pathname = next; }
 export function setSearchParams(next: string) { searchParams = new URLSearchParams(next); }
 export function setParams(next: Record<string, string>) { params = next; }
 
+// One stable object, as Next.js returns. A fresh object per call would change
+// identity on every render, so any effect with `router` in its dependency array
+// would re-run forever — which looks exactly like a page bug.
+const router = { push, replace, refresh, back, forward, prefetch };
+
 export const routerMock = {
-  useRouter: () => ({ push, replace, refresh, back, forward, prefetch }),
+  useRouter: () => router,
   usePathname: () => pathname,
   useSearchParams: () => searchParams,
   useParams: () => params,
