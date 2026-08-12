@@ -43,11 +43,22 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
+      // app/** belongs in the denominator. It was left out once, and the
+      // frontend read 98% while every page sat at 0%.
       include: ['lib/**', 'components/**', 'hooks/**', 'app/**'],
       exclude: [
         '**/*.test.*', 'test/**',
+        // Static data tables with no behaviour to exercise.
         'lib/panduan.ts', 'lib/toko-categories.ts', 'lib/chat/types.ts',
       ],
+      // A ratchet, not a target: set just under the current numbers so an
+      // unrelated change cannot quietly undo this, while leaving room to move.
+      thresholds: {
+        lines: 89,
+        statements: 86,
+        functions: 79,
+        branches: 78,
+      },
     },
   },
 });
