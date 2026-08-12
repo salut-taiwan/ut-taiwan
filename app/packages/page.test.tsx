@@ -74,6 +74,85 @@ describe('browsing packages', () => {
     expect(await screen.findByText(/Tidak ada modul dalam paket ini/)).toBeInTheDocument();
   });
 
+  test('searching is debounced and sent to the backend', async () => {
+    // The catalogue is paged; filtering in the browser would only search the
+    // page already loaded.
+    const queries: URLSearchParams[] = [];
+    server.use(
+      http.get(url('/packages'), ({ request }) => {
+        queries.push(new URL(request.url).searchParams);
+        return HttpResponse.json({ rows: [pkg()], total: 1, limit: 20, offset: 0 });
+      }),
+      http.get(url('/catalog/programs'), () => HttpResponse.json([])),
+    );
+    renderPage(<PackagesPage />, { as: 'student' });
+    await screen.findByRole('heading', { name: 'Paket Modul' });
+
+    await userEvent.type(
+      screen.getByPlaceholderText(/Cari paket berdasarkan nama/),
+      'semester 1',
+    );
+
+    await waitFor(
+      () => expect(queries.some((q) => q.get('search') === 'semester 1')).toBe(true),
+      { timeout: 3000 },
+    );
+  });
+
+  test('a failure to load is reported and can be retried', async () => {
+    let attempts = 0;
+    server.use(
+      http.get(url('/packages'), () => {
+        attempts += 1;
+        return attempts === 1
+          ? HttpResponse.error()
+          : HttpResponse.json({ rows: [pkg()], total: 1, limit: 20, offset: 0 });
+      }),
+      http.get(url('/catalog/programs'), () => HttpResponse.json([])),
+    );
+    renderPage(<PackagesPage />, { as: 'student' });
+    await screen.findByText(/Gagal memuat paket/);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Muat Ulang' }));
+
+    expect(await screen.findByText('Paket Semester 1')).toBeInTheDocument();
+  });
+
+  test('a large catalogue can be paged', async () => {
+    const queries: URLSearchParams[] = [];
+    server.use(
+      http.get(url('/packages'), ({ request }) => {
+        queries.push(new URL(request.url).searchParams);
+        return HttpResponse.json({ rows: [pkg()], total: 200, limit: 20, offset: 0 });
+      }),
+      http.get(url('/catalog/programs'), () => HttpResponse.json([])),
+    );
+    renderPage(<PackagesPage />, { as: 'student' });
+    await screen.findByText('Paket Semester 1');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next →' }));
+
+    // The page size is the first of PAGE_SIZES (9), not the API default.
+    await waitFor(() => expect(queries.some((q) => Number(q.get('offset')) > 0)).toBe(true));
+  });
+
+  test('a signed-out visitor adding a package is sent to log in', async () => {
+    const location = { href: '' } as Location;
+    Object.defineProperty(window, 'location', { value: location, writable: true });
+    server.use(
+      http.get(url('/packages'), () =>
+        HttpResponse.json({ rows: [pkg()], total: 1, limit: 20, offset: 0 }),
+      ),
+      http.get(url('/catalog/programs'), () => HttpResponse.json([])),
+    );
+    renderPage(<PackagesPage />);
+    await screen.findByText('Paket Semester 1');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Tambah ke Keranjang' }));
+
+    await waitFor(() => expect(location.href).toBe('/login'));
+  });
+
   test('filtering by programme is sent to the backend', async () => {
     const queries: URLSearchParams[] = [];
     server.use(

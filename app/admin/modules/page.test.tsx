@@ -110,6 +110,50 @@ describe('the module catalogue an admin sees', () => {
     expect(body!.author).toBe('Tim UT');
   });
 
+  test('the remaining optional fields are sent when filled', async () => {
+    await show();
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.post(url('/modules'), async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ id: 'm-2' });
+      }),
+    );
+
+    await fillNewModule();
+    await userEvent.type(screen.getByPlaceholderText('300'), '450');
+    await userEvent.type(screen.getByPlaceholderText('https://...'), 'https://cdn/cover.jpg');
+    await userEvent.type(
+      screen.getByPlaceholderText('https://tbo.karunika.co.id/...'),
+      'https://tbo.karunika.co.id/m/1',
+    );
+    await userEvent.click(saveButton());
+
+    await waitFor(() => expect(body).toBeDefined());
+    expect(body!.weight_grams).toBe(450);
+    expect(body!.cover_image_url).toBe('https://cdn/cover.jpg');
+    expect(body!.tbo_url).toBe('https://tbo.karunika.co.id/m/1');
+  });
+
+  test('the availability and multimedia flags are sent as booleans', async () => {
+    await show();
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.post(url('/modules'), async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ id: 'm-2' });
+      }),
+    );
+
+    await fillNewModule();
+    for (const box of screen.getAllByRole('checkbox')) await userEvent.click(box);
+    await userEvent.click(saveButton());
+
+    await waitFor(() => expect(body).toBeDefined());
+    expect(typeof body!.is_available).toBe('boolean');
+    expect(typeof body!.has_multimedia).toBe('boolean');
+  });
+
   test('optional fields left blank are omitted, not sent empty', async () => {
     await show();
     let body: Record<string, unknown> | undefined;

@@ -74,6 +74,46 @@ describe('running the catalogue scraper', () => {
     expect(await screen.findByText(/TBO tidak dapat diakses/)).toBeInTheDocument();
   });
 
+  test('the prefix sweep can be started separately', async () => {
+    // A full crawl and a prefix sweep are different jobs; the console offers
+    // both because the full one is far slower.
+    await show();
+    let started = false;
+    server.use(
+      http.post(url('/scraper/run-prefixes'), () => {
+        started = true;
+        return HttpResponse.json({ runId: 'r-3' });
+      }),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Scrape by Prefix/ }));
+
+    await waitFor(() => expect(started).toBe(true));
+    expect(await screen.findByText(/r-3/)).toBeInTheDocument();
+  });
+
+  test('a refused prefix sweep says why', async () => {
+    await show();
+    server.use(
+      http.post(url('/scraper/run-prefixes'), () =>
+        HttpResponse.json({ error: 'Scraper sedang berjalan' }, { status: 409 }),
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Scrape by Prefix/ }));
+
+    expect(await screen.findByText(/sedang berjalan/)).toBeInTheDocument();
+  });
+
+  test('a started run shows its id so it can be followed', async () => {
+    await show();
+    server.use(http.post(url('/scraper/run'), () => HttpResponse.json({ runId: 'r-9' })));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Jalankan Sekarang' }));
+
+    expect(await screen.findByText(/r-9/)).toBeInTheDocument();
+  });
+
   test('no runs yet is an empty list rather than an error', async () => {
     await show([]);
 

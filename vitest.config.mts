@@ -54,10 +54,10 @@ export default defineConfig({
       // A ratchet, not a target: set just under the current numbers so an
       // unrelated change cannot quietly undo this, while leaving room to move.
       thresholds: {
-        lines: 89,
-        statements: 86,
-        functions: 79,
-        branches: 78,
+        lines: 93,
+        statements: 90,
+        functions: 85,
+        branches: 80,
       },
     },
   },
