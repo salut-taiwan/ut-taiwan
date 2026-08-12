@@ -112,11 +112,16 @@ describe('sending the request', () => {
     await screen.findAllByText('NT$10,000', {}, { timeout: 3000 });
   }
 
-  test('both files must be attached', async () => {
+  test('nothing can be submitted until every field and both files are present', async () => {
+    // canSubmit is the only gate a student can reach; handleSubmit's own
+    // checks are defensive duplicates behind it (marked as such in the page).
     await show();
 
     await userEvent.type(amountField(), '5600000');
+    expect(submit()).toBeDisabled();
 
+    const [slipInput] = fileInputs();
+    await userEvent.upload(slipInput, slip());
     expect(submit()).toBeDisabled();
   });
 

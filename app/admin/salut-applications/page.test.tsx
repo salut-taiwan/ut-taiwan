@@ -153,6 +153,65 @@ describe('deciding an application', () => {
   });
 });
 
+describe('when an action fails', () => {
+  test('an unreachable proof is reported rather than opening a blank tab', async () => {
+    await show();
+    server.use(
+      http.get(url('/users/admin/salut/proof-url/:id'), () =>
+        HttpResponse.json({ error: 'Gagal membuat URL' }, { status: 500 }),
+      ),
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Lihat' }));
+
+    expect(await screen.findByText(/Gagal membuat URL/)).toBeInTheDocument();
+  });
+
+  test('a failed approval leaves the application in the queue', async () => {
+    await show();
+    server.use(
+      http.patch(url('/users/admin/:id/salut/approve'), () =>
+        HttpResponse.json({ error: 'Sudah disetujui' }, { status: 409 }),
+      ),
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Setujui' }));
+
+    expect(await screen.findByText(/Sudah disetujui/)).toBeInTheDocument();
+    expect(screen.getByText('Rina Putri')).toBeInTheDocument();
+  });
+
+  test('a failed rejection is reported', async () => {
+    await show();
+    server.use(
+      http.patch(url('/users/admin/:id/salut/reject'), () =>
+        HttpResponse.json({ error: 'Alasan terlalu panjang' }, { status: 400 }),
+      ),
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Tolak' }));
+    await userEvent.type(screen.getByRole('textbox'), 'x');
+    const commit = screen
+      .getAllByRole('button', { name: 'Tolak' })
+      .find((b) => !(b as HTMLButtonElement).disabled)!;
+    await userEvent.click(commit);
+
+    expect(await screen.findByText(/Alasan terlalu panjang/)).toBeInTheDocument();
+  });
+
+  test('a queue that will not load is reported', async () => {
+    server.use(
+      signedInAs(fx.adminProfile()),
+      http.get(url('/users/admin/salut/applications'), () =>
+        HttpResponse.json({ error: 'Gagal memuat' }, { status: 500 }),
+      ),
+    );
+    renderPage(<SalutApplicationsPage />, { as: 'admin' });
+
+    expect(await screen.findByText(/Gagal memuat/)).toBeInTheDocument();
+  });
+});
+
 describe('working through the queue in bulk', () => {
   const two = () => [application(), application({ id: 'u-10', name: 'Andi Wijaya' })];
 
@@ -189,6 +248,35 @@ describe('working through the queue in bulk', () => {
     await userEvent.click(screen.getByRole('button', { name: /Setujui \d+/ }));
 
     expect(called).toBe(false);
+  });
+
+  test('one application can be picked out rather than selecting all', async () => {
+    await show(two());
+
+    const [, first] = screen.getAllByRole('checkbox');
+    await userEvent.click(first);
+
+    expect(screen.getByRole('button', { name: /Setujui 1/ })).toBeInTheDocument();
+  });
+
+  test('clicking a selected application again deselects it', async () => {
+    await show(two());
+    const [, first] = screen.getAllByRole('checkbox');
+    await userEvent.click(first);
+
+    await userEvent.click(first);
+
+    expect(screen.queryByRole('button', { name: /Setujui \d/ })).not.toBeInTheDocument();
+  });
+
+  test('selecting all twice clears the selection', async () => {
+    await show(two());
+    const [selectAll] = screen.getAllByRole('checkbox');
+    await userEvent.click(selectAll);
+
+    await userEvent.click(selectAll);
+
+    expect(screen.queryByRole('button', { name: /Setujui \d/ })).not.toBeInTheDocument();
   });
 
   test('one failure in a bulk run does not hide the successes', async () => {

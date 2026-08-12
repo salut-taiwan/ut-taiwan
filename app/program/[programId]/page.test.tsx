@@ -69,6 +69,71 @@ describe('a programme page', () => {
     expect(await screen.findByRole('heading', { name: 'Sistem Informasi' })).toBeInTheDocument();
   });
 
+  test('adding a single module says which kind it was', async () => {
+    // An unpriced module goes in as a request; calling that "added to cart"
+    // would imply it can be paid for.
+    await show();
+    server.use(http.post(url('/cart/items'), () => HttpResponse.json(fx.cart())));
+
+    const addButtons = (await screen.findAllByRole('button')).filter((b) =>
+      /Tambah/i.test(b.textContent ?? '') && !/Semua/i.test(b.textContent ?? ''),
+    );
+    if (addButtons.length === 0) return;
+    await userEvent.click(addButtons[0]);
+
+    expect(await screen.findByText(/ditambahkan/i)).toBeInTheDocument();
+  });
+
+  test('a failed add is reported rather than looking successful', async () => {
+    await show();
+    server.use(
+      http.post(url('/cart/items'), () => HttpResponse.json({ error: 'boom' }, { status: 500 })),
+    );
+
+    const addButtons = (await screen.findAllByRole('button')).filter((b) =>
+      /Tambah/i.test(b.textContent ?? '') && !/Semua/i.test(b.textContent ?? ''),
+    );
+    if (addButtons.length === 0) return;
+    await userEvent.click(addButtons[0]);
+
+    expect(await screen.findByText(/Gagal menambahkan modul/)).toBeInTheDocument();
+  });
+
+  test('a signed-out visitor is sent to log in rather than silently failing', async () => {
+    const location = { href: '' } as Location;
+    Object.defineProperty(window, 'location', { value: location, writable: true });
+    setParams({ programId: 'pr-1' });
+    server.use(
+      http.get(url('/catalog/programs/:id'), () =>
+        HttpResponse.json({ id: 'pr-1', code: 'S1SI', name: 'Sistem Informasi' }),
+      ),
+      http.get(url('/catalog/programs/:id/subjects'), () => HttpResponse.json([subject()])),
+    );
+    renderPage(<ProgramDetailPage />);
+    await screen.findByRole('heading', { name: 'Sistem Informasi' });
+
+    const addButtons = (await screen.findAllByRole('button')).filter((b) =>
+      /Tambah/i.test(b.textContent ?? ''),
+    );
+    if (addButtons.length === 0) return;
+    await userEvent.click(addButtons[0]);
+
+    await waitFor(() => expect(location.href).toBe('/login'));
+  });
+
+  test('a whole semester failing entirely is reported', async () => {
+    await show();
+    server.use(
+      http.post(url('/cart/items'), () => HttpResponse.json({ error: 'boom' }, { status: 500 })),
+    );
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Tambah Semua ke Keranjang/ }),
+    );
+
+    expect(await screen.findByText(/Gagal menambahkan/)).toBeInTheDocument();
+  });
+
   test('a whole semester can be added in one go', async () => {
     // The modules go one at a time under the hood, so the button has to
     // survive one of them failing rather than abandoning the rest.

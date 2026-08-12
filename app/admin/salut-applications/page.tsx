@@ -36,7 +36,11 @@ export default function SalutApplicationsPage() {
     try {
       const data = await api.admin.listSalutApplications(tab === 'all' ? 'all' : 'pending');
       setApplications(data);
-    } catch {}
+    } catch (err) {
+      // Swallowing this left an admin looking at an empty queue that reads as
+      // "nothing to approve" — so they move on and applicants keep waiting.
+      showToast((err as Error).message || 'Gagal memuat permohonan', 'error');
+    }
     finally { setLoading(false); }
   }
 

@@ -111,6 +111,10 @@ export default function SksPaymentApplyPage() {
     if (busy) return;
     setError(null);
 
+    /* v8 ignore start -- unreachable: `canSubmit` already requires every one
+       of these before the submit button enables, so none of these branches can
+       be reached from the UI. Kept as a guard in case the button's gate and
+       this handler ever drift apart. */
     if (!nim.trim() || !name.trim() || !semesterPeriod.trim()) {
       setError('NIM, nama, dan semester wajib diisi.');
       return;
@@ -127,6 +131,7 @@ export default function SksPaymentApplyPage() {
       setError('Bukti transfer wajib diunggah.');
       return;
     }
+    /* v8 ignore stop */
 
     setBusy(true);
     try {
