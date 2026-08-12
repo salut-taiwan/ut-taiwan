@@ -284,6 +284,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(o => !o)}
               aria-label="Buka menu navigasi"
               aria-expanded={mobileOpen}
+              aria-controls="mobile-menu"
               className="md:hidden rounded-lg p-2 text-[var(--text-body)] hover:bg-[var(--surface-sunken)] transition-colors duration-150"
             >
               {mobileOpen ? (
@@ -304,6 +305,7 @@ export default function Navbar() {
           {mobileOpen && (
             <motion.div
               key="mobile-menu"
+              id="mobile-menu"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}

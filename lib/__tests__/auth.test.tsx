@@ -45,6 +45,8 @@ function Probe() {
       <span data-testid="expired">{String(auth.isSessionExpired)}</span>
       <button onClick={() => auth.login('a@b.c', 'pw').catch(() => {})}>masuk</button>
       <button onClick={() => auth.logout()}>keluar</button>
+      <button onClick={() => auth.stayLoggedIn()}>tetap masuk</button>
+      <button onClick={() => auth.dismissExpired()}>tutup</button>
     </div>
   );
 }
@@ -259,5 +261,67 @@ describe('useAuth outside a provider', () => {
     const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => render(<Probe />)).toThrow();
     quiet.mockRestore();
+  });
+});
+
+describe('rescuing a session that is about to expire', () => {
+  // A student filling in the checkout address must not lose it because a token
+  // aged out while they typed. The warning offers to renew in place.
+  const warn = () => userEvent.click(screen.getByRole('button', { name: 'tetap masuk' }));
+
+  test('renewing stores the new credentials and drops the warning', async () => {
+    storedSession();
+    refresh.mockResolvedValue({
+      token: 'tok-2',
+      refreshToken: 'ref-2',
+      expiresAt: Math.floor((Date.now() + 3600_000) / 1000),
+    });
+    renderAuth();
+    await settled();
+
+    await warn();
+
+    await waitFor(() => expect(localStorage.getItem('ut_token')).toBe('tok-2'));
+    expect(localStorage.getItem('ut_refresh_token')).toBe('ref-2');
+    expect(screen.getByTestId('warning')).toHaveTextContent('false');
+    expect(screen.getByTestId('expired')).toHaveTextContent('false');
+  });
+
+  test('a refresh the server rejects ends the session honestly', async () => {
+    // Silently doing nothing would leave the student clicking a dead button.
+    storedSession();
+    refresh.mockRejectedValue(new Error('refresh token revoked'));
+    renderAuth();
+    await settled();
+
+    await warn();
+
+    await waitFor(() => expect(screen.getByTestId('expired')).toHaveTextContent('true'));
+    expect(screen.getByTestId('warning')).toHaveTextContent('false');
+  });
+
+  test('with no refresh token there is nothing to renew, so it expires at once', async () => {
+    storedSession();
+    localStorage.removeItem('ut_refresh_token');
+    renderAuth();
+    await settled();
+
+    await warn();
+
+    await waitFor(() => expect(screen.getByTestId('expired')).toHaveTextContent('true'));
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  test('dismissing the expiry notice clears it', async () => {
+    storedSession();
+    refresh.mockRejectedValue(new Error('nope'));
+    renderAuth();
+    await settled();
+    await warn();
+    await waitFor(() => expect(screen.getByTestId('expired')).toHaveTextContent('true'));
+
+    await userEvent.click(screen.getByRole('button', { name: 'tutup' }));
+
+    expect(screen.getByTestId('expired')).toHaveTextContent('false');
   });
 });

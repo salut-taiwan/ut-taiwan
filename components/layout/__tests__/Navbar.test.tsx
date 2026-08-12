@@ -150,3 +150,106 @@ describe('the dropdown menus', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
   });
 });
+
+describe('the mobile menu', () => {
+  // Most students reach the site on a phone, so this panel — not the desktop
+  // bar — is the navigation they actually use.
+  const toggle = () => screen.getByRole('button', { name: 'Buka menu navigasi' });
+  const panel = () => document.getElementById('mobile-menu');
+  // The desktop bar renders the same destinations, so every query has to be
+  // scoped to the panel or it matches twice.
+  const inPanel = () => within(panel()!);
+
+  test('it starts closed', () => {
+    render(<Navbar />);
+    expect(panel()).toBeNull();
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('tapping the toggle opens it and says so to a screen reader', async () => {
+    render(<Navbar />);
+    await userEvent.click(toggle());
+
+    expect(panel()).toBeInTheDocument();
+    expect(toggle()).toHaveAttribute('aria-expanded', 'true');
+    expect(toggle()).toHaveAttribute('aria-controls', 'mobile-menu');
+  });
+
+  test('tapping again closes it', async () => {
+    render(<Navbar />);
+    await userEvent.click(toggle());
+    await userEvent.click(toggle());
+
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('every section is reachable, including the ones the desktop bar nests in a dropdown', async () => {
+    render(<Navbar />);
+    await userEvent.click(toggle());
+
+    for (const label of ['Semua Modul', 'Program Studi', 'Paket Modul', 'Panduan', 'Toko', 'Bayar SKS', 'SALUT']) {
+      expect(inPanel().getByRole('link', { name: label })).toBeInTheDocument();
+    }
+  });
+
+  test('following a link closes the menu, rather than covering the page arrived at', async () => {
+    render(<Navbar />);
+    await userEvent.click(toggle());
+
+    await userEvent.click(inPanel().getByRole('link', { name: 'Toko' }));
+
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('a signed-out visitor is offered sign-in from here too', async () => {
+    render(<Navbar />);
+    await userEvent.click(toggle());
+
+    expect(inPanel().getAllByRole('link', { name: /masuk/i }).length).toBeGreaterThan(0);
+  });
+
+  test('a signed-in student gets their orders, profile and a way out', async () => {
+    currentUser = student;
+    render(<Navbar />);
+    await userEvent.click(toggle());
+
+    expect(inPanel().getByRole('link', { name: 'Pesanan' })).toBeInTheDocument();
+    expect(inPanel().getByRole('link', { name: 'Profil' })).toBeInTheDocument();
+    expect(inPanel().getByRole('button', { name: /keluar/i })).toBeInTheDocument();
+  });
+
+  test('a student is not shown the admin area', async () => {
+    currentUser = student;
+    render(<Navbar />);
+    await userEvent.click(toggle());
+
+    expect(inPanel().queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument();
+  });
+
+  test('an admin is', async () => {
+    currentUser = admin;
+    render(<Navbar />);
+    await userEvent.click(toggle());
+
+    expect(inPanel().getByRole('link', { name: 'Admin' })).toHaveAttribute('href', '/admin');
+  });
+
+  test('signing out from the menu closes it and returns to the home page', async () => {
+    currentUser = student;
+    render(<Navbar />);
+    await userEvent.click(toggle());
+
+    await userEvent.click(inPanel().getByRole('button', { name: /keluar/i }));
+
+    expect(logout).toHaveBeenCalled();
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('the section being read is marked as current', async () => {
+    setPathname('/toko/almet-salut');
+    render(<Navbar />);
+    await userEvent.click(toggle());
+
+    expect(inPanel().getByRole('link', { name: 'Toko' }).className).toContain('font-semibold');
+  });
+});

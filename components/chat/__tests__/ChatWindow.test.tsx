@@ -3,13 +3,13 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ChatWindow from '@/components/chat/ChatWindow';
 import { MAX_MESSAGE_LENGTH } from '@/lib/chat/types';
-import type { ChatMessage, ChatStatus } from '@/lib/chat/types';
+import type { ChatMessage, ConnectionStatus } from '@/lib/chat/types';
 
 const send = vi.fn();
 const retry = vi.fn();
 
 let auth: { user: unknown; isLoading: boolean };
-let chat: { messages: ChatMessage[]; status: ChatStatus; isStreaming: boolean };
+let chat: { messages: ChatMessage[]; status: ConnectionStatus; isStreaming: boolean };
 
 vi.mock('@/lib/auth', () => ({ useAuth: () => auth }));
 vi.mock('@/components/chat/ChatProvider', () => ({
