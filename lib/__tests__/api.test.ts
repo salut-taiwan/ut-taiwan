@@ -359,3 +359,120 @@ describe('session helpers', () => {
     expect(getExpiresAt()).toBeNull();
   });
 });
+
+// Every endpoint wrapper, one row each. These are thin, but a wrong path or a
+// wrong verb is a real outage that no other tier catches: the backend routes
+// live in a different repo, so nothing else compares the two. A row failing
+// here means the frontend is calling something the backend does not serve.
+//
+// Paths are written without the /api prefix, which apiFetch adds.
+type Api = (typeof import('@/lib/api'))['api'];
+
+const ENDPOINTS: [name: string, call: (api: Api) => unknown, method: string, path: string, body?: unknown][] = [
+  ['auth.register', a => a.auth.register({ email: 'a@b.c', password: 'p', name: 'N', program_id: 'p-1', current_semester: 1, address_zh_city: 'c', address_zh_district: 'd', address_zh_road: 'r', address_zh_number: '1' }), 'POST', '/auth/register'],
+  ['auth.login', a => a.auth.login({ email: 'a@b.c', password: 'p' }), 'POST', '/auth/login', { email: 'a@b.c', password: 'p' }],
+  ['auth.refresh', a => a.auth.refresh({ refreshToken: 'r' }), 'POST', '/auth/refresh', { refreshToken: 'r' }],
+  ['auth.logout', a => a.auth.logout(), 'POST', '/auth/logout'],
+  ['auth.resendVerification', a => a.auth.resendVerification('a@b.c'), 'POST', '/auth/resend-verification', { email: 'a@b.c' }],
+  ['auth.getMe', a => a.auth.getMe(), 'GET', '/auth/me'],
+  ['auth.updateMe', a => a.auth.updateMe({ name: 'Baru' }), 'PUT', '/auth/me', { name: 'Baru' }],
+
+  ['catalog.getFaculties', a => a.catalog.getFaculties(), 'GET', '/catalog/faculties'],
+  ['catalog.getProgramsByFaculty', a => a.catalog.getProgramsByFaculty('f-1'), 'GET', '/catalog/faculties/f-1/programs'],
+  ['catalog.getPrograms (unfiltered)', a => a.catalog.getPrograms(), 'GET', '/catalog/programs'],
+  ['catalog.getPrograms (by faculty)', a => a.catalog.getPrograms('f-1'), 'GET', '/catalog/programs?facultyId=f-1'],
+  ['catalog.getPrograms (by code)', a => a.catalog.getPrograms(undefined, 'FE'), 'GET', '/catalog/programs?facultyCode=FE'],
+  ['catalog.getProgram', a => a.catalog.getProgram('p-1'), 'GET', '/catalog/programs/p-1'],
+  ['catalog.getSubjects', a => a.catalog.getSubjects('p-1'), 'GET', '/catalog/programs/p-1/subjects'],
+  ['catalog.getSubjects (by semester)', a => a.catalog.getSubjects('p-1', 3), 'GET', '/catalog/programs/p-1/subjects?semester=3'],
+  ['catalog.getSubject', a => a.catalog.getSubject('s-1'), 'GET', '/catalog/subjects/s-1'],
+
+  ['modules.list', a => a.modules.list(), 'GET', '/modules?page=1&limit=20'],
+  ['modules.list (paged)', a => a.modules.list(3, 50), 'GET', '/modules?page=3&limit=50'],
+  ['modules.search', a => a.modules.search('bahasa indonesia'), 'GET', '/modules/search?q=bahasa%20indonesia'],
+  ['modules.get', a => a.modules.get('m-1'), 'GET', '/modules/m-1'],
+  ['modules.create', a => a.modules.create({ tbo_code: 'X' }), 'POST', '/modules', { tbo_code: 'X' }],
+
+  ['packages.list', a => a.packages.list(), 'GET', '/packages'],
+  ['packages.get', a => a.packages.get('pk-1'), 'GET', '/packages/pk-1'],
+  ['packages.sync', a => a.packages.sync(), 'POST', '/packages/sync'],
+
+  ['cart.get', a => a.cart.get(), 'GET', '/cart'],
+  ['cart.addItem', a => a.cart.addItem('m-1'), 'POST', '/cart/items', { moduleId: 'm-1', quantity: 1 }],
+  ['cart.addItem (quantity)', a => a.cart.addItem('m-1', 4), 'POST', '/cart/items', { moduleId: 'm-1', quantity: 4 }],
+  ['cart.addPackage', a => a.cart.addPackage('pk-1'), 'POST', '/cart/packages', { packageId: 'pk-1' }],
+  ['cart.addMerch', a => a.cart.addMerch('sku-1', 2), 'POST', '/cart/merch', { skuId: 'sku-1', quantity: 2 }],
+  ['cart.updateItem', a => a.cart.updateItem('i-1', 3), 'PUT', '/cart/items/i-1', { quantity: 3 }],
+  ['cart.convertToRequest', a => a.cart.convertToRequest('i-1'), 'PATCH', '/cart/items/i-1/convert-to-request'],
+  ['cart.removeItem', a => a.cart.removeItem('i-1'), 'DELETE', '/cart/items/i-1'],
+  ['cart.clear', a => a.cart.clear(), 'DELETE', '/cart'],
+
+  ['orders.checkout', a => a.orders.checkout({ address: 'x' }), 'POST', '/orders/checkout', { address: 'x' }],
+  ['orders.list', a => a.orders.list(), 'GET', '/orders'],
+  ['orders.get', a => a.orders.get('o-1'), 'GET', '/orders/o-1'],
+  ['orders.cancel', a => a.orders.cancel('o-1'), 'POST', '/orders/o-1/cancel'],
+  ['orders.confirmDelivery', a => a.orders.confirmDelivery('o-1'), 'POST', '/orders/o-1/confirm-delivery'],
+
+  ['payments.getStatus', a => a.payments.getStatus('o-1'), 'GET', '/payments/o-1'],
+
+  ['salut.apply', a => a.salut.apply('https://x/p.jpg', 3, '0912345678'), 'POST', '/salut/apply', { proofUrl: 'https://x/p.jpg', current_semester: 3, wa_number: '0912345678' }],
+  ['salut.getStatus', a => a.salut.getStatus(), 'GET', '/salut/status'],
+
+  ['sksPayment.quote', a => a.sksPayment.quote(560000), 'POST', '/sks-payment/quote', { idr_amount: 560000 }],
+  ['sksPayment.submit', a => a.sksPayment.submit({ nim: '1', name: 'N', semester_period: '2026.1', idr_amount: 1, ut_slip_url: 'u', transfer_proof_url: 't' }), 'POST', '/sks-payment'],
+  ['sksPayment.listMine', a => a.sksPayment.listMine(), 'GET', '/sks-payment/mine'],
+
+  ['products.list', a => a.products.list(), 'GET', '/products'],
+  ['products.list (by category)', a => a.products.list({ category: 'almet' }), 'GET', '/products?category=almet'],
+  ['products.get', a => a.products.get('pr-1'), 'GET', '/products/pr-1'],
+  ['products.getClaimCta', a => a.products.getClaimCta('pr-1'), 'GET', '/products/pr-1/claim-cta'],
+
+  ['config.getFees', a => a.config.getFees(), 'GET', '/config/fees'],
+  ['config.getBanks', a => a.config.getBanks('NTD'), 'GET', '/config/banks?currency=NTD'],
+  ['config.getChatWidget', a => a.config.getChatWidget(), 'GET', '/config/chat-widget'],
+
+  ['scraper.run', a => a.scraper.run(), 'POST', '/scraper/run'],
+  ['scraper.runPrefixes', a => a.scraper.runPrefixes(), 'POST', '/scraper/run-prefixes'],
+  ['scraper.getRuns', a => a.scraper.getRuns(), 'GET', '/scraper/runs'],
+  ['scraper.getRun', a => a.scraper.getRun('r-1'), 'GET', '/scraper/runs/r-1'],
+
+  ['admin.listOrders', a => a.admin.listOrders(), 'GET', '/orders/admin/all'],
+  ['admin.confirmPayment', a => a.admin.confirmPayment('o-1'), 'POST', '/payments/o-1/confirm'],
+  ['admin.updateOrderStatus', a => a.admin.updateOrderStatus('o-1', 'shipped'), 'PATCH', '/orders/admin/o-1/status', { status: 'shipped' }],
+  ['admin.confirmKarunika', a => a.admin.confirmKarunika('o-1'), 'POST', '/orders/admin/o-1/confirm-karunika'],
+  ['admin.updateRequestItemStatus', a => a.admin.updateRequestItemStatus('o-1', 'i-1', 'approved', 1700), 'PATCH', '/orders/admin/o-1/items/i-1/request-status', { status: 'approved', unit_price: 1700 }],
+  ['admin.updateRequestItemStatus (reject, no price)', a => a.admin.updateRequestItemStatus('o-1', 'i-1', 'rejected'), 'PATCH', '/orders/admin/o-1/items/i-1/request-status', { status: 'rejected' }],
+  ['admin.listUsers', a => a.admin.listUsers(), 'GET', '/users/admin/all'],
+  ['admin.listUsers (filtered)', a => a.admin.listUsers({ search: 'rina', sort: 'name', dir: 'asc' }), 'GET', '/users/admin/all?search=rina&sort=name&dir=asc'],
+  ['admin.updateUserSalut', a => a.admin.updateUserSalut('u-1', true), 'PATCH', '/users/admin/u-1/salut', { is_salut: true }],
+  ['admin.bulkUpdateUserSalut', a => a.admin.bulkUpdateUserSalut(['u-1', 'u-2'], false), 'PATCH', '/users/admin/salut/bulk', { userIds: ['u-1', 'u-2'], is_salut: false }],
+  ['admin.listSalutApplications', a => a.admin.listSalutApplications(), 'GET', '/users/admin/salut/applications'],
+  ['admin.listSalutApplications (all)', a => a.admin.listSalutApplications('all'), 'GET', '/users/admin/salut/applications?status=all'],
+  ['admin.getSalutProofUrl', a => a.admin.getSalutProofUrl('u-1'), 'GET', '/users/admin/salut/proof-url/u-1'],
+  ['admin.approveSalut', a => a.admin.approveSalut('u-1'), 'PATCH', '/users/admin/u-1/salut/approve'],
+  ['admin.rejectSalut', a => a.admin.rejectSalut('u-1', 'bukti tidak jelas'), 'PATCH', '/users/admin/u-1/salut/reject', { reason: 'bukti tidak jelas' }],
+  ['admin.listSksPayments', a => a.admin.listSksPayments(), 'GET', '/sks-payment/admin/all'],
+  ['admin.listSksPayments (all)', a => a.admin.listSksPayments('all'), 'GET', '/sks-payment/admin/all?status=all'],
+  ['admin.getSksSlipUrl', a => a.admin.getSksSlipUrl('s-1'), 'GET', '/sks-payment/admin/s-1/slip-url'],
+  ['admin.getSksProofUrl', a => a.admin.getSksProofUrl('s-1'), 'GET', '/sks-payment/admin/s-1/proof-url'],
+  ['admin.completeSks', a => a.admin.completeSks('s-1'), 'PATCH', '/sks-payment/admin/s-1/complete'],
+  ['admin.rejectSks', a => a.admin.rejectSks('s-1', 'nominal beda'), 'PATCH', '/sks-payment/admin/s-1/reject', { reason: 'nominal beda' }],
+];
+
+describe('every endpoint calls the URL and verb it claims', () => {
+  test.each(ENDPOINTS)('%s', async (_name, call, method, path, body) => {
+    signedIn();
+    scriptFetch([{ body: {} }]);
+    const { api } = await freshApi();
+
+    await call(api);
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toBe(`${API}${path}`);
+    // apiFetch omits `method` for reads, which fetch defaults to GET.
+    expect(calls[0].init.method ?? 'GET').toBe(method);
+    if (body !== undefined) {
+      expect(JSON.parse(calls[0].init.body as string)).toEqual(body);
+    }
+  });
+});
