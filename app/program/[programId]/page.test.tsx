@@ -45,22 +45,36 @@ describe('a programme page', () => {
     expect(await screen.findByText('Program tidak ditemukan')).toBeInTheDocument();
   });
 
-  test('a module can be added on its own', async () => {
+  test('a purchasable module can be added on its own', async () => {
     await show();
-    let added = false;
+    let body: { moduleId?: string } | undefined;
     server.use(
-      http.post(url('/cart/items'), () => {
-        added = true;
+      http.post(url('/cart/items'), async ({ request }) => {
+        body = (await request.json()) as { moduleId?: string };
         return HttpResponse.json(fx.cart());
       }),
     );
+    await userEvent.click(await screen.findByRole('button', { name: 'Tambah' }));
 
-    const buttons = await screen.findAllByRole('button');
-    const add = buttons.find((b) => /Tambah/i.test(b.textContent ?? ''));
-    if (add) {
-      await userEvent.click(add);
-      await waitFor(() => expect(added).toBe(true));
-    }
+    await waitFor(() => expect(body?.moduleId).toBe('m-1'));
+    expect(await screen.findByText(/ditambahkan ke keranjang/i)).toBeInTheDocument();
+  });
+
+  test('an unpriced module is requested rather than added', async () => {
+    // Calling it "add to cart" would imply it can be paid for.
+    await show({
+      subjects: [
+        subject({
+          subject_modules: [
+            { modules: fx.moduleSummary({ price_student: null, price_student_display: null } as never) },
+          ],
+        }),
+      ],
+    });
+    server.use(http.post(url('/cart/items'), () => HttpResponse.json(fx.cart())));
+    await userEvent.click(await screen.findByRole('button', { name: 'Minta' }));
+
+    expect(await screen.findByText(/sebagai permintaan/i)).toBeInTheDocument();
   });
 
   test('a semester with no modules yet does not break the page', async () => {
@@ -75,11 +89,7 @@ describe('a programme page', () => {
     await show();
     server.use(http.post(url('/cart/items'), () => HttpResponse.json(fx.cart())));
 
-    const addButtons = (await screen.findAllByRole('button')).filter((b) =>
-      /Tambah/i.test(b.textContent ?? '') && !/Semua/i.test(b.textContent ?? ''),
-    );
-    if (addButtons.length === 0) return;
-    await userEvent.click(addButtons[0]);
+    await userEvent.click(await screen.findByRole('button', { name: 'Tambah' }));
 
     expect(await screen.findByText(/ditambahkan/i)).toBeInTheDocument();
   });
@@ -90,11 +100,7 @@ describe('a programme page', () => {
       http.post(url('/cart/items'), () => HttpResponse.json({ error: 'boom' }, { status: 500 })),
     );
 
-    const addButtons = (await screen.findAllByRole('button')).filter((b) =>
-      /Tambah/i.test(b.textContent ?? '') && !/Semua/i.test(b.textContent ?? ''),
-    );
-    if (addButtons.length === 0) return;
-    await userEvent.click(addButtons[0]);
+    await userEvent.click(await screen.findByRole('button', { name: 'Tambah' }));
 
     expect(await screen.findByText(/Gagal menambahkan modul/)).toBeInTheDocument();
   });
@@ -112,11 +118,7 @@ describe('a programme page', () => {
     renderPage(<ProgramDetailPage />);
     await screen.findByRole('heading', { name: 'Sistem Informasi' });
 
-    const addButtons = (await screen.findAllByRole('button')).filter((b) =>
-      /Tambah/i.test(b.textContent ?? ''),
-    );
-    if (addButtons.length === 0) return;
-    await userEvent.click(addButtons[0]);
+    await userEvent.click(await screen.findByRole('button', { name: 'Tambah' }));
 
     await waitFor(() => expect(location.href).toBe('/login'));
   });
