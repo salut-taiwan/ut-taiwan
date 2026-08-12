@@ -88,8 +88,15 @@ export const handlers = [
   http.get(url('/payments/:orderId/invoice'), () => HttpResponse.text('file-bytes')),
 
   // --- SALUT ---
+  // effective_status is what the page reads — the backend derives it, so the
+  // client never re-computes eligibility from dates.
   http.get(url('/salut/status'), () =>
-    HttpResponse.json({ status: 'none', is_active: false, can_apply: true }),
+    HttpResponse.json({
+      effective_status: 'none',
+      salut_rejection_reason: null,
+      salut_applied_at_display: null,
+      salut_applied_semester: null,
+    }),
   ),
   http.post(url('/salut/apply'), () =>
     HttpResponse.json({
