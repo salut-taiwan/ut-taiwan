@@ -476,3 +476,144 @@ describe('every endpoint calls the URL and verb it claims', () => {
     }
   });
 });
+
+// Every multipart helper rejects on a non-OK response with the server's own
+// message. They bypass the JSON path entirely (FormData bodies), so each has
+// its own copy of this and each has to be exercised.
+const UPLOADS: [name: string, call: (api: Api) => Promise<unknown>][] = [
+  ['payments.uploadProof', a => a.payments.uploadProof('o-1', new File(['x'], 'p.jpg'))],
+  ['salut.uploadProof', a => a.salut.uploadProof(new File(['x'], 'p.jpg'))],
+  ['sksPayment.uploadSlip', a => a.sksPayment.uploadSlip(new File(['x'], 's.pdf'))],
+  ['sksPayment.uploadProof', a => a.sksPayment.uploadProof(new File(['x'], 'p.png'))],
+  ['admin.uploadInvoice', a => a.admin.uploadInvoice('o-1', new File(['x'], 'i.pdf'))],
+];
+
+describe('a refused upload surfaces the server message', () => {
+  test.each(UPLOADS)('%s', async (_name, call) => {
+    signedIn();
+    scriptFetch([{ status: 400, body: { error: 'File terlalu besar' } }]);
+    const { api } = await freshApi();
+
+    await expect(call(api)).rejects.toThrow('File terlalu besar');
+  });
+
+  test.each(UPLOADS)('%s falls back when the body is not JSON', async (_name, call) => {
+    // A proxy 502 returns HTML; the student still needs to be told something.
+    signedIn();
+    scriptFetch([{ status: 502, json: async () => { throw new Error('not json'); } }]);
+    const { api } = await freshApi();
+
+    await expect(call(api)).rejects.toThrow('Upload gagal');
+  });
+});
+
+describe('downloading a stored file', () => {
+  test('a proof comes back as an object URL the page can open', async () => {
+    signedIn();
+    scriptFetch([{ body: {} }]);
+    const { api } = await freshApi();
+
+    const result = await api.payments.viewProof('o-1');
+
+    expect(result).toMatch(/^blob:/);
+  });
+
+  test('an invoice does too', async () => {
+    signedIn();
+    scriptFetch([{ body: {} }]);
+    const { api } = await freshApi();
+
+    expect(await api.admin.viewInvoice('o-1')).toMatch(/^blob:/);
+  });
+
+  test('a proof that cannot be fetched is an error, not an empty blob', async () => {
+    // An object URL for an empty blob opens a blank tab and looks like a bug
+    // in the browser rather than a missing file.
+    signedIn();
+    scriptFetch([{ status: 404 }]);
+    const { api } = await freshApi();
+
+    await expect(api.payments.viewProof('o-1')).rejects.toThrow('Gagal memuat file');
+  });
+
+  test('and so is an invoice', async () => {
+    signedIn();
+    scriptFetch([{ status: 404 }]);
+    const { api } = await freshApi();
+
+    await expect(api.admin.viewInvoice('o-1')).rejects.toThrow('Gagal memuat file');
+  });
+});
+
+describe('the multipart path shares the session handling', () => {
+  // authedFetch has its own copy of the 401 logic because apiFetch forces a
+  // JSON content type. The two must behave the same or an upload becomes the
+  // one request that silently logs a student out.
+  test('an expired token is refreshed and the upload retried', async () => {
+    signedIn();
+    scriptFetch([
+      { status: 401, body: {} },
+      { body: { token: 'tok-2', refreshToken: 'ref-2', expiresAt: 1800000000 } },
+      { body: { url: 'u/proof.jpg' } },
+    ]);
+    const { api } = await freshApi();
+
+    const result = await api.salut.uploadProof(new File(['x'], 'p.jpg'));
+
+    expect(result).toEqual({ url: 'u/proof.jpg' });
+    expect((calls[2].init.headers as Record<string, string>).Authorization).toBe('Bearer tok-2');
+  });
+
+  test('a 401 with no session reads as bad credentials, not an expired one', async () => {
+    scriptFetch([{ status: 401, body: { error: 'Tidak diizinkan' } }]);
+    const { api, setOnSessionExpired } = await freshApi();
+    const expired = vi.fn();
+    setOnSessionExpired(expired);
+
+    await expect(api.salut.uploadProof(new File(['x'], 'p.jpg'))).rejects.toThrow('Tidak diizinkan');
+    expect(expired).not.toHaveBeenCalled();
+  });
+
+  test('an error after a successful refresh reports itself, not a false expiry', async () => {
+    signedIn();
+    scriptFetch([
+      { status: 401, body: {} },
+      { body: { token: 'tok-2', refreshToken: 'ref-2', expiresAt: 1 } },
+      { status: 500, body: { error: 'Storage penuh' } },
+    ]);
+    const { api, setOnSessionExpired } = await freshApi();
+    const expired = vi.fn();
+    setOnSessionExpired(expired);
+
+    await expect(api.salut.uploadProof(new File(['x'], 'p.jpg'))).rejects.toThrow('Storage penuh');
+    expect(expired).not.toHaveBeenCalled();
+  });
+
+  test('a failed refresh ends the session', async () => {
+    signedIn();
+    scriptFetch([{ status: 401, body: {} }, { status: 401, body: {} }]);
+    const { api, setOnSessionExpired } = await freshApi();
+    const expired = vi.fn();
+    setOnSessionExpired(expired);
+
+    await expect(api.salut.uploadProof(new File(['x'], 'p.jpg'))).rejects.toThrow(/Sesi berakhir/);
+    expect(expired).toHaveBeenCalledOnce();
+  });
+
+  test('a refresh whose response is unusable counts as a failed refresh', async () => {
+    // attemptRefresh swallows the parse error and returns false rather than
+    // throwing something the caller cannot interpret.
+    signedIn();
+    scriptFetch([
+      { status: 401, body: {} },
+      { json: async () => { throw new Error('not json'); } },
+    ]);
+    const { api, setOnSessionExpired } = await freshApi();
+    const expired = vi.fn();
+    setOnSessionExpired(expired);
+
+    await expect(api.cart.get()).rejects.toThrow(/Sesi berakhir/);
+    expect(expired).toHaveBeenCalledOnce();
+  });
+});
+

@@ -119,6 +119,10 @@ export interface BankOption {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
+/* v8 ignore start -- the `typeof window === 'undefined'` arms are the
+   server-render guards. Tests run in jsdom, where window always exists, so
+   they cannot be reached; removing them would break any server component that
+   imports this module. */
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('ut_token');
@@ -128,8 +132,10 @@ function getRefreshToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('ut_refresh_token');
 }
+/* v8 ignore stop */
 
 export function getExpiresAt(): number | null {
+  /* v8 ignore next -- server-render guard, as above */
   if (typeof window === 'undefined') return null;
   const v = localStorage.getItem('ut_expires_at');
   return v ? Number(v) : null;
