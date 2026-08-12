@@ -209,10 +209,16 @@ export default function AdminOrdersPage() {
         </button>
       </div>
 
-      <div className="flex gap-1 bg-[var(--surface-sunken)] rounded-lg p-1 mb-5 w-fit">
+      <div
+        role="tablist"
+        aria-label="Filter jenis pesanan"
+        className="flex gap-1 bg-[var(--surface-sunken)] rounded-lg p-1 mb-5 w-fit"
+      >
         {(Object.keys(KIND_TAB_LABELS) as KindTab[]).map(t => (
           <button
             key={t}
+            role="tab"
+            aria-selected={kindTab === t}
             onClick={() => setKindTab(t)}
             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
               kindTab === t

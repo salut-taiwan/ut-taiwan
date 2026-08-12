@@ -48,3 +48,8 @@ skills-lock.json
 
 # IDE
 .idea
+# Playwright
+/test-results
+/playwright-report
+/blob-report
+/test/e2e/.auth
