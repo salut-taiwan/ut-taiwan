@@ -175,6 +175,18 @@ export const profile = (over: Partial<UserProfileDTO> = {}): UserProfileDTO =>
     salut_status: 'none',
     current_semester: 3,
     program_id: 'pr-1',
+    // Registration requires the Mandarin address, so every real profile has
+    // one — a fixture without it describes a shape the backend never sends.
+    address_zh_city: '台北市',
+    address_zh_district: '大安區',
+    address_zh_road: '基隆路四段',
+    address_zh_number: '43號',
+    address_zh_floor: '',
+    postal_code: '10617',
+    country: 'Taiwan',
+    birth_place: 'Jakarta',
+    birth_date: '2000-01-01',
+    shipping_address_lines: ['Budi Santoso', '台北市大安區基隆路四段43號', '10617'],
     ...over,
   }) as UserProfileDTO;
 

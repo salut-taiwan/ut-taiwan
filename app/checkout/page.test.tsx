@@ -9,6 +9,17 @@ import { renderPage, screen, waitFor } from '@/test/utils/renderWithProviders';
 import * as fx from '@/test/fixtures';
 import type { CartDTO, UserProfileDTO } from '@/types';
 
+/** A student who has not filled in their Mandarin address yet. */
+const withoutAddress = () =>
+  fx.profile({
+    address_zh_city: '',
+    address_zh_district: '',
+    address_zh_road: '',
+    address_zh_number: '',
+    postal_code: '',
+    shipping_address_lines: [],
+  } as Partial<UserProfileDTO>);
+
 const withAddress = (over = {}) =>
   fx.profile({
     address_zh_city: '台北市',
@@ -82,7 +93,7 @@ describe('choosing where it ships', () => {
   });
 
   test('a student with no saved address gets the form instead', async () => {
-    await show();
+    await show({ profile: withoutAddress() });
 
     expect(screen.getByPlaceholderText('台北市')).toBeInTheDocument();
   });
@@ -138,7 +149,7 @@ describe('placing the order', () => {
   });
 
   test('a typed address is sent when the student chooses one', async () => {
-    await show();
+    await show({ profile: withoutAddress() });
     const seen = captureCheckout();
 
     await fillAltAddress();
