@@ -34,6 +34,9 @@ export default function ProgramDetailPage() {
     ]).then(([prog, subs]) => {
       setProgram(prog);
       setSubjects(subs);
+    }).catch(() => {
+      // Leave `program` null so the "not found" branch renders. Without this
+      // a 404 or a network blip is an unhandled rejection.
     }).finally(() => setLoading(false));
   }, [programId]);
 

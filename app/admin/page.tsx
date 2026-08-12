@@ -120,6 +120,9 @@ export default function AdminPage() {
     if (user?.role === 'admin') {
       api.scraper.getRuns().then(runs => {
         if (runs.length > 0) setRecentRun(runs[0]);
+      }).catch(() => {
+        // The run summary is a convenience; the dashboard's job is navigation.
+        // Without this a scraper outage is an unhandled rejection.
       });
     }
   }, [user]);
