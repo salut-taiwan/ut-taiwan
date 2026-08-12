@@ -119,10 +119,12 @@ export interface BankOption {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-/* v8 ignore start -- the `typeof window === 'undefined'` arms are the
-   server-render guards. Tests run in jsdom, where window always exists, so
-   they cannot be reached; removing them would break any server component that
-   imports this module. */
+/* v8 ignore start -- the `typeof window === 'undefined'` arms are server-render
+   guards with no caller that runs on the server: every call site is inside an
+   effect or an event handler, both client-only. So they are unreachable in the
+   app as it stands, not merely in jsdom — a real browser would not hit them
+   either. They stay as a guard for the day something calls this from a server
+   component. */
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('ut_token');
