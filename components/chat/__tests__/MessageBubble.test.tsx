@@ -7,30 +7,30 @@ describe('MessageBubble', () => {
   test('what the student typed is shown exactly as typed', () => {
     // User text is never run through markdown: asterisks in a question should
     // stay visible rather than silently turning into emphasis.
-    render(<MessageBubble message={{ role: 'user', content: '**berapa** biaya?' }} />);
+    render(<MessageBubble message={{ id: 'm-1', role: 'user', content: '**berapa** biaya?' }} />);
     expect(screen.getByText('**berapa** biaya?')).toBeInTheDocument();
   });
 
   test('a student message carries no assistant avatar', () => {
-    const { container } = render(<MessageBubble message={{ role: 'user', content: 'halo' }} />);
+    const { container } = render(<MessageBubble message={{ id: 'm-1', role: 'user', content: 'halo' }} />);
     expect(container.querySelector('img')).toBeNull();
   });
 
   test('an assistant reply is rendered as markdown', () => {
     const { container } = render(
-      <MessageBubble message={{ role: 'assistant', content: '**tebal**' }} />,
+      <MessageBubble message={{ id: 'm-1', role: 'assistant', content: '**tebal**' }} />,
     );
     expect(container.querySelector('strong')).toHaveTextContent('tebal');
   });
 
   test('an assistant reply with nothing yet shows that it is thinking', () => {
     // An empty bubble would read as a broken answer.
-    render(<MessageBubble message={{ role: 'assistant', content: '' }} />);
+    render(<MessageBubble message={{ id: 'm-1', role: 'assistant', content: '' }} />);
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   test('once there is content the thinking indicator goes away', () => {
-    render(<MessageBubble message={{ role: 'assistant', content: 'Biayanya Rp 952.000' }} />);
+    render(<MessageBubble message={{ id: 'm-1', role: 'assistant', content: 'Biayanya Rp 952.000' }} />);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

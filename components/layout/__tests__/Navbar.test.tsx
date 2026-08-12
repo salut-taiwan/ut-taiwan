@@ -2,7 +2,7 @@ import { describe, expect, test, vi, beforeEach } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Navbar from '@/components/layout/Navbar';
-import { setPathname, push } from '@/test/utils/routerMock';
+import { setPathname } from '@/test/utils/routerMock';
 
 const logout = vi.fn();
 let currentUser: Record<string, unknown> | null = null;
