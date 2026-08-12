@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
 import type { ModuleDTO } from '@/types';
+import { modulePriceState } from '@/lib/modulePricing';
 
 export default function ModuleDetailPage() {
   const { moduleId } = useParams<{ moduleId: string }>();
@@ -35,7 +36,7 @@ export default function ModuleDetailPage() {
       await api.cart.addItem(module.id);
       setAdded(true);
       incrementCart(1);
-      showToast(module.is_available ? 'Modul ditambahkan ke keranjang!' : 'Modul ditambahkan sebagai permintaan!');
+      showToast(modulePriceState(module) === 'purchasable' ? 'Modul ditambahkan ke keranjang!' : 'Modul ditambahkan sebagai permintaan!');
       setTimeout(() => setAdded(false), 3000);
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Gagal menambahkan ke keranjang', 'error');
@@ -64,6 +65,8 @@ export default function ModuleDetailPage() {
   if (!module) return <div className="text-center py-16 text-red-500">Modul tidak ditemukan</div>;
 
   const usedInSubjects = (module.subject_modules || []).map(sm => sm.subjects).filter(Boolean);
+  const priceState = modulePriceState(module);
+  const purchasable = priceState === 'purchasable';
 
   return (
     <div className="max-w-4xl">
@@ -84,8 +87,8 @@ export default function ModuleDetailPage() {
                 alt={module.name}
                 width={180}
                 height={240}
+                sizes="(max-width: 640px) 100vw, 180px"
                 className="object-contain"
-                unoptimized
               />
             ) : (
               <div className="flex flex-col items-center gap-2 text-indigo-200 p-8">
@@ -133,7 +136,7 @@ export default function ModuleDetailPage() {
             <div className="mb-6 bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-100 rounded-2xl p-5">
               <p className="text-xs text-indigo-500 font-semibold uppercase tracking-wide mb-1">Harga Mahasiswa</p>
               <p className="text-3xl font-extrabold text-indigo-700 tabular-nums">
-                {module.price_student ? module.price_student_display : 'Hubungi Kami'}
+                {priceState === 'needs_price' ? 'Hubungi Kami' : module.price_student_display}
               </p>
               {module.price_general && (
                 <p className="text-sm text-[var(--text-muted)] mt-1">Harga Umum: {module.price_general_display}</p>
@@ -146,7 +149,7 @@ export default function ModuleDetailPage() {
               className={`inline-flex items-center justify-center gap-1.5 w-full sm:w-auto px-8 py-3 rounded-xl font-semibold transition-[background-color,transform,box-shadow] duration-150 disabled:opacity-50 active:scale-[0.98]
                 ${added
                   ? 'bg-emerald-600 text-white'
-                  : module.is_available && module.price_student
+                  : purchasable
                     ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]'
                     : 'bg-amber-500 text-white hover:bg-amber-600 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]'
                 }`}
@@ -158,13 +161,13 @@ export default function ModuleDetailPage() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
-                  {module.is_available && module.price_student ? 'Ditambahkan ke Keranjang!' : 'Ditambahkan sebagai Permintaan!'}
+                  {purchasable ? 'Ditambahkan ke Keranjang!' : 'Ditambahkan sebagai Permintaan!'}
                 </>
-              ) : module.is_available && module.price_student ? 'Tambah ke Keranjang' : 'Tambahkan sebagai Permintaan'}
+              ) : purchasable ? 'Tambah ke Keranjang' : 'Tambahkan sebagai Permintaan'}
             </button>
-            {(!module.is_available || !module.price_student) && !added && (
+            {!purchasable && !added && (
               <p className="mt-2 text-xs text-amber-600">
-                {!module.price_student
+                {priceState === 'needs_price'
                   ? 'Harga modul ini belum tersedia. Admin akan mengkonfirmasi harga sebelum meminta pembayaran.'
                   : 'Stok sedang tidak tersedia di TBO Karunika. Anda dapat mengajukan permintaan dan admin akan mengkonfirmasi ketersediaannya.'
                 }

@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
 import { useCart } from '@/lib/cart';
 import { cn } from '@/lib/utils';
+import { isModulePurchasable, modulePriceState } from '@/lib/modulePricing';
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -54,7 +55,7 @@ export default function ProgramDetailPage() {
       const added = results.filter(r => r.status === 'fulfilled').length;
       if (added === 0) { showToast('Gagal menambahkan modul', 'error'); return; }
       const requestCount = unique
-        .filter((m, i) => results[i].status === 'fulfilled' && (!m.is_available || !m.price_student))
+        .filter((m, i) => results[i].status === 'fulfilled' && !isModulePurchasable(m))
         .length;
       const normalCount = added - requestCount;
       const msg = requestCount > 0
@@ -226,7 +227,7 @@ function SubjectCard({ subject, onAddToCart, addingModule }: { subject: SubjectD
               </div>
               <div className="flex items-center gap-4 ml-4 flex-shrink-0">
                 <span className="text-sm font-semibold tabular-nums">
-                  {!mod.price_student
+                  {modulePriceState(mod) === 'needs_price'
                     ? <span className="text-[var(--text-muted)]">Hubungi Kami</span>
                     : mod.is_available
                       ? <span className="text-[var(--foreground)]">{mod.price_student_display}</span>
@@ -234,17 +235,17 @@ function SubjectCard({ subject, onAddToCart, addingModule }: { subject: SubjectD
                   }
                 </span>
                 <button
-                  onClick={() => onAddToCart(mod.id, !(mod.is_available && mod.price_student))}
+                  onClick={() => onAddToCart(mod.id, !isModulePurchasable(mod))}
                   disabled={addingModule === mod.id}
                   className={`inline-flex items-center gap-1 text-xs px-3 py-2 rounded-lg disabled:opacity-50 transition-[background-color,transform] duration-150 font-semibold active:scale-[0.98] min-h-[32px] ${
-                    mod.is_available && mod.price_student
+                    isModulePurchasable(mod)
                       ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                       : 'bg-amber-500 text-white hover:bg-amber-600'
                   }`}
                 >
                   {addingModule === mod.id
                     ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-3 h-3" /> Menambahkan...</>
-                    : mod.is_available && mod.price_student ? 'Tambah' : 'Minta'
+                    : isModulePurchasable(mod) ? 'Tambah' : 'Minta'
                   }
                 </button>
               </div>

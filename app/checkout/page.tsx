@@ -413,8 +413,8 @@ export default function CheckoutPage() {
                   </div>
                 ))}
                 <div className="flex justify-between text-[var(--text-muted)] text-xs italic">
-                  <span>Kode unik</span>
-                  <span>+akan ditambahkan</span>
+                  <span>Kode unik (verifikasi pembayaran)</span>
+                  <span>+Rp 100 – Rp 500</span>
                 </div>
                 <div className="flex justify-between font-bold items-end pt-2 border-t border-[var(--border-subtle)]">
                   <span className="text-[var(--foreground)]">Total Pesanan</span>

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api, type FeesConfig } from '@/lib/api';
+import Input from '@/components/ui/Input';
 
 export default function SalutApplyPage() {
   const { user, isLoading } = useAuth();
@@ -16,6 +17,7 @@ export default function SalutApplyPage() {
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [appliedAtDisplay, setAppliedAtDisplay] = useState<string | null>(null);
   const [currentSemester, setCurrentSemester] = useState<number | ''>('');
+  const [waNumber, setWaNumber] = useState('');
 
   const [qrisOpen, setQrisOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -39,8 +41,9 @@ export default function SalutApplyPage() {
       setAppliedAtDisplay(s.salut_applied_at_display ?? null);
       if (typeof s.salut_applied_semester === 'number') setCurrentSemester(s.salut_applied_semester);
     }).catch(() => setStatus('none'));
-    api.auth.getMe().then((profile: { current_semester?: number | null }) => {
+    api.auth.getMe().then((profile: { current_semester?: number | null; phone?: string | null }) => {
       if (typeof profile.current_semester === 'number') setCurrentSemester(profile.current_semester);
+      if (profile.phone) setWaNumber(profile.phone);
     }).catch(() => {});
   }, [user, isLoading, router]);
 
@@ -60,11 +63,11 @@ export default function SalutApplyPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) return;
+    if (!file || !waNumber.trim()) return;
     setUploading(true);
     try {
       const { url } = await api.salut.uploadProof(file);
-      await api.salut.apply(url, currentSemester === '' ? 0 : Number(currentSemester));
+      await api.salut.apply(url, currentSemester === '' ? 0 : Number(currentSemester), waNumber.trim());
       setSubmitted(true);
       setStatus('pending');
     } catch (err) {
@@ -137,11 +140,13 @@ export default function SalutApplyPage() {
     );
   }
 
+  // IDR leads: the transfer happens over QRIS in rupiah, and the NTD figure is
+  // what the fee is quoted in.
   const feeDisplay = currentSemester === '' || !fees
     ? null
     : currentSemester === 1
-      ? { amount: fees.salutMembership.new_display, label: fees.salutMembership.new_label }
-      : { amount: fees.salutMembership.returning_display, label: fees.salutMembership.returning_label };
+      ? { amount: fees.salutMembership.new_display_idr, ntd: fees.salutMembership.new_display, label: fees.salutMembership.new_label }
+      : { amount: fees.salutMembership.returning_display_idr, ntd: fees.salutMembership.returning_display, label: fees.salutMembership.returning_label };
 
   return (
     <div className="max-w-lg mx-auto">
@@ -191,7 +196,7 @@ export default function SalutApplyPage() {
             </p>
             {feeDisplay?.label && (
               <p className="text-xs text-[var(--text-muted)] mt-1">
-                {feeDisplay.label}
+                {feeDisplay.ntd} — {feeDisplay.label}
               </p>
             )}
           </div>
@@ -255,7 +260,21 @@ export default function SalutApplyPage() {
 
       {/* Upload form */}
       <form onSubmit={handleSubmit} className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-5">
-        <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 2: Upload Bukti Pembayaran</h2>
+        <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 2: Data & Bukti Pembayaran</h2>
+
+        <div className="mb-4">
+          <Input
+            label="Nomor WhatsApp Aktif *"
+            id="wa-number"
+            name="wa_number"
+            type="tel"
+            required
+            value={waNumber}
+            onChange={e => setWaNumber(e.target.value)}
+            placeholder="08123456789"
+            hint="Admin menambahkan Anda ke grup SALUT lewat nomor ini."
+          />
+        </div>
 
         <div
           onClick={() => inputRef.current?.click()}
@@ -297,7 +316,7 @@ export default function SalutApplyPage() {
 
         <button
           type="submit"
-          disabled={!file || uploading}
+          disabled={!file || !waNumber.trim() || uploading}
           className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)] flex items-center justify-center gap-2"
         >
           {uploading ? (

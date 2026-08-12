@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { api, type FeesConfig } from '@/lib/api';
@@ -79,8 +78,6 @@ const BENEFITS: { icon: BenefitIcon; title: string; nonSalut: string; salut: str
 export default function SalutPage() {
   const { user } = useAuth();
   const [fees, setFees] = useState<FeesConfig | null>(null);
-  const [qrisOpen, setQrisOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     api.config.getFees().then(setFees).catch(() => {});
@@ -94,7 +91,7 @@ export default function SalutPage() {
     {
       n: '1',
       title: 'Transfer Biaya Keanggotaan',
-      desc: `Transfer ${tierLabel} ke rekening atau QRIS SALUT di bawah.`,
+      desc: `Transfer ${tierLabel} melalui QRIS SALUT di halaman pendaftaran (login dulu).`,
     },
     {
       n: '2',
@@ -107,17 +104,6 @@ export default function SalutPage() {
       desc: 'Admin akan memverifikasi pembayaran dalam 1–2 hari kerja.',
     },
   ];
-
-  async function handleCopyAccount() {
-    if (!fees?.paymentBank.account) return;
-    try {
-      await navigator.clipboard.writeText(fees.paymentBank.account);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // ignore
-    }
-  }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -160,11 +146,25 @@ export default function SalutPage() {
           <div className="font-medium text-[var(--text-muted)]">Biaya</div>
           <div className="border-t border-[var(--border-subtle)] pt-2.5 text-[var(--foreground)]">Semester Pertama</div>
           <div className="border-t border-[var(--border-subtle)] pt-2.5 font-semibold text-teal-700 tabular-nums">
-            {fees ? fees.salutMembership.new_display : <span className="inline-block w-20 h-4 rounded skeleton" />}
+            {fees ? (
+              <>
+                {fees.salutMembership.new_display}
+                {fees.salutMembership.new_display_idr && (
+                  <span className="block text-xs font-medium text-[var(--text-muted)]">{fees.salutMembership.new_display_idr}</span>
+                )}
+              </>
+            ) : <span className="inline-block w-20 h-4 rounded skeleton" />}
           </div>
           <div className="border-t border-[var(--border-subtle)] pt-2.5 text-[var(--foreground)]">Semester Berikutnya</div>
           <div className="border-t border-[var(--border-subtle)] pt-2.5 font-semibold text-teal-700 tabular-nums">
-            {fees ? fees.salutMembership.returning_display : <span className="inline-block w-20 h-4 rounded skeleton" />}
+            {fees ? (
+              <>
+                {fees.salutMembership.returning_display}
+                {fees.salutMembership.returning_display_idr && (
+                  <span className="block text-xs font-medium text-[var(--text-muted)]">{fees.salutMembership.returning_display_idr}</span>
+                )}
+              </>
+            ) : <span className="inline-block w-20 h-4 rounded skeleton" />}
           </div>
         </div>
         <p className="text-xs text-[var(--text-muted)] mt-4">
@@ -203,104 +203,27 @@ export default function SalutPage() {
         <span>Mahasiswa baru UT? <a href="/panduan#mahasiswa-baru" className="font-semibold underline hover:text-indigo-600">Lihat panduan pendaftaran &rarr;</a></span>
       </div>
 
-      {/* Detail Pembayaran */}
+      {/* Detail Pembayaran — QRIS hanya di halaman pendaftaran (lihat catatan di bawah) */}
       <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-6 mb-8">
         <h2 className="font-semibold text-[var(--foreground)] mb-4">Detail Pembayaran</h2>
-        <div className="flex flex-col sm:flex-row gap-6 items-start">
-          <div className="flex-1 w-full space-y-3 text-sm">
-            {/* Bank rekening */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/40 border border-blue-200 rounded-xl p-4 space-y-2 text-blue-900">
-              <p className="font-semibold text-sm mb-2">
-                Transfer ke rekening{' '}
-                {fees ? <span>{fees.paymentBank.bank}</span> : <span className="inline-block w-10 h-4 rounded skeleton align-middle" />}
-              </p>
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs text-blue-700">Atas nama</span>
-                <span className="font-medium text-sm">
-                  {fees ? fees.paymentBank.holder : <span className="inline-block w-36 h-4 rounded skeleton align-middle" />}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-blue-700">No. Rekening</span>
-                <div className="flex items-center gap-2">
-                  {fees ? (
-                    <span className="font-mono text-base font-extrabold tracking-widest text-[var(--foreground)]">{fees.paymentBank.account}</span>
-                  ) : (
-                    <span className="inline-block w-28 h-4 rounded skeleton" />
-                  )}
-                  <button
-                    onClick={handleCopyAccount}
-                    disabled={!fees}
-                    title="Salin nomor rekening"
-                    className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded p-0.5 transition-[color,background-color] duration-150 disabled:opacity-50"
-                  >
-                    {copied ? (
-                      <CheckIcon className="w-4 h-4 text-emerald-500" />
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1">Berita / Catatan Transfer</p>
-              <p className="font-mono bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-xs">SALUT [NIM Anda]</p>
-            </div>
-
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 text-xs text-amber-800">
-              Simpan bukti pembayaran Anda, lalu upload melalui halaman pendaftaran.
-            </div>
+        <div className="space-y-3 text-sm">
+          <p className="text-[var(--text-body)]">
+            QRIS pembayaran ditampilkan di halaman pendaftaran setelah Anda login. Pembayaran hanya
+            dilakukan melalui QRIS tersebut agar admin dapat mencocokkan transfer Anda dengan permohonan.
+          </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 text-xs text-amber-800">
+            Jangan transfer sebelum mengisi permohonan — pembayaran tanpa permohonan tidak dapat dilacak
+            dan tidak otomatis menjadikan Anda anggota.
           </div>
-
-          <div className="shrink-0 flex flex-col items-center gap-2 self-center sm:self-start">
-            <button
-              type="button"
-              onClick={() => setQrisOpen(true)}
-              className="w-40 h-40 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-xl flex items-center justify-center overflow-hidden p-2 hover:border-indigo-400 transition-colors duration-150 cursor-zoom-in"
-            >
-              <Image
-                src="/qris.png"
-                alt="QRIS SALUT"
-                width={152}
-                height={152}
-                className="object-contain"
-                unoptimized
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-            </button>
-            <p className="text-xs text-[var(--text-muted)]">Klik untuk memperbesar</p>
-          </div>
-
-          {qrisOpen && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-6"
-              onClick={() => setQrisOpen(false)}
-            >
-              <div className="relative bg-white rounded-2xl p-4 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
-                <button
-                  onClick={() => setQrisOpen(false)}
-                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-                <Image
-                  src="/qris.png"
-                  alt="QRIS SALUT"
-                  width={400}
-                  height={400}
-                  className="w-full h-auto"
-                  unoptimized
-                />
-                <p className="text-center text-xs text-gray-400 mt-2">Scan QRIS untuk membayar</p>
-              </div>
-            </div>
-          )}
+          <Link
+            href={user ? '/salut/apply' : '/login?redirect=/salut/apply'}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+          >
+            Buka halaman pendaftaran
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
         </div>
       </div>
 

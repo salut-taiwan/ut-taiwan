@@ -43,6 +43,10 @@ export interface FeesConfig {
     new_label?: string;
     returning_label?: string;
     tier_combined_display?: string;
+    // IDR equivalents — the fee is quoted in NTD but transferred via QRIS in IDR.
+    new_display_idr?: string | null;
+    returning_display_idr?: string | null;
+    tier_combined_display_idr?: string;
   };
   serviceFees: { label: string; key: string; amount: number; amount_display?: string }[];
   totalServiceFees: number;
@@ -82,6 +86,8 @@ export interface ApplicableFee {
   currency: 'NTD';
   tier: 'new' | 'returning';
   amount_display: string;
+  amount_idr?: number;
+  amount_idr_display?: string | null;
   tier_label: string;
 }
 
@@ -335,8 +341,8 @@ export const api = {
         return r.json();
       });
     },
-    apply: (proofUrl: string, currentSemester: number): Promise<{ message: string; fee: { amount: number; currency: 'NTD'; tier: 'new' | 'returning' }; nextExpiry: string; renewalPolicy: RenewalPolicy }> =>
-      apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl, current_semester: currentSemester }) }),
+    apply: (proofUrl: string, currentSemester: number, waNumber: string): Promise<{ message: string; fee: { amount: number; currency: 'NTD'; tier: 'new' | 'returning' }; nextExpiry: string; renewalPolicy: RenewalPolicy }> =>
+      apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl, current_semester: currentSemester, wa_number: waNumber }) }),
     getStatus: () => apiFetch<SalutStatus>('/salut/status'),
   },
   sksPayment: {
@@ -418,8 +424,10 @@ export const api = {
       apiFetch(`/orders/admin/${orderId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     confirmKarunika: (orderId: string) =>
       apiFetch(`/orders/admin/${orderId}/confirm-karunika`, { method: 'POST' }),
+    // Returns the whole refreshed order: approving an item rewrites the order
+    // totals and the pending payment amount server-side.
     updateRequestItemStatus: (orderId: string, itemId: string, status: 'approved' | 'rejected', unitPrice?: number) =>
-      apiFetch(`/orders/admin/${orderId}/items/${itemId}/request-status`, {
+      apiFetch<{ message: string; status: string; order: OrderDTO | null }>(`/orders/admin/${orderId}/items/${itemId}/request-status`, {
         method: 'PATCH',
         body: JSON.stringify({ status, ...(unitPrice !== undefined ? { unit_price: unitPrice } : {}) }),
       }),

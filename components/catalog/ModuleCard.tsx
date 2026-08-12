@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { useState } from 'react';
 import { useToast } from '@/components/ui/Toast';
 import { useCart } from '@/lib/cart';
+import { moduleCtaLabel, modulePriceState } from '@/lib/modulePricing';
 
 interface ModuleCardProps {
   module: ModuleSummaryDTO;
@@ -20,6 +21,8 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
   const [added, setAdded] = useState(false);
   const { showToast } = useToast();
   const { syncCartCount } = useCart();
+  const priceState = modulePriceState(module);
+  const purchasable = priceState === 'purchasable';
 
   async function handleAdd() {
     if (!user) {
@@ -31,7 +34,7 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
       const cart = await api.cart.addItem(module.id);
       setAdded(true);
       syncCartCount(cart.itemCount);
-      showToast(module.is_available ? 'Modul ditambahkan ke keranjang!' : 'Modul ditambahkan sebagai permintaan!');
+      showToast(purchasable ? 'Modul ditambahkan ke keranjang!' : 'Modul ditambahkan sebagai permintaan!');
       onAddedToCart?.();
       setTimeout(() => setAdded(false), 2000);
     } catch (err) {
@@ -42,7 +45,7 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
   }
 
   return (
-    <div className={`bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1 active:scale-[0.99] transition-[box-shadow,transform] duration-200 overflow-hidden flex flex-col border-t-4 ${module.is_available && module.price_student ? 'border-t-indigo-500' : 'border-t-amber-400'}`}>
+    <div className={`bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1 active:scale-[0.99] transition-[box-shadow,transform] duration-200 overflow-hidden flex flex-col border-t-4 ${purchasable ? 'border-t-indigo-500' : 'border-t-amber-400'}`}>
       <Link href={`/modules/${module.id}`} className="block">
         <div className="bg-[var(--surface-sunken)] h-48 flex items-center justify-center overflow-hidden">
           {module.cover_image_url ? (
@@ -51,8 +54,8 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
               alt={module.name}
               width={120}
               height={160}
+              sizes="120px"
               className="object-contain h-full w-auto"
-              unoptimized
             />
           ) : (
             <div className="flex flex-col items-center gap-1.5 text-indigo-200 px-4">
@@ -72,8 +75,8 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
           <h3 className="text-sm font-medium text-[var(--foreground)] line-clamp-2 hover:text-indigo-700 transition-colors duration-150 mb-2">{module.name}</h3>
         </Link>
         <div className="mt-auto">
-          <p className={`text-base font-bold mb-3 tabular-nums ${!module.price_student ? 'text-[var(--text-muted)]' : module.is_available ? 'text-indigo-700' : 'text-amber-600'}`}>
-            {module.price_student ? module.price_student_display : 'Hubungi Kami'}
+          <p className={`text-base font-bold mb-3 tabular-nums ${priceState === 'needs_price' ? 'text-[var(--text-muted)]' : purchasable ? 'text-indigo-700' : 'text-amber-600'}`}>
+            {priceState === 'needs_price' ? 'Hubungi Kami' : module.price_student_display}
           </p>
           <button
             onClick={handleAdd}
@@ -81,7 +84,7 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
             className={`w-full text-sm py-2.5 rounded-xl font-semibold transition-[background-color,transform,box-shadow] duration-150 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-1.5
               ${added
                 ? 'bg-emerald-600 text-white shadow-sm'
-                : module.is_available && module.price_student
+                : purchasable
                   ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:-translate-y-px hover:shadow-[var(--shadow-sm)] shadow-[var(--shadow-btn-primary)]'
                   : 'bg-amber-500 text-white hover:bg-amber-600 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-sm)]'
               }`}
@@ -96,10 +99,10 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
-                {module.is_available && module.price_student ? 'Ditambahkan!' : 'Diminta!'}
+                {purchasable ? 'Ditambahkan!' : 'Diminta!'}
               </>
             ) : (
-              module.is_available && module.price_student ? 'Tambah ke Keranjang' : 'Minta Buku Ini'
+              moduleCtaLabel(module)
             )}
           </button>
         </div>

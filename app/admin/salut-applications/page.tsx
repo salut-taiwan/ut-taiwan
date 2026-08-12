@@ -205,6 +205,7 @@ export default function SalutApplicationsPage() {
                 )}
                 <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)]">Nama</th>
                 <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)]">NIM</th>
+                <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)]">WhatsApp</th>
                 <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)] hidden md:table-cell">Program</th>
                 <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)] hidden md:table-cell">Biaya</th>
                 <th className="px-4 py-3 text-left font-semibold text-[var(--foreground)] hidden lg:table-cell">Tanggal Daftar</th>
@@ -234,6 +235,20 @@ export default function SalutApplicationsPage() {
                       <p className="text-xs text-[var(--text-muted)]">{app.email}</p>
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-[var(--foreground)]">{app.nim ?? '-'}</td>
+                    <td className="px-4 py-3 text-xs">
+                      {app.salut_wa_number ? (
+                        <a
+                          href={`https://wa.me/${app.salut_wa_number}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-emerald-700 hover:underline"
+                        >
+                          +{app.salut_wa_number}
+                        </a>
+                      ) : (
+                        <span className="text-[var(--text-muted)]">-</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 hidden md:table-cell text-[var(--text-body)]">
                       {app.programs?.code ?? '-'}
                       {app.current_semester && <span className="ml-1 text-[var(--text-muted)]">Sem {app.current_semester}</span>}

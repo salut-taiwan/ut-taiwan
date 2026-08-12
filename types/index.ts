@@ -224,6 +224,9 @@ export interface OrderDTO {
   payments: PaymentDTO[];
   created_at: string;
   // Computed by backend
+  // One checkout maps the whole cart into one order, so an order can hold both
+  // modules and merchandise ('mixed'). Admin list only.
+  order_kind?: 'module' | 'merch' | 'mixed';
   step_index?: number;
   can_cancel?: boolean;
   confirm_deadline?: string;
@@ -247,6 +250,7 @@ export interface OrderDTO {
 
 export interface OrderItemDTO {
   id: string;
+  item_type?: 'module' | 'merch';
   module_code: string;
   module_name: string;
   quantity: number;
@@ -343,8 +347,10 @@ export interface AdminSalutApplicationDTO {
   current_semester: number | null;
   salut_applied_at: string;
   salut_payment_proof_url: string;
-  salut_applied_fee_amount: string | null;
+  salut_applied_fee_amount: number | null;
   salut_applied_semester: number | null;
+  // Bare international digits, e.g. "628123456789" — drops straight into wa.me.
+  salut_wa_number: string | null;
   programs: { code: string; name: string } | null;
   // Backend-formatted (Phase 1 additive)
   salut_applied_at_display?: string | null;

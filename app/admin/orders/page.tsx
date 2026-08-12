@@ -5,13 +5,23 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
-import { OrderDTO } from '@/types';
+import { OrderDTO, OrderItemDTO } from '@/types';
 
 const PAYMENT_STATUS_COLORS: Record<string, string> = {
   pending: 'bg-amber-50   border-l-[3px] border-l-amber-400   text-amber-800  rounded-r-sm',
   paid:    'bg-emerald-50 border-l-[3px] border-l-emerald-500 text-emerald-800 rounded-r-sm',
   expired: 'bg-[var(--surface-sunken)] border-l-[3px] border-l-[var(--border-default)] text-[var(--text-body)] rounded-r-sm',
   failed:  'bg-red-50     border-l-[3px] border-l-red-400     text-red-700    rounded-r-sm',
+};
+
+// Almet and modul are handled by different people on different timelines, so the
+// table is filtered by what an order contains. A mixed order shows under both.
+type KindTab = 'all' | 'module' | 'merch';
+
+const KIND_TAB_LABELS: Record<KindTab, string> = {
+  all: 'Semua',
+  module: 'Modul',
+  merch: 'Almet & Merch',
 };
 
 const ORDER_STATUS_COLORS: Record<string, string> = {
@@ -23,6 +33,23 @@ const ORDER_STATUS_COLORS: Record<string, string> = {
   delivered:        'bg-[var(--surface-sunken)] border-l-[3px] border-l-[var(--border-default)] text-[var(--text-body)] rounded-r-sm',
   cancelled:        'bg-red-50     border-l-[3px] border-l-red-400     text-red-700    rounded-r-sm',
 };
+
+// Merch lines reuse the module_* columns, so module_code is blank for them —
+// show what the item actually is instead of an empty monospace gap.
+function ItemLabel({ item }: { item: OrderItemDTO }) {
+  return (
+    <div className="flex-1 min-w-0">
+      {item.item_type === 'merch' ? (
+        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200 mr-1">Almet</span>
+      ) : (
+        <span className="font-mono text-[var(--text-muted)] mr-1">{item.module_code}</span>
+      )}
+      <span className="text-[var(--text-body)]">{item.module_name}</span>
+      {item.variant_label && <span className="text-[var(--text-muted)] ml-1">({item.variant_label})</span>}
+      <span className="text-[var(--text-muted)] ml-1">×{item.quantity}</span>
+    </div>
+  );
+}
 
 export default function AdminOrdersPage() {
   const { user, isLoading } = useAuth();
@@ -37,6 +64,7 @@ export default function AdminOrdersPage() {
   const [updatingRequest, setUpdatingRequest] = useState<string | null>(null);
   const [pricingItem, setPricingItem] = useState<string | null>(null);
   const [priceInput, setPriceInput] = useState('');
+  const [kindTab, setKindTab] = useState<KindTab>('all');
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'admin')) {
@@ -146,17 +174,13 @@ export default function AdminOrdersPage() {
     if (!confirm(`${label} item ini?`)) return;
     setUpdatingRequest(itemId);
     try {
-      await api.admin.updateRequestItemStatus(orderId, itemId, status, unitPrice);
+      const res = await api.admin.updateRequestItemStatus(orderId, itemId, status, unitPrice);
       setPricingItem(null);
       setPriceInput('');
-      updateOrderInState(orderId, (order) => ({
-        ...order,
-        order_items: (order.order_items ?? []).map(item => {
-          if (item.id !== itemId) return item;
-          const newUnitPrice = unitPrice ?? item.unit_price;
-          return { ...item, request_status: status, unit_price: newUnitPrice, subtotal: newUnitPrice * item.quantity };
-        }),
-      }));
+      // Resolving an item rewrites the order subtotal, total and payment amount
+      // server-side, so take the whole order back rather than patching the row.
+      if (res.order) updateOrderInState(orderId, () => res.order!);
+      else await fetchOrders();
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
@@ -166,6 +190,10 @@ export default function AdminOrdersPage() {
 
   if (isLoading || loading) return <div className="text-center py-16 text-[var(--text-muted)]">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
+
+  const visibleOrders = kindTab === 'all'
+    ? orders
+    : orders.filter(o => o.order_kind === kindTab || o.order_kind === 'mixed');
 
   return (
     <div>
@@ -182,8 +210,26 @@ export default function AdminOrdersPage() {
         </button>
       </div>
 
-      {orders.length === 0 ? (
-        <div className="text-center py-16 text-[var(--text-muted)]">Belum ada pesanan</div>
+      <div className="flex gap-1 bg-[var(--surface-sunken)] rounded-lg p-1 mb-5 w-fit">
+        {(Object.keys(KIND_TAB_LABELS) as KindTab[]).map(t => (
+          <button
+            key={t}
+            onClick={() => setKindTab(t)}
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+              kindTab === t
+                ? 'bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-xs)]'
+                : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'
+            }`}
+          >
+            {KIND_TAB_LABELS[t]}
+          </button>
+        ))}
+      </div>
+
+      {visibleOrders.length === 0 ? (
+        <div className="text-center py-16 text-[var(--text-muted)]">
+          {orders.length === 0 ? 'Belum ada pesanan' : 'Tidak ada pesanan pada kategori ini'}
+        </div>
       ) : (
         <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">
           <table className="w-full text-sm">
@@ -199,7 +245,7 @@ export default function AdminOrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-subtle)]">
-              {orders.map(order => {
+              {visibleOrders.map(order => {
                 const payment = order.payments?.[0];
                 const canConfirmKarunika = order.status === 'pending';
                 const canConfirmPayment = order.status === 'awaiting_payment' && payment?.status === 'pending';
@@ -216,6 +262,12 @@ export default function AdminOrdersPage() {
                         {order.order_number}
                         {order.is_salut_order && (
                           <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200 font-sans">SALUT</span>
+                        )}
+                        {order.order_kind === 'mixed' && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200 font-sans">Campuran</span>
+                        )}
+                        {order.order_kind === 'merch' && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200 font-sans">Almet</span>
                         )}
                       </div>
                       {(order.order_items && order.order_items.length > 0) && (
@@ -401,11 +453,7 @@ export default function AdminOrdersPage() {
                           <div className="divide-y divide-[var(--border-subtle)]">
                             {availableItems.map(item => (
                               <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
-                                <div className="flex-1 min-w-0">
-                                  <span className="font-mono text-[var(--text-muted)] mr-1">{item.module_code}</span>
-                                  <span className="text-[var(--text-body)]">{item.module_name}</span>
-                                  <span className="text-[var(--text-muted)] ml-1">×{item.quantity}</span>
-                                </div>
+                                <ItemLabel item={item} />
                                 <span className={`tabular-nums shrink-0 ${item.request_status === 'rejected' ? 'text-[var(--text-muted)] line-through' : 'font-semibold text-[var(--text-body)]'}`}>
                                   {item.subtotal_display}
                                 </span>
@@ -439,11 +487,7 @@ export default function AdminOrdersPage() {
                               const isZeroPrice = item.unit_price === 0;
                               return (
                               <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
-                                <div className="flex-1 min-w-0">
-                                  <span className="font-mono text-[var(--text-muted)] mr-1">{item.module_code}</span>
-                                  <span className="text-[var(--text-body)]">{item.module_name}</span>
-                                  <span className="text-[var(--text-muted)] ml-1">×{item.quantity}</span>
-                                </div>
+                                <ItemLabel item={item} />
                                 <span className="font-semibold text-[var(--text-body)] tabular-nums shrink-0">
                                   {isZeroPrice && item.request_status !== 'rejected'
                                     ? <span className="text-xs text-[var(--text-muted)] italic font-normal">Harga menyusul</span>
