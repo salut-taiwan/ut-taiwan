@@ -46,11 +46,10 @@ export const moduleSummary = (over: Partial<ModuleSummaryDTO> = {}): ModuleSumma
     id: 'm-1',
     tbo_code: 'MKDU4109',
     name: 'Bahasa Inggris I',
-    edition: '2',
     cover_image_url: null,
     price_student: 1700,
     is_available: true,
-    _display: { price: ntd(1700), availability: 'Tersedia' },
+    price_student_display: ntd(1700),
     ...over,
   }) as ModuleSummaryDTO;
 
