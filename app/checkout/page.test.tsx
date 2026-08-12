@@ -5,6 +5,7 @@ import CheckoutPage from './page';
 import { server } from '@/test/setup/msw';
 import { url } from '@/test/msw/handlers';
 import { push } from '@/test/utils/routerMock';
+import { within } from '@testing-library/react';
 import { renderPage, screen, waitFor } from '@/test/utils/renderWithProviders';
 import * as fx from '@/test/fixtures';
 import type { CartDTO, UserProfileDTO } from '@/types';
@@ -243,6 +244,42 @@ describe('modules the student asked for by hand', () => {
     await show({ profile: withAddress() });
 
     expect(screen.getByRole('heading', { name: 'Checkout' })).toBeInTheDocument();
+  });
+
+  test('another module can be requested from the checkout page itself', async () => {
+    // A student who remembers one more module should not have to go back.
+    await show({ profile: withAddress() });
+    const seen = captureCheckout();
+
+    await userEvent.type(screen.getByPlaceholderText(/Kode TBO/), 'EKMA4111');
+    await userEvent.type(screen.getByPlaceholderText(/Nama modul/), 'Pengantar Bisnis');
+    await userEvent.click(screen.getByRole('button', { name: '+ Tambah' }));
+    await placeOrder();
+
+    await waitFor(() => expect(seen.body).toBeDefined());
+    expect(seen.body!.customItems).toEqual([
+      { moduleCode: 'EKMA4111', moduleName: 'Pengantar Bisnis' },
+    ]);
+  });
+
+  test('a request added here can be taken off again', async () => {
+    await show({ profile: withAddress() });
+    const seen = captureCheckout();
+
+    await userEvent.type(screen.getByPlaceholderText(/Kode TBO/), 'EKMA4111');
+    await userEvent.click(screen.getByRole('button', { name: '+ Tambah' }));
+    const row = screen.getByText('EKMA4111').closest('div');
+    await userEvent.click(within(row!).getAllByRole('button')[0]);
+    await placeOrder();
+
+    await waitFor(() => expect(seen.body).toBeDefined());
+    expect(seen.body!.customItems).toEqual([]);
+  });
+
+  test('nothing can be added without a code', async () => {
+    await show({ profile: withAddress() });
+
+    expect(screen.getByRole('button', { name: '+ Tambah' })).toBeDisabled();
   });
 
   test('an ordinary checkout sends no custom items', async () => {

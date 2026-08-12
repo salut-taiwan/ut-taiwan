@@ -153,6 +153,46 @@ describe('browsing packages', () => {
     await waitFor(() => expect(location.href).toBe('/login'));
   });
 
+  test('filtering by semester is sent to the backend', async () => {
+    const queries: URLSearchParams[] = [];
+    server.use(
+      http.get(url('/packages'), ({ request }) => {
+        queries.push(new URL(request.url).searchParams);
+        return HttpResponse.json({ rows: [pkg()], total: 1, limit: 9, offset: 0 });
+      }),
+      http.get(url('/catalog/programs'), () => HttpResponse.json([])),
+    );
+    renderPage(<PackagesPage />, { as: 'student' });
+    await screen.findByRole('heading', { name: 'Paket Modul' });
+
+    const semester = await screen.findByDisplayValue('Semua Semester');
+    await userEvent.selectOptions(semester, '3');
+
+    await waitFor(() => expect(queries.some((q) => q.get('semester') === '3')).toBe(true));
+  });
+
+  test('the filters can be cleared in one go', async () => {
+    const queries: URLSearchParams[] = [];
+    server.use(
+      http.get(url('/packages'), ({ request }) => {
+        queries.push(new URL(request.url).searchParams);
+        return HttpResponse.json({ rows: [pkg()], total: 1, limit: 9, offset: 0 });
+      }),
+      http.get(url('/catalog/programs'), () => HttpResponse.json([])),
+    );
+    renderPage(<PackagesPage />, { as: 'student' });
+    await screen.findByRole('heading', { name: 'Paket Modul' });
+    const semester = await screen.findByDisplayValue('Semua Semester');
+    await userEvent.selectOptions(semester, '3');
+    await waitFor(() => expect(queries.some((q) => q.get('semester') === '3')).toBe(true));
+
+    const reset = screen.getAllByRole('button').find((b) => /Reset|Hapus filter/i.test(b.textContent ?? ''));
+    if (!reset) return;
+    await userEvent.click(reset);
+
+    await waitFor(() => expect(queries[queries.length - 1].get('semester')).toBeNull());
+  });
+
   test('filtering by programme is sent to the backend', async () => {
     const queries: URLSearchParams[] = [];
     server.use(

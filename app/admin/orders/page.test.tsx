@@ -476,6 +476,150 @@ describe('pricing a requested module', () => {
   });
 });
 
+describe('looking at what the student sent', () => {
+  test('a transfer proof can be opened', async () => {
+    await show([
+      fx.order({
+        status: 'awaiting_payment',
+        payments: [fx.payment({ proof_path: 'u/bukti.jpg' })],
+      }),
+    ]);
+    const open = vi.fn();
+    vi.stubGlobal('open', open);
+    await expandFirstRow();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Lihat Bukti' }));
+
+    await waitFor(() => expect(open).toHaveBeenCalled());
+  });
+
+  test('a proof that will not load is reported rather than a blank tab', async () => {
+    await show([
+      fx.order({
+        status: 'awaiting_payment',
+        payments: [fx.payment({ proof_path: 'u/bukti.jpg' })],
+      }),
+    ]);
+    server.use(
+      http.get(url('/payments/:orderId/proof'), () =>
+        HttpResponse.json({ error: 'Gagal memuat file' }, { status: 500 }),
+      ),
+    );
+    await expandFirstRow();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Lihat Bukti' }));
+
+    expect(await screen.findByText(/Gagal memuat file/)).toBeInTheDocument();
+  });
+
+  test('an invoice that will not load is reported too', async () => {
+    await show([
+      fx.order({
+        status: 'awaiting_payment',
+        payments: [fx.payment({ invoice_path: 'u/invoice.pdf' })],
+      }),
+    ]);
+    server.use(
+      http.get(url('/payments/:orderId/invoice'), () =>
+        HttpResponse.json({ error: 'Gagal memuat file' }, { status: 500 }),
+      ),
+    );
+    await expandFirstRow();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Lihat Invoice' }));
+
+    expect(await screen.findByText(/Gagal memuat file/)).toBeInTheDocument();
+  });
+
+  test('an uploaded invoice can be replaced', async () => {
+    await show([
+      fx.order({
+        status: 'awaiting_payment',
+        payments: [fx.payment({ invoice_path: 'u/invoice.pdf' })],
+      }),
+    ]);
+    let uploaded = false;
+    server.use(
+      http.post(url('/payments/:orderId/invoice'), () => {
+        uploaded = true;
+        return HttpResponse.json({ message: 'ok' });
+      }),
+    );
+    await expandFirstRow();
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await userEvent.upload(input, new File(['pdf'], 'baru.pdf', { type: 'application/pdf' }));
+
+    await waitFor(() => expect(uploaded).toBe(true));
+  });
+});
+
+describe('pricing: the paths around the price field', () => {
+  const withRequest = () =>
+    fx.order({
+      status: 'pending',
+      order_items: [
+        fx.orderItem({
+          id: 'oi-9',
+          is_request: true,
+          request_status: 'pending',
+          unit_price: 0,
+          price_visible: false,
+        }),
+      ],
+    });
+
+  test('opening the price field can be cancelled', async () => {
+    await show([withRequest()]);
+    await expandFirstRow();
+    await userEvent.click(await screen.findByRole('button', { name: 'Setujui' }));
+
+    await userEvent.click(screen.getByRole('button', { name: '✕' }));
+
+    expect(screen.queryByPlaceholderText('Harga...')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Setujui' })).toBeInTheDocument();
+  });
+
+  test('an already-priced request is approved without asking again', async () => {
+    // The price field only opens for a zero-priced item.
+    await show([
+      fx.order({
+        status: 'pending',
+        order_items: [
+          fx.orderItem({ id: 'oi-9', is_request: true, request_status: 'pending', unit_price: 1700 }),
+        ],
+      }),
+    ]);
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.patch(url('/orders/admin/:orderId/items/:itemId/request-status'), async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ message: 'ok', status: 'approved', order: fx.order() });
+      }),
+    );
+    await expandFirstRow();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Setujui' }));
+
+    await waitFor(() => expect(body?.status).toBe('approved'));
+    expect(body!.unit_price).toBeUndefined();
+  });
+
+  test('a refused pricing change is reported', async () => {
+    await show([withRequest()]);
+    server.use(
+      http.patch(url('/orders/admin/:orderId/items/:itemId/request-status'), () =>
+        HttpResponse.json({ error: 'Item sudah diproses' }, { status: 409 }),
+      ),
+    );
+    await expandFirstRow();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Tolak' }));
+
+    expect(await screen.findByText(/sudah diproses/)).toBeInTheDocument();
+  });
+});
+
 describe('when the queue cannot be loaded', () => {
   test('the admin is told rather than shown an empty queue', async () => {
     server.use(
