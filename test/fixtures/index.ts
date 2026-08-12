@@ -205,7 +205,8 @@ export const product = (over: Partial<ProductDTO> = {}): ProductDTO =>
     product_images: [{ id: 'i-1', image_url: 'https://cdn/almet.jpg', sort_order: 1 }],
     product_variant_types: [],
     product_skus: [],
-    _display: { price: ntd(560) },
+    // The backend sends base_price_display, not a nested _display object.
+    base_price_display: ntd(560),
     ...over,
   }) as ProductDTO;
 
