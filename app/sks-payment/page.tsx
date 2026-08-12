@@ -40,15 +40,8 @@ export default function SksPaymentListPage() {
       .catch(() => setLoadError(true));
   }, [user, isLoading, router]);
 
-  if (isLoading || rows === null) {
-    return (
-      <div className="max-w-3xl mx-auto">
-        <div className="h-8 w-56 rounded skeleton mb-6" />
-        <div className="h-40 rounded-2xl skeleton" />
-      </div>
-    );
-  }
-
+  // Checked before the skeleton: a failed load leaves `rows` null, so the
+  // other order would show a loading skeleton forever instead of the error.
   if (loadError) {
     return (
       <div className="max-w-3xl mx-auto text-center py-16">
@@ -56,6 +49,15 @@ export default function SksPaymentListPage() {
         <button onClick={() => location.reload()} className="text-sm font-semibold text-indigo-600 hover:underline">
           Muat ulang
         </button>
+      </div>
+    );
+  }
+
+  if (isLoading || rows === null) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <div className="h-8 w-56 rounded skeleton mb-6" />
+        <div className="h-40 rounded-2xl skeleton" />
       </div>
     );
   }
