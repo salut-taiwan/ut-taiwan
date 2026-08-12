@@ -49,12 +49,12 @@ describe('who may see the order queue', () => {
 describe('splitting jackets from modules', () => {
   // Almet and modul are handled by different people on different timelines, so
   // the queue is filtered by what an order contains.
-  const module = fx.order({ id: 'o-1', order_number: 'UT-2026-0001', order_kind: 'module' });
-  const merch = fx.order({ id: 'o-2', order_number: 'UT-2026-0002', order_kind: 'merch' });
-  const mixed = fx.order({ id: 'o-3', order_number: 'UT-2026-0003', order_kind: 'mixed' });
+  const moduleOrder = fx.order({ id: 'o-1', order_number: 'UT-2026-0001', order_kind: 'module' });
+  const merchOrder = fx.order({ id: 'o-2', order_number: 'UT-2026-0002', order_kind: 'merch' });
+  const mixedOrder = fx.order({ id: 'o-3', order_number: 'UT-2026-0003', order_kind: 'mixed' });
 
   test('all three tabs are offered', async () => {
-    await show([module]);
+    await show([moduleOrder]);
 
     expect(screen.getByRole('tab', { name: /Semua/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Modul/ })).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe('splitting jackets from modules', () => {
   });
 
   test('the module queue hides jacket-only orders', async () => {
-    await show([module, merch]);
+    await show([moduleOrder, merchOrder]);
 
     await userEvent.click(screen.getByRole('tab', { name: /^Modul/ }));
 
@@ -71,7 +71,7 @@ describe('splitting jackets from modules', () => {
   });
 
   test('the jacket queue hides module-only orders', async () => {
-    await show([module, merch]);
+    await show([moduleOrder, merchOrder]);
 
     await userEvent.click(screen.getByRole('tab', { name: /Almet/ }));
 
@@ -81,7 +81,7 @@ describe('splitting jackets from modules', () => {
 
   test('an order containing both appears in both queues', async () => {
     // Neither team should have to look in the other's list to find it.
-    await show([mixed]);
+    await show([mixedOrder]);
 
     await userEvent.click(screen.getByRole('tab', { name: /^Modul/ }));
     expect(screen.getByText('UT-2026-0003')).toBeInTheDocument();
