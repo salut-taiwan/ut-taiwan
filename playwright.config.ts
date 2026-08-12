@@ -36,7 +36,13 @@ export default defineConfig({
   },
 
   projects: [
-    { name: 'guest', use: { ...devices['Desktop Chrome'] } },
+    // Stubbed specs. In live mode these are skipped: they route the API away,
+    // which would defeat the point of running against a real backend.
+    {
+      name: 'guest',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: LIVE ? /.*/ : /-live\.spec\.ts|auth\.setup\.ts/,
+    },
     ...(LIVE
       ? [
           { name: 'setup', testMatch: /auth\.setup\.ts/, use: { ...devices['Desktop Chrome'] } },
@@ -44,13 +50,13 @@ export default defineConfig({
             name: 'student',
             use: { ...devices['Desktop Chrome'], storageState: 'test/e2e/.auth/student.json' },
             dependencies: ['setup'],
-            testMatch: /student-.*\.spec\.ts/,
+            testMatch: /student-live\.spec\.ts/,
           },
           {
             name: 'admin',
             use: { ...devices['Desktop Chrome'], storageState: 'test/e2e/.auth/admin.json' },
             dependencies: ['setup'],
-            testMatch: /admin-.*\.spec\.ts/,
+            testMatch: /admin-live\.spec\.ts/,
           },
         ]
       : []),
