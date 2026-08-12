@@ -134,8 +134,26 @@ export const handlers = [
   http.patch(url('/users/admin/:id/salut/reject'), () => HttpResponse.json({ message: 'ok' })),
 
   // --- config and misc ---
+  // Mirrors presenters/feesPresenter.js — salutMembership and its renewalPolicy
+  // are always present, and the SALUT page reads them without guarding.
   http.get(url('/config/fees'), () =>
-    HttpResponse.json({ shipping: 300, box: 0, admin: 0, salut_waives: ['box', 'admin'] }),
+    HttpResponse.json({
+      shipping: 300,
+      box: 0,
+      admin: 0,
+      salut_waives: ['box', 'admin'],
+      salutMembership: {
+        new: 1700,
+        returning: 1200,
+        new_display: 'NT$1,700',
+        returning_display: 'NT$1,200',
+        new_display_idr: 'Rp952.000',
+        returning_display_idr: 'Rp672.000',
+        tier_combined_display: 'NT$1,700 (semester 1) atau NT$1,200 (semester 2+)',
+        tier_combined_display_idr: 'Rp952.000 (semester 1) atau Rp672.000 (semester 2+)',
+        renewalPolicy: { notice: null },
+      },
+    }),
   ),
   http.get(url('/config/banks'), () => HttpResponse.json({ currency: 'NTD', banks: [] })),
   http.get(url('/config/chat-widget'), () =>

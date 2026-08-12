@@ -83,7 +83,7 @@ export default function SalutPage() {
     api.config.getFees().then(setFees).catch(() => {});
   }, []);
 
-  const tierLabel = fees?.salutMembership.tier_combined_display ?? '...';
+  const tierLabel = fees?.salutMembership?.tier_combined_display ?? '...';
   const isMember = Boolean(user?.is_member ?? user?.is_salut_active);
   const isPending = Boolean(user?.is_pending) || (!isMember && user?.salut_status === 'pending');
 
@@ -146,7 +146,7 @@ export default function SalutPage() {
           <div className="font-medium text-[var(--text-muted)]">Biaya</div>
           <div className="border-t border-[var(--border-subtle)] pt-2.5 text-[var(--foreground)]">Semester Pertama</div>
           <div className="border-t border-[var(--border-subtle)] pt-2.5 font-semibold text-teal-700 tabular-nums">
-            {fees ? (
+            {fees?.salutMembership ? (
               <>
                 {fees.salutMembership.new_display}
                 {fees.salutMembership.new_display_idr && (
@@ -157,7 +157,7 @@ export default function SalutPage() {
           </div>
           <div className="border-t border-[var(--border-subtle)] pt-2.5 text-[var(--foreground)]">Semester Berikutnya</div>
           <div className="border-t border-[var(--border-subtle)] pt-2.5 font-semibold text-teal-700 tabular-nums">
-            {fees ? (
+            {fees?.salutMembership ? (
               <>
                 {fees.salutMembership.returning_display}
                 {fees.salutMembership.returning_display_idr && (
@@ -170,7 +170,7 @@ export default function SalutPage() {
         <p className="text-xs text-[var(--text-muted)] mt-4">
           Biaya keanggotaan dibayarkan per semester dan digunakan untuk mendukung layanan, fasilitas, serta benefit anggota SALUT.
         </p>
-        {fees?.salutMembership.renewalPolicy.notice && (
+        {fees?.salutMembership?.renewalPolicy?.notice && (
           <p className="text-xs italic text-[var(--text-muted)] mt-2">
             <strong>Keanggotaan SALUT berakhir</strong> setiap <strong>1 Mei</strong> dan <strong>1 November</strong> pukul 00:00 (Asia/Taipei). Perpanjangan wajib dilakukan setiap semester.
           </p>
