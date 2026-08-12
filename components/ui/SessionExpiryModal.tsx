@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { getExpiresAt } from '@/lib/api';
+import { formatCountdown } from '@/lib/format/duration';
 import Button from '@/components/ui/Button';
 
 export default function SessionExpiryModal() {
@@ -45,11 +46,7 @@ export default function SessionExpiryModal() {
     router.push('/login');
   }
 
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
+  const formatTime = formatCountdown;
 
   if (!showExpiryWarning && !isSessionExpired) return null;
 

@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import { cn } from '@/lib/utils';
+import { getInitials } from '@/lib/user/initials';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 
 const modulLinks = [
@@ -46,15 +47,6 @@ function useDropdown() {
   return { open, setOpen, ref };
 }
 
-function getInitials(name?: string | null, email?: string | null) {
-  if (name && name.trim()) {
-    const parts = name.trim().split(/\s+/);
-    if (parts.length === 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }
-  if (email) return email[0].toUpperCase();
-  return '?';
-}
 
 export default function Navbar() {
   const { user, isLoading, logout } = useAuth();

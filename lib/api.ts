@@ -141,7 +141,15 @@ export function setOnSessionExpired(cb: (() => void) | null) {
   onSessionExpired = cb;
 }
 
-let isRefreshing = false;
+// The in-flight refresh, shared by every request that 401s while it runs.
+// This used to be a boolean, so a second concurrent 401 skipped the refresh and
+// threw "Sesi berakhir" even though the session had just been renewed.
+let refreshInFlight: Promise<boolean> | null = null;
+
+function refreshOnce(): Promise<boolean> {
+  refreshInFlight ??= attemptRefresh().finally(() => { refreshInFlight = null; });
+  return refreshInFlight;
+}
 
 async function attemptRefresh(): Promise<boolean> {
   const refreshToken = getRefreshToken();
@@ -165,6 +173,34 @@ async function attemptRefresh(): Promise<boolean> {
   }
 }
 
+/**
+ * fetch for multipart uploads and binary downloads, which cannot go through
+ * apiFetch because it forces a JSON content type and parses the response.
+ *
+ * It still has to share apiFetch's 401 handling: without it, a token that
+ * expired mid-session made every upload fail with a bare "Upload gagal" and no
+ * session-expiry prompt, even though a refresh would have succeeded.
+ */
+async function authedFetch(path: string, options: RequestInit = {}): Promise<Response> {
+  const withAuth = (token: string | null): RequestInit => ({
+    ...options,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
+  });
+
+  const token = getToken();
+  const res = await fetch(`${API_BASE}${path}`, withAuth(token));
+  if (res.status !== 401 || !token) return res;
+
+  const refreshed = await refreshOnce();
+  if (refreshed) return fetch(`${API_BASE}${path}`, withAuth(getToken()));
+
+  onSessionExpired?.();
+  throw new Error('Sesi berakhir. Silakan login kembali.');
+}
+
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers: HeadersInit = {
@@ -181,25 +217,27 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
       const err = await res.json().catch(() => ({ error: res.statusText }));
       throw new Error(err.error || `HTTP ${res.status}`);
     }
-    if (!isRefreshing) {
-      isRefreshing = true;
-      const refreshed = await attemptRefresh();
-      isRefreshing = false;
+    // Every concurrent 401 awaits the same refresh and then retries, rather
+    // than the first one refreshing and the rest reporting a dead session.
+    const refreshed = await refreshOnce();
 
-      if (refreshed) {
-        // Retry with the new token
-        const newToken = getToken();
-        const retryHeaders: HeadersInit = {
-          'Content-Type': 'application/json',
-          ...(newToken ? { Authorization: `Bearer ${newToken}` } : {}),
-          ...(options.headers || {}),
-        };
-        const retryRes = await fetch(`${API_BASE}${path}`, { ...options, headers: retryHeaders });
-        if (retryRes.ok) return retryRes.json();
-      }
+    if (refreshed) {
+      const newToken = getToken();
+      const retryHeaders: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(newToken ? { Authorization: `Bearer ${newToken}` } : {}),
+        ...(options.headers || {}),
+      };
+      const retryRes = await fetch(`${API_BASE}${path}`, { ...options, headers: retryHeaders });
+      if (retryRes.ok) return retryRes.json();
 
-      onSessionExpired?.();
+      // The token is fine; this particular request failed. Report its own
+      // error instead of blaming the session.
+      const retryErr = await retryRes.json().catch(() => ({ error: retryRes.statusText }));
+      throw new Error(retryErr.error || `HTTP ${retryRes.status}`);
     }
+
+    onSessionExpired?.();
     throw new Error('Sesi berakhir. Silakan login kembali.');
   }
 
@@ -305,41 +343,26 @@ export const api = {
   },
   payments: {
     getStatus: (orderId: string) => apiFetch(`/payments/${orderId}`),
-    uploadProof: (orderId: string, file: File): Promise<void> => {
-      const token = getToken();
+    uploadProof: async (orderId: string, file: File): Promise<void> => {
       const fd = new FormData();
       fd.append('file', file);
-      return fetch(`${API_BASE}/payments/${orderId}/proof`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      }).then(async r => {
-        if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
-      });
+      const r = await authedFetch(`/payments/${orderId}/proof`, { method: 'POST', body: fd });
+      if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
     },
     viewProof: async (orderId: string): Promise<string> => {
-      const token = getToken();
-      const res = await fetch(`${API_BASE}/payments/${orderId}/proof`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await authedFetch(`/payments/${orderId}/proof`);
       if (!res.ok) throw new Error('Gagal memuat file');
       const blob = await res.blob();
       return URL.createObjectURL(blob);
     },
   },
   salut: {
-    uploadProof: (file: File): Promise<{ url: string }> => {
-      const token = getToken();
+    uploadProof: async (file: File): Promise<{ url: string }> => {
       const fd = new FormData();
       fd.append('proof', file);
-      return fetch(`${API_BASE}/salut/upload-proof`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      }).then(async r => {
-        if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
-        return r.json();
-      });
+      const r = await authedFetch('/salut/upload-proof', { method: 'POST', body: fd });
+      if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
+      return r.json();
     },
     apply: (proofUrl: string, currentSemester: number, waNumber: string): Promise<{ message: string; fee: { amount: number; currency: 'NTD'; tier: 'new' | 'returning' }; nextExpiry: string; renewalPolicy: RenewalPolicy }> =>
       apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl, current_semester: currentSemester, wa_number: waNumber }) }),
@@ -352,31 +375,19 @@ export const api = {
         body: JSON.stringify({ idr_amount }),
         signal,
       }),
-    uploadSlip: (file: File): Promise<{ url: string }> => {
-      const token = getToken();
+    uploadSlip: async (file: File): Promise<{ url: string }> => {
       const fd = new FormData();
       fd.append('file', file);
-      return fetch(`${API_BASE}/sks-payment/upload-slip`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      }).then(async r => {
-        if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
-        return r.json();
-      });
+      const r = await authedFetch('/sks-payment/upload-slip', { method: 'POST', body: fd });
+      if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
+      return r.json();
     },
-    uploadProof: (file: File): Promise<{ url: string }> => {
-      const token = getToken();
+    uploadProof: async (file: File): Promise<{ url: string }> => {
       const fd = new FormData();
       fd.append('file', file);
-      return fetch(`${API_BASE}/sks-payment/upload-proof`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      }).then(async r => {
-        if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
-        return r.json();
-      });
+      const r = await authedFetch('/sks-payment/upload-proof', { method: 'POST', body: fd });
+      if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
+      return r.json();
     },
     submit: (body: {
       nim: string;
@@ -431,23 +442,14 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify({ status, ...(unitPrice !== undefined ? { unit_price: unitPrice } : {}) }),
       }),
-    uploadInvoice: (orderId: string, file: File): Promise<void> => {
-      const token = getToken();
+    uploadInvoice: async (orderId: string, file: File): Promise<void> => {
       const fd = new FormData();
       fd.append('file', file);
-      return fetch(`${API_BASE}/payments/${orderId}/invoice`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      }).then(async r => {
-        if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
-      });
+      const r = await authedFetch(`/payments/${orderId}/invoice`, { method: 'POST', body: fd });
+      if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
     },
     viewInvoice: async (orderId: string): Promise<string> => {
-      const token = getToken();
-      const res = await fetch(`${API_BASE}/payments/${orderId}/invoice`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await authedFetch(`/payments/${orderId}/invoice`);
       if (!res.ok) throw new Error('Gagal memuat file');
       const blob = await res.blob();
       return URL.createObjectURL(blob);

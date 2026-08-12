@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/ui/Toast';
 import type { ClaimCta, ProductDTO, ProductSKUDTO } from '@/types';
+import { resolveSku, canAddToCart } from '@/lib/product/skuResolution';
 
 
 export default function ProductDetail({ product }: { product: ProductDTO }) {
@@ -44,19 +45,8 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
     // Re-fetch when auth state flips (login/logout) so the CTA reflects the current user.
   }, [isClaimGated, product.id, user?.id]);
 
-  // Find the SKU that matches the current selection
-  const resolvedSku: ProductSKUDTO | null = (() => {
-    if (skus.length === 0) return null;
-    if (variantTypes.length === 0) return skus[0] ?? null;
-    const selectedValues = Object.values(selectedOptions);
-    if (selectedValues.length < variantTypes.length) return null;
-    return skus.find(s =>
-      s.option_names.length === selectedValues.length &&
-      s.option_names.every(v => selectedValues.includes(v))
-    ) ?? null;
-  })();
-
-  const canAdd = variantTypes.length === 0 ? skus.length > 0 : resolvedSku !== null;
+  const resolvedSku: ProductSKUDTO | null = resolveSku(skus, variantTypes, selectedOptions);
+  const canAdd = canAddToCart(skus, variantTypes, selectedOptions);
   const displayPriceLabel = resolvedSku?.price_display ?? product.base_price_display ?? '';
 
   async function handleAddToCart() {

@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { OrderDTO, OrderItemDTO } from '@/types';
+import { filterOrdersByKind, type OrderKindTab } from '@/lib/orders/kindFilter';
 
 const PAYMENT_STATUS_COLORS: Record<string, string> = {
   pending: 'bg-amber-50   border-l-[3px] border-l-amber-400   text-amber-800  rounded-r-sm',
@@ -16,7 +17,7 @@ const PAYMENT_STATUS_COLORS: Record<string, string> = {
 
 // Almet and modul are handled by different people on different timelines, so the
 // table is filtered by what an order contains. A mixed order shows under both.
-type KindTab = 'all' | 'module' | 'merch';
+type KindTab = OrderKindTab;
 
 const KIND_TAB_LABELS: Record<KindTab, string> = {
   all: 'Semua',
@@ -191,9 +192,7 @@ export default function AdminOrdersPage() {
   if (isLoading || loading) return <div className="text-center py-16 text-[var(--text-muted)]">Memuat...</div>;
   if (!user || user.role !== 'admin') return null;
 
-  const visibleOrders = kindTab === 'all'
-    ? orders
-    : orders.filter(o => o.order_kind === kindTab || o.order_kind === 'mixed');
+  const visibleOrders = filterOrdersByKind(orders, kindTab);
 
   return (
     <div>
