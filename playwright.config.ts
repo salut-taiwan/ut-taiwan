@@ -78,7 +78,12 @@ export default defineConfig({
     },
     ...(LIVE
       ? [{
-          command: 'npm --prefix ../ut-taiwan-be run start',
+          // e2e:serve, not start: it loads .env.e2e explicitly. `start` runs
+          // dotenv's default lookup, which picks up .env — on a developer
+          // machine that points at the real Supabase project, so the browser
+          // would be driven against production while the seed wrote to the
+          // local stack.
+          command: 'npm --prefix ../ut-taiwan-be run e2e:serve',
           url: 'http://127.0.0.1:3001/api/health',
           env: { PORT: '3001', NODE_ENV: 'test' },
           reuseExistingServer: !process.env.CI,

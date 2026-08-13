@@ -1,0 +1,124 @@
+name: live e2e
+
+# The acceptance suite against a real backend, a real database and the real
+# Supabase stack — the only tier that can catch the frontend and the backend
+# disagreeing. Stub mode (in test.yml) answers from fixtures, so a genuine
+# contract mismatch passes there.
+#
+# Not on every push: it stands up Postgres, GoTrue, Storage and PostgREST, then
+# drives Chromium, so it costs minutes rather than seconds. Pushes to main and
+# a nightly run, plus a manual trigger.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 02:00 UTC — 10:00 in Taipei, so a failure is waiting at the start of the day.
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: live-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      # Both repos live side by side, because playwright.config.ts starts the
+      # backend from ../ut-taiwan-be. Checking the frontend out into a named
+      # directory rather than the workspace root is what makes that resolve.
+      - name: Check out the frontend
+        uses: actions/checkout@v4
+        with:
+          path: ut-taiwan
+
+      # BACKEND_REPO_TOKEN is only needed once ut-taiwan-be is private —
+      # anonymous clone works while it is public. The `||` keeps this job
+      # working either way, and the guard below turns a missing secret into a
+      # readable message instead of a checkout error nobody can parse.
+      - name: Check out the backend
+        uses: actions/checkout@v4
+        with:
+          repository: salut-taiwan/ut-taiwan-be
+          path: ut-taiwan-be
+          token: ${{ secrets.BACKEND_REPO_TOKEN || github.token }}
+
+      - name: Confirm the backend checkout landed
+        run: |
+          if [ ! -f ut-taiwan-be/package.json ]; then
+            echo "::error::The backend checkout is empty. If ut-taiwan-be is private, add a"
+            echo "::error::BACKEND_REPO_TOKEN secret (a PAT with repo:read on salut-taiwan/ut-taiwan-be)."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: |
+            ut-taiwan/package-lock.json
+            ut-taiwan-be/package-lock.json
+
+      - name: Install the frontend
+        working-directory: ut-taiwan
+        run: npm ci
+
+      - name: Install the backend
+        working-directory: ut-taiwan-be
+        run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Only the four services the backend actually talks to. The others
+      # (Studio, Realtime, the edge runtime, the mail catcher) are several more
+      # images to pull for nothing.
+      - name: Start the Supabase stack
+        working-directory: ut-taiwan-be
+        run: |
+          supabase start \
+            -x realtime,studio,imgproxy,inbucket,edge-runtime,logflare,vector,supavisor,mailpit
+
+      - name: Point the backend at the local stack
+        working-directory: ut-taiwan-be
+        # The keys in the example file are the CLI's fixed local demo keys —
+        # published by Supabase, not usable anywhere else.
+        run: cp .env.e2e.example .env.e2e
+
+      - name: Apply the schema
+        working-directory: ut-taiwan-be
+        run: npm run e2e:schema
+
+      - name: Seed the accounts and catalogue
+        working-directory: ut-taiwan-be
+        run: npm run e2e:seed
+
+      - name: Install Chromium
+        working-directory: ut-taiwan
+        run: npx playwright install --with-deps chromium
+
+      - name: Acceptance suite against the real backend
+        working-directory: ut-taiwan
+        env:
+          E2E_MODE: live
+        run: npm run test:e2e
+
+      - name: Collect the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-e2e-report
+          path: |
+            ut-taiwan/playwright-report/
+            ut-taiwan/test-results/
+          retention-days: 7
+
+      # Leaves nothing running if a later step is added and fails.
+      - name: Stop the Supabase stack
+        if: always()
+        working-directory: ut-taiwan-be
+        run: supabase stop --no-backup || true
