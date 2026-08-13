@@ -151,6 +151,61 @@ describe('the dropdown menus', () => {
   });
 });
 
+describe('moving through a dropdown with the keyboard', () => {
+  // role="menu" sets the expectation that arrow keys work. Before this, Tab
+  // was the only way through and it walked straight out of the menu.
+  const openModul = async () => {
+    render(<Navbar />);
+    await userEvent.click(screen.getByRole('button', { name: /Modul/ }));
+  };
+
+  test('ArrowDown moves to the first item', async () => {
+    await openModul();
+
+    await userEvent.keyboard('{ArrowDown}');
+
+    expect(screen.getByRole('menuitem', { name: 'Semua Modul' })).toHaveFocus();
+  });
+
+  test('ArrowDown again moves to the next', async () => {
+    await openModul();
+
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}');
+
+    expect(screen.getByRole('menuitem', { name: 'Program Studi' })).toHaveFocus();
+  });
+
+  test('ArrowUp from the first item wraps to the last', async () => {
+    await openModul();
+
+    await userEvent.keyboard('{ArrowDown}{ArrowUp}');
+
+    expect(screen.getByRole('menuitem', { name: 'Paket Modul' })).toHaveFocus();
+  });
+
+  test('Home and End jump to the ends', async () => {
+    await openModul();
+
+    await userEvent.keyboard('{End}');
+    expect(screen.getByRole('menuitem', { name: 'Paket Modul' })).toHaveFocus();
+
+    await userEvent.keyboard('{Home}');
+    expect(screen.getByRole('menuitem', { name: 'Semua Modul' })).toHaveFocus();
+  });
+
+  test('Escape closes the menu and returns focus to its trigger', async () => {
+    // Otherwise focus falls to <body> and the next Tab restarts from the top
+    // of the page.
+    await openModul();
+    await userEvent.keyboard('{ArrowDown}');
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.queryByRole('menuitem', { name: 'Semua Modul' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Modul/ })).toHaveFocus();
+  });
+});
+
 describe('the mobile menu', () => {
   // Most students reach the site on a phone, so this panel — not the desktop
   // bar — is the navigation they actually use.

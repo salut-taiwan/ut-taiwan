@@ -32,6 +32,9 @@
   --text-muted: #5B6B80;
   --text-body: #475569;
   --ring-focus: rgba(10,69,149,0.25);
+  /* Solid, for the focus outline. --ring-focus is a translucent glow and is
+     too faint on its own. 8.73:1 against the page background. */
+  --focus-ring: #0A4595;
   /* Was #E85D26: 3.49:1 against the white text on the landing-page CTA, which
      is 16px semibold and so does not qualify as large text. */
   --warm: #BF4A1C;
@@ -95,6 +98,28 @@
   --color-amber-900: #3D3300;
 }
 
+/* Keyboard focus.
+ *
+ * 51 buttons and links defined no focus style and fell back to the browser
+ * default, which is easy to lose against a coloured button or a dark surface.
+ * This gives every interactive element the same visible ring.
+ *
+ * :focus-visible, not :focus, so a mouse click does not leave a ring behind.
+ * outline-offset puts the ring on the page background rather than on the
+ * control, which is what keeps it high-contrast on a dark or saturated button.
+ * :where() holds specificity at 0 — a component that styles its own focus
+ * still overrides this.
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Never remove the indicator without replacing it. */
+:where(a, button, input, select, textarea):focus:not(:focus-visible) {
+  outline: none;
+}
+
 .dark {
   --background: #0F172A;
   --foreground: #F1F5F9;
@@ -112,6 +137,8 @@
   --text-muted: #94A3B8;
   --text-body: #CBD5E1;
   --ring-focus: rgba(100,127,227,0.30);
+  /* 7.11:1 on --surface; the light ring would be 3.96 here. */
+  --focus-ring: #93B4FF;
   --shadow-xs:    0 1px 2px rgba(0,0,0,0.20);
   --shadow-sm:    0 1px 3px rgba(0,0,0,0.25), 0 2px 6px rgba(0,0,0,0.15);
   --shadow-md:    0 2px 6px rgba(0,0,0,0.30), 0 6px 18px rgba(0,0,0,0.25);

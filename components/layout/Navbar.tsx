@@ -33,9 +33,42 @@ function useDropdown() {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false);
+
+    /** The menu items, in the order they are rendered. */
+    function items(): HTMLElement[] {
+      return Array.from(ref.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
     }
+
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        // Focus goes back to the trigger, otherwise it lands on <body> and the
+        // next Tab restarts from the top of the page.
+        ref.current?.querySelector<HTMLElement>('[aria-haspopup]')?.focus();
+        return;
+      }
+
+      // Arrow keys move between items — the pattern a screen-reader user
+      // expects from role="menu", and previously the only way through this
+      // menu was Tab, which also walked out of it.
+      const list = items();
+      if (list.length === 0) return;
+      const current = list.indexOf(document.activeElement as HTMLElement);
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const step = e.key === 'ArrowDown' ? 1 : -1;
+        const next = current === -1 ? 0 : (current + step + list.length) % list.length;
+        list[next]?.focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        list[0]?.focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        list[list.length - 1]?.focus();
+      }
+    }
+
     document.addEventListener('mousedown', handleClick);
     document.addEventListener('keydown', handleKey);
     return () => {
