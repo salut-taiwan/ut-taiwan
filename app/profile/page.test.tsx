@@ -78,6 +78,35 @@ describe('viewing the profile', () => {
   });
 });
 
+describe('what a member is told about their benefits', () => {
+  test('an active member sees the fees they no longer pay', async () => {
+    await show(
+      fx.profile({
+        is_salut: true,
+        is_salut_active: true,
+        salut_status: 'approved',
+        salut_approved_at_display: '1 Februari 2026',
+      } as never),
+    );
+
+    expect(await screen.findByText(/dibebaskan untuk Anda/)).toBeInTheDocument();
+    expect(screen.getByText(/1 Februari 2026/)).toBeInTheDocument();
+  });
+
+  test('an application still waiting is shown as pending', async () => {
+    await show(fx.profile({ salut_status: 'pending', is_salut: false } as never));
+
+    expect(await screen.findByRole('heading', { name: 'Profil Saya' })).toBeInTheDocument();
+    expect(screen.queryByText(/dibebaskan untuk Anda/)).not.toBeInTheDocument();
+  });
+
+  test('a rejected application does not read as membership', async () => {
+    await show(fx.profile({ salut_status: 'rejected', is_salut: false } as never));
+
+    expect(screen.queryByText(/dibebaskan untuk Anda/)).not.toBeInTheDocument();
+  });
+});
+
 describe('saving changes', () => {
   test('an edited name is sent', async () => {
     await show();
@@ -99,6 +128,19 @@ describe('saving changes', () => {
     await save();
 
     expect(await screen.findByText(/Tersimpan|Berhasil|Disimpan/i)).toBeInTheDocument();
+  });
+
+  test('a save that fails without a message still says something', async () => {
+    // The handler alerts err.message; a thrown non-Error has none, and an
+    // empty alert would read as a successful save.
+    await show();
+    server.use(http.put(url('/auth/me'), () => HttpResponse.error()));
+
+    await save();
+
+    await waitFor(() =>
+      expect(vi.mocked(globalThis.alert)).toHaveBeenCalledWith(expect.stringMatching(/\S/)),
+    );
   });
 
   test('a refused save says why rather than looking successful', async () => {

@@ -238,3 +238,66 @@ export function signIn(role: 'student' | 'admin' = 'student') {
   localStorage.setItem('ut_expires_at', String(Math.floor(Date.now() / 1000) + 3600));
   return role;
 }
+
+/**
+ * A DTO with every optional field absent.
+ *
+ * The backend omits nulls in places, and a page that reads `x.y.z` where the
+ * backend sent no `y` takes the whole route down. That has already happened
+ * twice here — the landing page and the SALUT page both guarded `fees?` and
+ * then read two levels deeper. These strip a payload to its required fields so
+ * every `?? fallback` in a page gets exercised in one go.
+ */
+export const sparseProfile = (): UserProfileDTO =>
+  ({
+    id: 'u-1',
+    email: 'budi@example.com',
+    name: null,
+    nim: null,
+    phone: null,
+    role: 'student',
+    is_verified: false,
+    is_salut: false,
+    salut_status: 'none',
+  }) as unknown as UserProfileDTO;
+
+export const sparseOrder = (): OrderDTO =>
+  ({
+    id: 'o-1',
+    order_number: 'UT-2026-0001',
+    status: 'pending',
+    subtotal: 0,
+    shipping_cost: 0,
+    box_fee: 0,
+    admin_fee: 0,
+    is_salut_order: false,
+    total_amount: 0,
+    shipping_name: '',
+    shipping_address: '',
+    shipping_city: '',
+    shipping_province: '',
+    shipping_postal: '',
+    shipping_country: '',
+    shipping_phone: '',
+    notes: null,
+    order_items: [],
+    payments: [],
+    created_at: '2026-05-20T06:30:00Z',
+  }) as unknown as OrderDTO;
+
+export const sparseCart = (): CartDTO =>
+  ({ id: 'c-1', userId: 'u-1', items: [], subtotal: 0, itemCount: 0 }) as unknown as CartDTO;
+
+export const sparseProduct = (): ProductDTO =>
+  ({
+    id: 'pr-1',
+    tokopedia_id: 'tp-1',
+    category: 'almet',
+    name: 'Almamater UT',
+    base_price: 0,
+    weight_grams: null,
+    claim_rule: null,
+    product_images: [],
+    product_variant_types: [],
+    product_skus: [],
+  }) as unknown as ProductDTO;

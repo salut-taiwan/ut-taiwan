@@ -236,6 +236,81 @@ describe('sending the transfer proof', () => {
   });
 });
 
+describe('how each stage of an order looks', () => {
+  // The status badge, the progress bar and the payment block all branch on
+  // state. A student checks this page repeatedly between paying and receiving,
+  // so each stage has to render its own way rather than falling through to a
+  // default.
+  test('a paid order shows when it was paid', async () => {
+    await show(
+      fx.order({
+        status: 'paid',
+        status_label: 'Dibayar',
+        progress_percent: 60,
+        payments: [
+          fx.payment({
+            status: 'paid',
+            paid_at: '2026-05-21T00:00:00Z',
+            paid_at_display: '21 Mei 2026',
+            payment_status_label: 'Lunas',
+          }),
+        ],
+        steps: [
+          { key: 'pending', label: 'Dibuat', state: 'completed' },
+          { key: 'paid', label: 'Dibayar', state: 'completed' },
+          { key: 'shipped', label: 'Dikirim', state: 'current' },
+          { key: 'done', label: 'Selesai', state: 'pending' },
+        ],
+      }),
+    );
+
+    expect(screen.getByText('21 Mei 2026')).toBeInTheDocument();
+  });
+
+  test('a payment deadline is shown while one applies', async () => {
+    // The order is cancelled automatically after it passes.
+    await show(
+      fx.order({
+        status: 'awaiting_payment',
+        payments: [
+          fx.payment({
+            show_payment_instructions: true,
+            show_payment_deadline: true,
+            bank_account: '1234567890',
+            expires_at: '2026-05-25T00:00:00Z',
+            expires_at_display: '25 Mei 2026',
+          }),
+        ],
+      }),
+    );
+
+    expect(screen.getByText('25 Mei 2026')).toBeInTheDocument();
+  });
+
+  test('an unknown status still renders a badge rather than an empty gap', async () => {
+    // The colour map is keyed by status; a status it does not know must fall
+    // back rather than render unstyled.
+    await show(fx.order({ status: 'refunded' as never, status_label: 'Dikembalikan' }));
+
+    expect(screen.getByText('Dikembalikan')).toBeInTheDocument();
+  });
+
+  test('a cancelled order says so and offers nothing', async () => {
+    await show(
+      fx.order({
+        status: 'cancelled',
+        status_label: 'Dibatalkan',
+        can_cancel: false,
+        progress_percent: 0,
+        payments: [fx.payment({ status: 'expired', show_payment_instructions: false })],
+      }),
+    );
+
+    expect(screen.getAllByText('Dibatalkan').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: /Batalkan Pesanan/i })).not.toBeInTheDocument();
+  });
+});
+
 describe('cancelling', () => {
   test('a cancellable order offers it', async () => {
     await show(fx.order({ can_cancel: true }));
