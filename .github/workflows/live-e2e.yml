@@ -70,9 +70,13 @@ jobs:
         working-directory: ut-taiwan-be
         run: npm ci
 
+      # Pinned, not `latest`. Resolving `latest` costs an unauthenticated
+      # GitHub API call that gets rate-limited on a busy runner, and it lets a
+      # CLI release change what CI does with no change from us.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # 2.113.0 is the version the suite was verified against locally.
+          version: 2.113.0
 
       # Only the four services the backend actually talks to. The others
       # (Studio, Realtime, the edge runtime, the mail catcher) are several more
@@ -81,7 +85,7 @@ jobs:
         working-directory: ut-taiwan-be
         run: |
           supabase start \
-            -x realtime,studio,imgproxy,inbucket,edge-runtime,logflare,vector,supavisor,mailpit
+            -x realtime,studio,imgproxy,edge-runtime,logflare,vector,supavisor,mailpit
 
       - name: Point the backend at the local stack
         working-directory: ut-taiwan-be
