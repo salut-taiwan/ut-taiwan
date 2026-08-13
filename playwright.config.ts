@@ -18,8 +18,14 @@ const BASE_URL = `http://127.0.0.1:${PORT}`;
 export default defineConfig({
   testDir: './test/e2e/specs',
   fullyParallel: true,
-  workers: process.env.CI ? 2 : undefined,
-  retries: process.env.CI ? 2 : 0,
+  // Live mode drives one seeded database, so the specs are stateful: they
+  // place orders, upload proofs and change a SALUT status. Two workers let the
+  // student journey mutate what the admin specs are asserting on, and a retry
+  // re-runs a group against a database the first attempt already changed — a
+  // pass would be meaningless and a failure unreadable. Stub mode has no such
+  // problem: it answers from fixtures.
+  workers: LIVE ? 1 : process.env.CI ? 2 : undefined,
+  retries: LIVE ? 0 : process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   timeout: 30_000,
   expect: { timeout: 7_000 },
@@ -51,6 +57,15 @@ export default defineConfig({
             use: { ...devices['Desktop Chrome'], storageState: 'test/e2e/.auth/student.json' },
             dependencies: ['setup'],
             testMatch: /student-live\.spec\.ts/,
+          },
+          {
+            // auth.setup.ts has always signed this account in; until now
+            // nothing used it. It is the semester-1 SALUT member the free
+            // almet claim rule is written for.
+            name: 'member',
+            use: { ...devices['Desktop Chrome'], storageState: 'test/e2e/.auth/member.json' },
+            dependencies: ['setup'],
+            testMatch: /member-live\.spec\.ts/,
           },
           {
             name: 'admin',

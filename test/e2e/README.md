@@ -30,7 +30,14 @@ E2E_MODE=live npm run test:e2e
 `*-live.spec.ts` runs only here, and the stubbed specs are skipped — they route
 the API away, which would defeat the point.
 
-Tear down with `npm run e2e:down` in the backend. To rebuild the schema from
+Tear down with `npm run e2e:down` in the backend.
+
+**After rebuilding the database, delete `.next` in this repo.** `/toko` and the
+product page are server components with a 24-hour `revalidate`, and Next caches
+those fetches on disk. Rebuild the database and the cached listing still links
+to product ids that no longer exist, so the claim tests land on a 404 and the
+CTA reads "Tidak tersedia". Clearing `.next/cache` alone is not always enough.
+CI never hits this — every run is a fresh checkout. To rebuild the schema from
 scratch, `supabase db reset` then `npm run e2e:up` again.
 
 ### Seeded accounts
