@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api, type FeesConfig } from '@/lib/api';
 import Input from '@/components/ui/Input';
+import { useDismissOnEscape } from '@/hooks/useDismissOnEscape';
 
 export default function SalutApplyPage() {
   const { user, isLoading } = useAuth();
@@ -46,6 +47,8 @@ export default function SalutApplyPage() {
       if (profile.phone) setWaNumber(profile.phone);
     }).catch(() => {});
   }, [user, isLoading, router]);
+
+  useDismissOnEscape(qrisOpen, () => setQrisOpen(false));
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     // No client-side MIME/size validation - backend rejects with structured error.
@@ -276,9 +279,12 @@ export default function SalutApplyPage() {
           />
         </div>
 
-        <div
+        {/* A button, not a div: this was a div with onClick and no tabIndex, so
+            the only way to attach a payment proof was with a mouse. */}
+        <button
+          type="button"
           onClick={() => inputRef.current?.click()}
-          className="border-2 border-dashed border-[var(--border-default)] hover:border-indigo-400 rounded-xl p-6 text-center cursor-pointer transition-colors duration-150 mb-3"
+          className="w-full border-2 border-dashed border-[var(--border-default)] hover:border-indigo-400 rounded-xl p-6 text-center cursor-pointer transition-colors duration-150 mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         >
           {preview ? (
             <div className="flex flex-col items-center gap-2">
@@ -302,11 +308,12 @@ export default function SalutApplyPage() {
               <p className="text-xs">JPG, PNG, WebP, atau PDF (maks. 5 MB)</p>
             </div>
           )}
-        </div>
+        </button>
 
         <input
           ref={inputRef}
           type="file"
+          aria-label="Bukti pembayaran QRIS"
           accept="image/jpeg,image/png,image/webp,application/pdf"
           className="hidden"
           onChange={handleFileChange}

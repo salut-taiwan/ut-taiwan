@@ -246,6 +246,20 @@ describe('the terms of business', () => {
     expect(screen.getByText(/wajib ditulis dalam bahasa Mandarin/)).toBeInTheDocument();
   });
 
+  test('Escape closes the terms dialog', async () => {
+    // It could only be dismissed by clicking the backdrop or Batal, both
+    // mouse-first. A keyboard user who opened it had to hunt for the button.
+    await show();
+    await userEvent.click(checkout());
+    expect(screen.getByRole('heading', { name: 'Ketentuan Pemesanan Buku' })).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(
+      screen.queryByRole('heading', { name: 'Ketentuan Pemesanan Buku' }),
+    ).not.toBeInTheDocument();
+  });
+
   test('closing the dialog forgets that they agreed', async () => {
     // Otherwise reopening it shows a pre-ticked box they never re-read.
     await show();

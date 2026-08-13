@@ -198,7 +198,8 @@ export default function AdminUsersPage() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Cari nama, email, NIM, telepon, atau program..."
+              aria-label="Cari mahasiswa"
+            placeholder="Cari nama, email, NIM, telepon, atau program..."
               className="w-full pl-9 pr-4 py-2 text-sm border border-[var(--border-default)] rounded-lg bg-[var(--surface)] text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-[var(--ring-focus)] transition-[border-color,box-shadow] duration-150"
             />
           </div>
@@ -299,6 +300,7 @@ export default function AdminUsersPage() {
                     checked={allSelected}
                     ref={el => { if (el) el.indeterminate = someSelected; }}
                     onChange={toggleSelectAll}
+                    aria-label="Pilih semua mahasiswa di halaman ini"
                     className="rounded border-[var(--border-default)] text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                   />
                 </th>
@@ -353,6 +355,7 @@ export default function AdminUsersPage() {
                       type="checkbox"
                       checked={selectedIds.has(u.id)}
                       onChange={() => toggleSelect(u.id)}
+                      aria-label={`Pilih ${u.name}`}
                       className="rounded border-[var(--border-default)] text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                     />
                   </td>

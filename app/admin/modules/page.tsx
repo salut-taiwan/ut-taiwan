@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import type { ModuleDTO } from '@/types';
+import { useDismissOnEscape } from '@/hooks/useDismissOnEscape';
 
 const EMPTY_FORM = {
   tbo_code: '', name: '', price_student: '', price_general: '',
@@ -42,6 +43,8 @@ export default function AdminModulesPage() {
       setTotal(data.total || 0);
     }).finally(() => setLoading(false));
   }
+
+  useDismissOnEscape(showCreate, () => setShowCreate(false));
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -150,8 +153,8 @@ export default function AdminModulesPage() {
             <form onSubmit={handleCreate} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Kode TBO *</label>
-                  <input
+                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1" htmlFor="modules-kode-tbo">Kode TBO *</label>
+                  <input id="modules-kode-tbo"
                     type="text"
                     value={form.tbo_code}
                     onChange={e => setForm(f => ({ ...f, tbo_code: e.target.value }))}
@@ -161,8 +164,8 @@ export default function AdminModulesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Edisi</label>
-                  <input
+                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1" htmlFor="modules-edisi">Edisi</label>
+                  <input id="modules-edisi"
                     type="text"
                     value={form.edition}
                     onChange={e => setForm(f => ({ ...f, edition: e.target.value }))}
@@ -173,8 +176,8 @@ export default function AdminModulesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Nama Modul *</label>
-                <input
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1" htmlFor="modules-nama-modul">Nama Modul *</label>
+                <input id="modules-nama-modul"
                   type="text"
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -186,8 +189,8 @@ export default function AdminModulesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Harga Mahasiswa (Rp) *</label>
-                  <input
+                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1" htmlFor="modules-harga-mahasiswa-rp">Harga Mahasiswa (Rp) *</label>
+                  <input id="modules-harga-mahasiswa-rp"
                     type="number"
                     value={form.price_student}
                     onChange={e => setForm(f => ({ ...f, price_student: e.target.value }))}
@@ -198,8 +201,8 @@ export default function AdminModulesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Harga Umum (Rp) *</label>
-                  <input
+                  <label className="block text-xs font-semibold text-[var(--text-body)] mb-1" htmlFor="modules-harga-umum-rp">Harga Umum (Rp) *</label>
+                  <input id="modules-harga-umum-rp"
                     type="number"
                     value={form.price_general}
                     onChange={e => setForm(f => ({ ...f, price_general: e.target.value }))}
@@ -212,8 +215,8 @@ export default function AdminModulesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Pengarang</label>
-                <input
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1" htmlFor="modules-pengarang">Pengarang</label>
+                <input id="modules-pengarang"
                   type="text"
                   value={form.author}
                   onChange={e => setForm(f => ({ ...f, author: e.target.value }))}
@@ -223,8 +226,8 @@ export default function AdminModulesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Penerbit</label>
-                <input
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1" htmlFor="modules-penerbit">Penerbit</label>
+                <input id="modules-penerbit"
                   type="text"
                   value={form.publisher}
                   onChange={e => setForm(f => ({ ...f, publisher: e.target.value }))}
@@ -233,8 +236,8 @@ export default function AdminModulesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">Berat (gram)</label>
-                <input
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1" htmlFor="modules-berat-gram">Berat (gram)</label>
+                <input id="modules-berat-gram"
                   type="number"
                   value={form.weight_grams}
                   onChange={e => setForm(f => ({ ...f, weight_grams: e.target.value }))}
@@ -245,8 +248,8 @@ export default function AdminModulesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">URL Sampul</label>
-                <input
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1" htmlFor="modules-url-sampul">URL Sampul</label>
+                <input id="modules-url-sampul"
                   type="url"
                   value={form.cover_image_url}
                   onChange={e => setForm(f => ({ ...f, cover_image_url: e.target.value }))}
@@ -256,8 +259,8 @@ export default function AdminModulesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1">URL TBO</label>
-                <input
+                <label className="block text-xs font-semibold text-[var(--text-body)] mb-1" htmlFor="modules-url-tbo">URL TBO</label>
+                <input id="modules-url-tbo"
                   type="url"
                   value={form.tbo_url}
                   onChange={e => setForm(f => ({ ...f, tbo_url: e.target.value }))}

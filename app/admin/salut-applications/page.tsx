@@ -203,6 +203,7 @@ export default function SalutApplicationsPage() {
                       type="checkbox"
                       checked={selectedIds.size === applications.filter(a => !approvingIds.has(a.id)).length && applications.length > 0}
                       onChange={toggleSelectAll}
+                      aria-label="Pilih semua permohonan di halaman ini"
                       className="h-4 w-4 rounded border-[var(--border-default)] text-indigo-600"
                     />
                   </th>
@@ -229,6 +230,7 @@ export default function SalutApplicationsPage() {
                           type="checkbox"
                           checked={selectedIds.has(app.id)}
                           onChange={() => toggleSelect(app.id)}
+                          aria-label={`Pilih permohonan ${app.name}`}
                           disabled={busy}
                           className="h-4 w-4 rounded border-[var(--border-default)] text-indigo-600"
                         />
@@ -297,7 +299,8 @@ export default function SalutApplicationsPage() {
                               type="text"
                               value={rejectReason}
                               onChange={e => setRejectReason(e.target.value)}
-                              placeholder="Alasan penolakan..."
+                              aria-label="Alasan penolakan"
+              placeholder="Alasan penolakan..."
                               maxLength={500}
                               className="text-xs border border-[var(--border-default)] rounded-lg px-2.5 py-1.5 w-48 text-[var(--foreground)] bg-[var(--surface)] focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100"
                             />

@@ -205,8 +205,8 @@ export default function SksPaymentApplyPage() {
           <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 1: Data Pembayaran</h2>
           <div className="space-y-3 text-sm">
             <div>
-              <label className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1 block">NIM</label>
-              <input
+              <label className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1 block" htmlFor="apply-nim">NIM</label>
+              <input id="apply-nim"
                 type="text"
                 value={nim}
                 onChange={e => setNim(e.target.value)}
@@ -216,8 +216,8 @@ export default function SksPaymentApplyPage() {
               />
             </div>
             <div>
-              <label className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1 block">Nama Lengkap</label>
-              <input
+              <label className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1 block" htmlFor="apply-nama-lengkap">Nama Lengkap</label>
+              <input id="apply-nama-lengkap"
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
@@ -227,8 +227,8 @@ export default function SksPaymentApplyPage() {
               />
             </div>
             <div>
-              <label className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1 block">Semester / Periode</label>
-              <input
+              <label className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1 block" htmlFor="apply-semester-periode">Semester / Periode</label>
+              <input id="apply-semester-periode"
                 type="text"
                 value={semesterPeriod}
                 onChange={e => setSemesterPeriod(e.target.value)}
@@ -239,10 +239,10 @@ export default function SksPaymentApplyPage() {
               />
             </div>
             <div>
-              <label className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1 block">
+              <label className="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide mb-1 block" htmlFor="apply-nominal-tagihan-ut-rp">
                 Nominal Tagihan UT (Rp)
               </label>
-              <input
+              <input id="apply-nominal-tagihan-ut-rp"
                 type="number"
                 min="1"
                 step="1"
@@ -276,9 +276,13 @@ export default function SksPaymentApplyPage() {
         {/* Step 2: upload UT slip */}
         <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-5">
           <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 2: Upload Slip Pembayaran UT</h2>
-          <div
+          {/* A button, not a div: with onClick on a div and no tabIndex there was
+              no way to attach a file without a mouse. */}
+          <button
+            type="button"
             onClick={() => slipInputRef.current?.click()}
-            className="border-2 border-dashed border-[var(--border-default)] hover:border-indigo-400 rounded-xl p-6 text-center cursor-pointer transition-colors duration-150"
+            aria-label="Pilih slip pembayaran UT"
+            className="w-full border-2 border-dashed border-[var(--border-default)] hover:border-indigo-400 rounded-xl p-6 text-center cursor-pointer transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           >
             {slipPreview ? (
               <div className="flex flex-col items-center gap-2">
@@ -303,10 +307,11 @@ export default function SksPaymentApplyPage() {
                 <p className="text-xs">JPG, PNG, WebP, atau PDF (maks. 5 MB)</p>
               </div>
             )}
-          </div>
+          </button>
           <input
             ref={slipInputRef}
             type="file"
+            aria-label="Slip pembayaran UT"
             accept="image/jpeg,image/png,image/webp,application/pdf"
             className="hidden"
             onChange={handleSlipChange}
@@ -348,9 +353,13 @@ export default function SksPaymentApplyPage() {
         {/* Step 4: upload transfer proof */}
         <div className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] p-5">
           <h2 className="font-semibold text-[var(--foreground)] mb-4 text-sm">Langkah 4: Upload Bukti Transfer</h2>
-          <div
+          {/* A button, not a div: with onClick on a div and no tabIndex there was
+              no way to attach a file without a mouse. */}
+          <button
+            type="button"
             onClick={() => proofInputRef.current?.click()}
-            className="border-2 border-dashed border-[var(--border-default)] hover:border-indigo-400 rounded-xl p-6 text-center cursor-pointer transition-colors duration-150"
+            aria-label="Pilih bukti transfer"
+            className="w-full border-2 border-dashed border-[var(--border-default)] hover:border-indigo-400 rounded-xl p-6 text-center cursor-pointer transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           >
             {proofPreview ? (
               <div className="flex flex-col items-center gap-2">
@@ -375,10 +384,11 @@ export default function SksPaymentApplyPage() {
                 <p className="text-xs">JPG, PNG, WebP, atau PDF (maks. 5 MB)</p>
               </div>
             )}
-          </div>
+          </button>
           <input
             ref={proofInputRef}
             type="file"
+            aria-label="Bukti transfer"
             accept="image/jpeg,image/png,image/webp,application/pdf"
             className="hidden"
             onChange={handleProofChange}

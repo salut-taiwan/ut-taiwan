@@ -240,38 +240,38 @@ export default function ProfilePage() {
           <SectionHeading>Informasi Pribadi</SectionHeading>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Nama Lengkap *</label>
-              <input name="name" value={form.name} onChange={handleChange} required className={inputClass} />
+              <label className={labelClass} htmlFor="profile-nama-lengkap">Nama Lengkap *</label>
+              <input id="profile-nama-lengkap" name="name" value={form.name} onChange={handleChange} required className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Email</label>
-              <input value={profile?.email} disabled
+              <label className={labelClass} htmlFor="profile-email">Email</label>
+              <input id="profile-email" value={profile?.email} disabled
                 className="w-full border border-[var(--border)] bg-[var(--surface-sunken)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--text-muted)] cursor-not-allowed" />
             </div>
             <div>
-              <label className={labelClass}>NIM</label>
-              <input name="nim" value={form.nim} onChange={handleChange}
+              <label className={labelClass} htmlFor="profile-nim">NIM</label>
+              <input id="profile-nim" name="nim" value={form.nim} onChange={handleChange}
                 className={inputClass} placeholder="Nomor Induk Mahasiswa" />
             </div>
             <div>
-              <label className={labelClass}>Nomor WhatsApp Aktif</label>
-              <input name="phone" type="tel" value={form.phone} onChange={handleChange}
+              <label className={labelClass} htmlFor="profile-nomor-whatsapp-aktif">Nomor WhatsApp Aktif</label>
+              <input id="profile-nomor-whatsapp-aktif" name="phone" type="tel" value={form.phone} onChange={handleChange}
                 className={inputClass} placeholder="+886 xxx xxx xxx" />
               <p className="text-xs text-[var(--text-muted)] mt-1">Gunakan nomor yang aktif di WhatsApp</p>
             </div>
             <div>
-              <label className={labelClass}>Tempat Lahir</label>
-              <input name="birth_place" value={form.birth_place} onChange={handleChange}
+              <label className={labelClass} htmlFor="profile-tempat-lahir">Tempat Lahir</label>
+              <input id="profile-tempat-lahir" name="birth_place" value={form.birth_place} onChange={handleChange}
                 className={inputClass} placeholder="Kota/kabupaten tempat lahir" />
             </div>
             <div>
-              <label className={labelClass}>Tanggal Lahir</label>
-              <input name="birth_date" type="date" value={form.birth_date} onChange={handleChange}
+              <label className={labelClass} htmlFor="profile-tanggal-lahir">Tanggal Lahir</label>
+              <input id="profile-tanggal-lahir" name="birth_date" type="date" value={form.birth_date} onChange={handleChange}
                 className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Program Studi</label>
-              <select name="program_id" value={form.program_id} onChange={handleChange} className={inputClass}>
+              <label className={labelClass} htmlFor="profile-program-studi">Program Studi</label>
+              <select id="profile-program-studi" name="program_id" value={form.program_id} onChange={handleChange} className={inputClass}>
                 <option value="">Pilih Program Studi</option>
                 {programs.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
@@ -279,8 +279,8 @@ export default function ProfilePage() {
               </select>
             </div>
             <div>
-              <label className={labelClass}>Semester Sekarang</label>
-              <select name="current_semester" value={form.current_semester} onChange={handleChange} className={inputClass}>
+              <label className={labelClass} htmlFor="profile-semester-sekarang">Semester Sekarang</label>
+              <select id="profile-semester-sekarang" name="current_semester" value={form.current_semester} onChange={handleChange} className={inputClass}>
                 <option value="">Pilih Semester</option>
                 {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
               </select>
@@ -294,33 +294,33 @@ export default function ProfilePage() {
           <p className="text-xs text-[var(--text-muted)] mb-4">Harap isi dalam bahasa Mandarin (請用中文填寫)</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>縣市 *</label>
-              <input name="address_zh_city" value={form.address_zh_city} onChange={handleChange}
+              <label className={labelClass} htmlFor="profile-縣市">縣市 *</label>
+              <input id="profile-縣市" name="address_zh_city" value={form.address_zh_city} onChange={handleChange}
                 className={inputClass} placeholder="台北市" />
             </div>
             <div>
-              <label className={labelClass}>區 *</label>
-              <input name="address_zh_district" value={form.address_zh_district} onChange={handleChange}
+              <label className={labelClass} htmlFor="profile-區">區 *</label>
+              <input id="profile-區" name="address_zh_district" value={form.address_zh_district} onChange={handleChange}
                 className={inputClass} placeholder="信義區" />
             </div>
             <div className="sm:col-span-2">
-              <label className={labelClass}>路/街 *</label>
-              <input name="address_zh_road" value={form.address_zh_road} onChange={handleChange}
+              <label className={labelClass} htmlFor="profile-路-街">路/街 *</label>
+              <input id="profile-路-街" name="address_zh_road" value={form.address_zh_road} onChange={handleChange}
                 className={inputClass} placeholder="信義路五段" />
             </div>
             <div>
-              <label className={labelClass}>號 *</label>
-              <input name="address_zh_number" value={form.address_zh_number} onChange={handleChange}
+              <label className={labelClass} htmlFor="profile-號">號 *</label>
+              <input id="profile-號" name="address_zh_number" value={form.address_zh_number} onChange={handleChange}
                 className={inputClass} placeholder="7號" />
             </div>
             <div>
-              <label className={labelClass}>樓/室 (選填)</label>
-              <input name="address_zh_floor" value={form.address_zh_floor} onChange={handleChange}
+              <label className={labelClass} htmlFor="profile-樓-室-選填">樓/室 (選填)</label>
+              <input id="profile-樓-室-選填" name="address_zh_floor" value={form.address_zh_floor} onChange={handleChange}
                 className={inputClass} placeholder="3樓" />
             </div>
             <div>
-              <label className={labelClass}>郵遞區號 *</label>
-              <input name="postal_code" value={form.postal_code} onChange={handleChange} required
+              <label className={labelClass} htmlFor="profile-郵遞區號">郵遞區號 *</label>
+              <input id="profile-郵遞區號" name="postal_code" value={form.postal_code} onChange={handleChange} required
                 className={inputClass} placeholder="106" />
             </div>
           </div>
@@ -335,8 +335,8 @@ export default function ProfilePage() {
               <p className="text-xs font-semibold text-[var(--text-body)] uppercase tracking-wide mb-3">Rekening NTD (Taiwan)</p>
               <div className="space-y-3">
                 <div>
-                  <label className={labelClass}>Bank</label>
-                  <select name="bank_ntd_code" value={form.bank_ntd_code} onChange={handleChange}
+                  <label className={labelClass} htmlFor="profile-bank">Bank</label>
+                  <select id="profile-bank" name="bank_ntd_code" value={form.bank_ntd_code} onChange={handleChange}
                     className={inputClass}>
                     <option value="">Pilih Bank NTD</option>
                     {ntdBanks.map(b => (
@@ -345,8 +345,8 @@ export default function ProfilePage() {
                   </select>
                 </div>
                 <div>
-                  <label className={labelClass}>Nomor Rekening</label>
-                  <input name="bank_ntd_account" value={form.bank_ntd_account} onChange={handleChange}
+                  <label className={labelClass} htmlFor="profile-nomor-rekening">Nomor Rekening</label>
+                  <input id="profile-nomor-rekening" name="bank_ntd_account" value={form.bank_ntd_account} onChange={handleChange}
                     className={inputClass} placeholder="Nomor rekening NTD" />
                 </div>
               </div>
@@ -357,8 +357,8 @@ export default function ProfilePage() {
               <p className="text-xs font-semibold text-[var(--text-body)] uppercase tracking-wide mb-3">Rekening IDR (Indonesia)</p>
               <div className="space-y-3">
                 <div>
-                  <label className={labelClass}>Bank</label>
-                  <select name="bank_idr_name" value={form.bank_idr_name} onChange={handleChange}
+                  <label className={labelClass} htmlFor="profile-bank">Bank</label>
+                  <select id="profile-bank" name="bank_idr_name" value={form.bank_idr_name} onChange={handleChange}
                     className={inputClass}>
                     <option value="">Pilih Bank IDR</option>
                     {idrBanks.map(b => (
@@ -367,8 +367,8 @@ export default function ProfilePage() {
                   </select>
                 </div>
                 <div>
-                  <label className={labelClass}>Nomor Rekening</label>
-                  <input name="bank_idr_account" value={form.bank_idr_account} onChange={handleChange}
+                  <label className={labelClass} htmlFor="profile-nomor-rekening">Nomor Rekening</label>
+                  <input id="profile-nomor-rekening" name="bank_idr_account" value={form.bank_idr_account} onChange={handleChange}
                     className={inputClass} placeholder="Nomor rekening IDR" />
                 </div>
               </div>

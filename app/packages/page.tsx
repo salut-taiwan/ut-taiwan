@@ -119,6 +119,7 @@ export default function PackagesPage() {
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
+          aria-label="Cari paket"
           placeholder="Cari paket berdasarkan nama atau deskripsi..."
           className="w-full pl-9 pr-4 py-2 text-sm border border-[var(--border-default)] rounded-lg bg-[var(--surface)] text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-[var(--ring-focus)] transition-[border-color,box-shadow] duration-150"
         />

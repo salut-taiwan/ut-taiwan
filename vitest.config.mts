@@ -23,7 +23,14 @@ export default defineConfig({
           ...shared,
           name: 'unit',
           setupFiles: ['./test/setup/base.ts'],
-          include: ['lib/**/*.test.{ts,tsx}', 'components/**/*.test.tsx', 'hooks/**/*.test.ts'],
+          // test/** is for cross-cutting checks that belong to no one module,
+          // e.g. the source scan for controls with no accessible name.
+          include: [
+            'lib/**/*.test.{ts,tsx}',
+            'components/**/*.test.tsx',
+            'hooks/**/*.test.ts',
+            'test/**/*.test.ts',
+          ],
           exclude: ['**/node_modules/**', '.next/**'],
         },
       },

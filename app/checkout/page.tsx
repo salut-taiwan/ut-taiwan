@@ -334,6 +334,7 @@ export default function CheckoutPage() {
                   type="text"
                   value={draftCode}
                   onChange={e => setDraftCode(e.target.value.slice(0, 30))}
+                  aria-label="Kode TBO modul yang diminta"
                   placeholder="Kode TBO, misal EKMA4111"
                   className="w-full border border-[var(--border-default)] rounded-lg px-2.5 py-1.5 text-xs text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-[var(--ring-focus)] transition-[border-color,box-shadow] duration-150"
                 />
@@ -341,6 +342,7 @@ export default function CheckoutPage() {
                   type="text"
                   value={draftName}
                   onChange={e => setDraftName(e.target.value)}
+                  aria-label="Nama modul yang diminta (opsional)"
                   placeholder="Nama modul (opsional)"
                   className="w-full border border-[var(--border-default)] rounded-lg px-2.5 py-1.5 text-xs text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-[var(--ring-focus)] transition-[border-color,box-shadow] duration-150"
                 />

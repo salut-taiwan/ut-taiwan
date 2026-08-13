@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import type { AdminSksPaymentDTO, SksPaymentTone } from '@/types';
+import { useDismissOnEscape } from '@/hooks/useDismissOnEscape';
 
 type Tab = 'pending' | 'all';
 
@@ -30,6 +31,12 @@ export default function AdminSksPaymentsPage() {
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectingInProgress, setRejectingInProgress] = useState(false);
+
+  // Matches the backdrop's guard: an in-flight rejection must not be
+  // dismissed half-sent.
+  useDismissOnEscape(Boolean(rejectingId), () => {
+    if (!rejectingInProgress) setRejectingId(null);
+  });
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'admin')) router.push('/');
