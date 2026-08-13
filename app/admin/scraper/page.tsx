@@ -89,7 +89,7 @@ export default function AdminScraperPage() {
           <button
             onClick={handleTriggerPrefix}
             disabled={triggering || triggeringPrefix}
-            className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm"
+            className="bg-emerald-700 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-800 disabled:opacity-50 transition-colors shadow-sm"
           >
             {triggeringPrefix ? 'Memulai...' : 'Scrape by Prefix (106 kode)'}
           </button>

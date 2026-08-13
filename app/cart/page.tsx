@@ -228,7 +228,7 @@ export default function CartPage() {
                         <button
                           onClick={() => handleConvertToRequest(item.id)}
                           disabled={busyItem}
-                          className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors font-semibold active:scale-[0.98]"
+                          className="text-xs bg-amber-500 text-slate-900 px-2 py-0.5 rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors font-semibold active:scale-[0.98]"
                         >
                           {converting === item.id ? 'Mengubah...' : 'Ubah ke Permintaan'}
                         </button>
@@ -349,7 +349,7 @@ export default function CartPage() {
                     setDraftCode('');
                     setDraftName('');
                   }}
-                  className="w-full py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-full py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-900 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   + Tambah
                 </button>

@@ -355,7 +355,7 @@ export default function CheckoutPage() {
                     setDraftCode('');
                     setDraftName('');
                   }}
-                  className="w-full py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-full py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-900 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   + Tambah
                 </button>

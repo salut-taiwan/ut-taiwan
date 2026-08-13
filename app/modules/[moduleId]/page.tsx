@@ -148,10 +148,10 @@ export default function ModuleDetailPage() {
               disabled={adding}
               className={`inline-flex items-center justify-center gap-1.5 w-full sm:w-auto px-8 py-3 rounded-xl font-semibold transition-[background-color,transform,box-shadow] duration-150 disabled:opacity-50 active:scale-[0.98]
                 ${added
-                  ? 'bg-emerald-600 text-white'
+                  ? 'bg-emerald-600 text-slate-900'
                   : purchasable
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]'
-                    : 'bg-amber-500 text-white hover:bg-amber-600 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]'
+                    ? 'bg-indigo-600 text-slate-900 hover:bg-indigo-700 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]'
+                    : 'bg-amber-500 text-slate-900 hover:bg-amber-600 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]'
                 }`}
             >
               {adding ? (

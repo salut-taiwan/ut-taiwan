@@ -26,11 +26,16 @@
   --border-subtle: rgba(15,23,42,0.06);
   --border-default: #E2E8F0;
   --border-strong: #CBD5E1;
-  --text-muted: #94A3B8;
+  /* Contrast-checked against --surface, --background and --surface-sunken.
+     Was #94A3B8, which is 2.56:1 on white — well under the 4.5:1 WCAG AA
+     needs for normal text, and it carries most of the secondary copy. */
+  --text-muted: #5B6B80;
   --text-body: #475569;
   --ring-focus: rgba(10,69,149,0.25);
-  --warm: #E85D26;
-  --warm-hover: #C94F1F;
+  /* Was #E85D26: 3.49:1 against the white text on the landing-page CTA, which
+     is 16px semibold and so does not qualify as large text. */
+  --warm: #BF4A1C;
+  --warm-hover: #A63F19;
   --warm-subtle: #FEF0E9;
 
   /* Shadow scale - all tinted with brand blue */
@@ -103,8 +108,9 @@
   --border-subtle: rgba(255,255,255,0.06);
   --border-default: #334155;
   --border-strong: #475569;
-  --text-muted: #64748B;
-  --text-body: #94A3B8;
+  /* Was #64748B: 3.07:1 on --surface. */
+  --text-muted: #94A3B8;
+  --text-body: #CBD5E1;
   --ring-focus: rgba(100,127,227,0.30);
   --shadow-xs:    0 1px 2px rgba(0,0,0,0.20);
   --shadow-sm:    0 1px 3px rgba(0,0,0,0.25), 0 2px 6px rgba(0,0,0,0.15);

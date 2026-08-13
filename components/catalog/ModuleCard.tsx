@@ -83,10 +83,10 @@ export default function ModuleCard({ module, onAddedToCart }: ModuleCardProps) {
             disabled={adding}
             className={`w-full text-sm py-2.5 rounded-xl font-semibold transition-[background-color,transform,box-shadow] duration-150 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-1.5
               ${added
-                ? 'bg-emerald-600 text-white shadow-sm'
+                ? 'bg-emerald-600 text-slate-900 shadow-sm'
                 : purchasable
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:-translate-y-px hover:shadow-[var(--shadow-sm)] shadow-[var(--shadow-btn-primary)]'
-                  : 'bg-amber-500 text-white hover:bg-amber-600 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-sm)]'
+                  ? 'bg-indigo-600 text-slate-900 hover:bg-indigo-700 hover:-translate-y-px hover:shadow-[var(--shadow-sm)] shadow-[var(--shadow-btn-primary)]'
+                  : 'bg-amber-500 text-slate-900 hover:bg-amber-600 hover:-translate-y-px shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-sm)]'
               }`}
           >
             {adding ? (

@@ -242,8 +242,8 @@ function SubjectCard({ subject, onAddToCart, addingModule }: { subject: SubjectD
                   disabled={addingModule === mod.id}
                   className={`inline-flex items-center gap-1 text-xs px-3 py-2 rounded-lg disabled:opacity-50 transition-[background-color,transform] duration-150 font-semibold active:scale-[0.98] min-h-[32px] ${
                     isModulePurchasable(mod)
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                      : 'bg-amber-500 text-white hover:bg-amber-600'
+                      ? 'bg-indigo-600 text-slate-900 hover:bg-indigo-700'
+                      : 'bg-amber-500 text-slate-900 hover:bg-amber-600'
                   }`}
                 >
                   {addingModule === mod.id

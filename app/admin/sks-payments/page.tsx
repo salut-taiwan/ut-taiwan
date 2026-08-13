@@ -196,7 +196,7 @@ export default function AdminSksPaymentsPage() {
                     </button>
                     <button
                       onClick={() => openRejectModal(r.id)}
-                      className="px-3 py-1.5 text-xs font-semibold bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-xs font-semibold bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
                     >
                       Tolak
                     </button>
@@ -237,7 +237,7 @@ export default function AdminSksPaymentsPage() {
               <button
                 onClick={confirmReject}
                 disabled={rejectingInProgress || !rejectReason.trim()}
-                className="px-4 py-2 text-sm font-semibold bg-red-500 hover:bg-red-600 text-white rounded-lg disabled:opacity-50 transition-colors"
+                className="px-4 py-2 text-sm font-semibold bg-red-600 hover:bg-red-700 text-white rounded-lg disabled:opacity-50 transition-colors"
               >
                 {rejectingInProgress ? 'Menolak...' : 'Tolak'}
               </button>

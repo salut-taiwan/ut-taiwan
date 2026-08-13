@@ -176,8 +176,8 @@ function OrderDetailContent() {
               <div key={step.key} className="flex flex-col items-center flex-1">
                 <div className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold z-10',
-                  step.state === 'completed' ? 'bg-indigo-600 text-white'
-                  : step.state === 'current' ? 'bg-amber-500 text-white ring-4 ring-amber-100'
+                  step.state === 'completed' ? 'bg-indigo-600 text-slate-900'
+                  : step.state === 'current' ? 'bg-amber-500 text-slate-900 ring-4 ring-amber-100'
                   : 'bg-[var(--border)] text-[var(--text-muted)]'
                 )}>
                   {step.state === 'completed' ? <CheckIcon className="w-3.5 h-3.5" /> : i + 1}

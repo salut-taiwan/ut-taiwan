@@ -328,7 +328,7 @@ export default function AdminOrdersPage() {
                             onClick={() => handleConfirmKarunika(order.id)}
                             disabled={busy || pendingRequests.length > 0}
                             title={pendingRequests.length > 0 ? 'Selesaikan permintaan terlebih dahulu' : undefined}
-                            className="bg-amber-500 text-white text-xs px-3 py-2 rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors font-semibold w-full active:scale-[0.98]"
+                            className="bg-amber-500 text-slate-900 text-xs px-3 py-2 rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors font-semibold w-full active:scale-[0.98]"
                           >
                             {confirmingKarunika === order.id ? 'Memproses...' : 'Konfirmasi Karunika'}
                           </button>
@@ -337,7 +337,7 @@ export default function AdminOrdersPage() {
                           <button
                             onClick={() => handleConfirm(order.id)}
                             disabled={busy}
-                            className="bg-emerald-600 text-white text-xs px-3 py-2 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors font-semibold w-full"
+                            className="bg-emerald-600 text-slate-900 text-xs px-3 py-2 rounded-lg hover:bg-emerald-800 disabled:opacity-50 transition-colors font-semibold w-full"
                           >
                             {confirming === order.id ? 'Memproses...' : 'Konfirmasi Bayar'}
                           </button>
@@ -346,7 +346,7 @@ export default function AdminOrdersPage() {
                           <button
                             onClick={() => handleStatusUpdate(order.id, 'processing', 'Proses')}
                             disabled={busy}
-                            className="bg-indigo-600 text-white text-xs px-3 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold w-full"
+                            className="bg-indigo-600 text-slate-900 text-xs px-3 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-semibold w-full"
                           >
                             Proses
                           </button>
@@ -355,7 +355,7 @@ export default function AdminOrdersPage() {
                           <button
                             onClick={() => handleStatusUpdate(order.id, 'shipped', 'Kirim')}
                             disabled={busy}
-                            className="bg-purple-600 text-white text-xs px-3 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors font-semibold w-full"
+                            className="bg-purple-600 text-slate-900 text-xs px-3 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors font-semibold w-full"
                           >
                             Kirim
                           </button>
@@ -364,7 +364,7 @@ export default function AdminOrdersPage() {
                           <button
                             onClick={() => handleStatusUpdate(order.id, 'delivered', 'Terima')}
                             disabled={busy}
-                            className="bg-[var(--border-strong)] text-white text-xs px-3 py-2 rounded-lg hover:opacity-80 disabled:opacity-50 transition-opacity font-semibold w-full"
+                            className="bg-[var(--surface-sunken)] text-[var(--foreground)] border border-[var(--border-strong)] text-xs px-3 py-2 rounded-lg hover:bg-[var(--border-subtle)] disabled:opacity-50 transition-colors font-semibold w-full"
                           >
                             Terima
                           </button>
@@ -469,7 +469,7 @@ export default function AdminOrdersPage() {
                                     <button
                                       onClick={() => handleRequestStatus(order.id, item.id, 'rejected')}
                                       disabled={updatingRequest === item.id}
-                                      className="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors font-semibold active:scale-[0.98]"
+                                      className="bg-red-600 text-white px-2 py-1 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors font-semibold active:scale-[0.98]"
                                     >
                                       {updatingRequest === item.id ? '...' : 'Tolak'}
                                     </button>
@@ -516,7 +516,7 @@ export default function AdminOrdersPage() {
                                         <button
                                           onClick={() => handleRequestStatus(order.id, item.id, 'approved', Number(priceInput))}
                                           disabled={!priceInput || Number(priceInput) <= 0 || updatingRequest === item.id}
-                                          className="bg-emerald-600 text-white px-2 py-1 rounded-lg hover:bg-emerald-700 disabled:opacity-50 font-semibold active:scale-[0.98]"
+                                          className="bg-emerald-700 text-white px-2 py-1 rounded-lg hover:bg-emerald-800 disabled:opacity-50 font-semibold active:scale-[0.98]"
                                         >
                                           {updatingRequest === item.id ? '...' : 'OK'}
                                         </button>
@@ -539,14 +539,14 @@ export default function AdminOrdersPage() {
                                             }
                                           }}
                                           disabled={updatingRequest === item.id}
-                                          className="bg-emerald-600 text-white px-2 py-1 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors font-semibold active:scale-[0.98]"
+                                          className="bg-emerald-700 text-white px-2 py-1 rounded-lg hover:bg-emerald-800 disabled:opacity-50 transition-colors font-semibold active:scale-[0.98]"
                                         >
                                           {updatingRequest === item.id ? '...' : 'Setujui'}
                                         </button>
                                         <button
                                           onClick={() => handleRequestStatus(order.id, item.id, 'rejected')}
                                           disabled={updatingRequest === item.id}
-                                          className="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors font-semibold active:scale-[0.98]"
+                                          className="bg-red-600 text-white px-2 py-1 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors font-semibold active:scale-[0.98]"
                                         >
                                           {updatingRequest === item.id ? '...' : 'Tolak'}
                                         </button>
