@@ -27,7 +27,7 @@ describe('MainContainer', () => {
     container.querySelector('main > div[class*="max-w-7xl"]') === null;
 
   test('the landing page and the auth pages run edge to edge', () => {
-    for (const path of ['/', '/login', '/register']) {
+    for (const path of ['/', '/login', '/register', '/salut']) {
       setPathname(path);
       const { container, unmount } = render(<MainContainer>isi</MainContainer>);
       expect(bleeds(container), `${path} should be full bleed`).toBe(true);
@@ -36,7 +36,7 @@ describe('MainContainer', () => {
   });
 
   test('every other page gets the padded container', () => {
-    for (const path of ['/toko', '/orders/abc', '/salut']) {
+    for (const path of ['/toko', '/orders/abc']) {
       setPathname(path);
       const { container, unmount } = render(<MainContainer>isi</MainContainer>);
       expect(bleeds(container), `${path} should be contained`).toBe(false);

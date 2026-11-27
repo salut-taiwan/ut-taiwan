@@ -30,7 +30,8 @@ function LoginForm() {
     setLoading(true);
     try {
       await login(email, password);
-      router.push('/program');
+      const target = searchParams.get('redirect');
+      router.push(target && target.startsWith('/') && !target.startsWith('//') && !target.includes('\\') ? target : '/program');
     } catch (err) {
       const msg = (err as Error).message || 'Email atau password salah';
       setError(msg);
@@ -41,6 +42,7 @@ function LoginForm() {
   }
 
   async function handleResend() {
+    if (!email.includes('@')) { setError('Gunakan alamat email terdaftar untuk mengirim ulang verifikasi.'); return; }
     try {
       await api.auth.resendVerification(email);
       setResendSent(true);
@@ -115,12 +117,12 @@ function LoginForm() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
                 id="login-email"
-                label="Email"
-                type="email"
+                label="Email atau NIM"
+                type="text"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                placeholder="email@example.com"
+                placeholder="Email atau Nomor Induk Mahasiswa"
               />
               <div>
                 <label htmlFor="login-password" className="block text-sm font-medium text-[var(--foreground)] mb-1.5">Password</label>

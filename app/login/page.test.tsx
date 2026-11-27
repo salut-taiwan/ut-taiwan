@@ -7,7 +7,7 @@ import { url } from '@/test/msw/handlers';
 import { push, setSearchParams } from '@/test/utils/routerMock';
 import { renderPage, screen, waitFor } from '@/test/utils/renderWithProviders';
 
-const email = () => screen.getByLabelText('Email');
+const email = () => screen.getByLabelText('Email atau NIM');
 const password = () => screen.getByLabelText('Password');
 const submit = () => screen.getByRole('button', { name: 'Masuk' });
 

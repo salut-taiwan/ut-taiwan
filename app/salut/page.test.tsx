@@ -1,77 +1,23 @@
-import { describe, expect, test } from 'vitest';
-import { HttpResponse, http } from 'msw';
+import { beforeEach, afterEach, describe, expect, test, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import SalutPage from './page';
-import { server } from '@/test/setup/msw';
-import { url } from '@/test/msw/handlers';
-import { renderPage, screen } from '@/test/utils/renderWithProviders';
-
-const fees = (over = {}) => ({
-  shipping: 300,
-  box: 0,
-  admin: 0,
-  salutMembership: {
-    new: 1700,
-    returning: 1200,
-    new_display: 'NT$1,700',
-    returning_display: 'NT$1,200',
-    new_display_idr: 'Rp952.000',
-    returning_display_idr: 'Rp672.000',
-    tier_combined_display: 'NT$1,700 (semester 1) atau NT$1,200 (semester 2+)',
-    renewalPolicy: { notice: null },
-  },
-  ...over,
-});
-
-async function show(config: object = fees()) {
-  server.use(http.get(url('/config/fees'), () => HttpResponse.json(config)));
-  renderPage(<SalutPage />);
-  await screen.findByRole('heading', { level: 1 });
-}
-
-describe('the public SALUT page', () => {
-  test('it is readable without signing in', async () => {
-    await show();
-
-    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
-  });
-
-  test('the membership fee comes from the backend, in both currencies', async () => {
-    // Students think in rupiah and pay in NTD; showing one without the other
-    // is what generated the "berapa sih sebenarnya" questions.
-    await show();
-
-    expect(await screen.findByText('NT$1,700')).toBeInTheDocument();
-    expect(screen.getByText('Rp952.000')).toBeInTheDocument();
-  });
-
-  test('the returning-member rate is shown too', async () => {
-    await show();
-
-    expect(await screen.findByText('NT$1,200')).toBeInTheDocument();
-    expect(screen.getByText('Rp672.000')).toBeInTheDocument();
-  });
-
-  test('the QRIS itself is not on this page', async () => {
-    // Students were transferring from here without logging in or applying, so
-    // admins had no application to match the payment against.
-    await show();
-
-    expect(screen.queryByAltText(/QRIS/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/ditampilkan di halaman pendaftaran/)).toBeInTheDocument();
-  });
-
-  test('no bank account number is offered either', async () => {
-    // Same reason: a bank transfer cannot be reconciled through QRIS.
-    await show();
-
-    expect(screen.queryByText(/No\. Rekening/i)).not.toBeInTheDocument();
-  });
-
-  test('a config that will not load still renders the page', async () => {
-    // The fee is not the point of the page; losing it must not take the whole
-    // explanation with it. Nor must a payload missing salutMembership.
-    await show({ shipping: 300, box: 0, admin: 0 });
-
-    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
-  });
+const mocks=vi.hoisted(()=>({user:null as null|{id:string},push:vi.fn(),getFees:vi.fn(),getMe:vi.fn(),getStatus:vi.fn(),upload:vi.fn(),apply:vi.fn()}));
+vi.mock('next/navigation',()=>({useRouter:()=>({push:mocks.push})}));
+vi.mock('@/lib/auth',()=>({useAuth:()=>({user:mocks.user,isLoading:false})}));
+vi.mock('@/lib/api',()=>({api:{config:{getFees:mocks.getFees},auth:{getMe:mocks.getMe},salut:{getStatus:mocks.getStatus,uploadProof:mocks.upload,apply:mocks.apply}}}));
+const profile={id:'u-test',name:'Mahasiswa Uji',nim:'000000001',phone:'+886900000001',current_semester:3};
+const status={effective_status:'none',is_member:false,is_pending:false};
+beforeEach(()=>{vi.clearAllMocks();mocks.user={id:'u-test'};mocks.getFees.mockResolvedValue({salutMembership:{billing:'once_per_study'}});mocks.getMe.mockResolvedValue(profile);mocks.getStatus.mockResolvedValue(status);mocks.upload.mockResolvedValue({url:'u-test/proof.jpg'});mocks.apply.mockResolvedValue({message:'ok'});HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};URL.createObjectURL=vi.fn(()=> 'blob:test');URL.revokeObjectURL=vi.fn();});
+afterEach(cleanup);
+async function ready(){render(<SalutPage/>);await waitFor(()=>expect(screen.getByRole('button',{name:'Lanjutkan Pembayaran'})).not.toBeDisabled());}
+async function confirm(){await ready();fireEvent.click(screen.getByRole('button',{name:'Konfirmasi Pembayaran'}));await waitFor(()=>expect(document.querySelector('#confirmation-dialog')).toHaveAttribute('open'));}
+describe('SALUT once-per-study payment flow',()=>{
+ test('the selected headline, contribution and photographs render',async()=>{await ready();expect(screen.getByRole('heading',{level:1})).toHaveTextContent('Kontribusi OperasionalSALUT Taiwan');expect(screen.getByAltText('Foto kegiatan OSMB SALUT Taiwan')).toBeVisible();});
+ test('an unauthenticated student is sent to login with a return destination',async()=>{mocks.user=null;await ready();fireEvent.click(screen.getByRole('button',{name:'Lanjutkan Pembayaran'}));expect(mocks.push).toHaveBeenCalledWith('/login?redirect=%2Fsalut%3Fconfirm%3D1');});
+ test('payment opens the exact PostBank details, separately from confirmation',async()=>{await ready();fireEvent.click(screen.getByRole('button',{name:'Lanjutkan Pembayaran'}));expect(document.querySelector('#payment-dialog')).toHaveAttribute('open');expect(document.querySelector('#payment-dialog')).toHaveTextContent('700-00011311204391');expect(document.querySelector('#confirmation-dialog')).not.toHaveAttribute('open');});
+ test('confirmation uses the authenticated student identity',async()=>{await confirm();expect(screen.getByLabelText('Nama lengkap')).toHaveValue(profile.name);expect(screen.getByLabelText('NIM')).toHaveValue(profile.nim);expect(screen.getByLabelText('NIM')).toHaveAttribute('readonly');});
+ test.each(['approved','pending','expired'])('a %s record cannot open another payment form',async s=>{mocks.getStatus.mockResolvedValue({...status,effective_status:s});await ready();fireEvent.click(screen.getByRole('button',{name:'Konfirmasi Pembayaran'}));expect(document.querySelector('#confirmation-dialog')).not.toHaveAttribute('open');});
+ test('a backend still using semester billing cannot accept a contribution',async()=>{mocks.getFees.mockResolvedValue({salutMembership:{}});await ready();fireEvent.click(screen.getByRole('button',{name:'Lanjutkan Pembayaran'}));expect(document.querySelector('#payment-dialog')).not.toHaveAttribute('open');expect(screen.getByText('Pembayaran belum tersedia. Hubungi SALUT Taiwan untuk bantuan.')).toBeVisible();});
+ test('the upload and confirmation preserve the note and current semester',async()=>{await confirm();const file=new File(['receipt'],'receipt.png',{type:'image/png'});fireEvent.change(screen.getByLabelText('Foto bukti pembayaran'),{target:{files:[file]}});fireEvent.change(screen.getByLabelText('Keterangan'),{target:{value:'Nama pengirim berbeda'}});fireEvent.submit(document.querySelector('#confirmation-form')!);await waitFor(()=>expect(mocks.apply).toHaveBeenCalledWith('u-test/proof.jpg',3,profile.phone,'Nama pengirim berbeda'));expect(await screen.findByText(/Konfirmasi pembayaran Anda sudah diterima/)).toBeVisible();});
+ test('a failed confirmation can retry without uploading the same proof twice',async()=>{mocks.apply.mockRejectedValueOnce(new Error('Koneksi terganggu')).mockResolvedValueOnce({message:'ok'});await confirm();const file=new File(['receipt'],'receipt.png',{type:'image/png'});fireEvent.change(screen.getByLabelText('Foto bukti pembayaran'),{target:{files:[file]}});fireEvent.submit(document.querySelector('#confirmation-form')!);await screen.findByText('Koneksi terganggu');fireEvent.submit(document.querySelector('#confirmation-form')!);await waitFor(()=>expect(mocks.apply).toHaveBeenCalledTimes(2));expect(mocks.upload).toHaveBeenCalledTimes(1);});
 });

@@ -32,7 +32,9 @@ async function fillForm() {
     name: 'Budi Santoso',
     email: 'budi@example.com',
     nim: '041234567',
-    phone: '0912345678',
+    phone: '+6281234567890',
+    phone_taiwan: '0912345678',
+    almamater_size: 'Ukuran khusus 2XL',
     password: 'rahasia123',
     confirmPassword: 'rahasia123',
     birth_place: 'Jakarta',
@@ -184,5 +186,84 @@ describe('submitting it', () => {
     await waitFor(() => expect(body).toBeDefined());
     expect(body!.bank_ntd_code).toBeUndefined();
     expect(body!.bank_idr_account).toBeUndefined();
+  });
+});
+
+describe('Taiwan contact and free-text almamater size', () => {
+  test('both new fields are required text inputs', async () => {
+    await show();
+    expect(screen.getByLabelText(/Nomor Taiwan Aktif/)).toBeRequired();
+    expect(screen.getByLabelText(/Ukuran Almamater/)).toBeRequired();
+    expect(screen.getByLabelText(/Ukuran Almamater/).tagName).toBe('INPUT');
+    expect(screen.getByLabelText(/Ukuran Almamater/)).toHaveAttribute('maxlength', '30');
+  });
+
+  test('the introduction invites the student to connect with SALUT services', async () => {
+    await show();
+    expect(screen.getByText('Bersama SALUT Taiwan')).toBeInTheDocument();
+    expect(screen.getByText(/Setiap perjalanan studi dimulai dari satu langkah/)).toBeInTheDocument();
+    expect(screen.queryByText(/hingga keanggotaan SALUT/)).not.toBeInTheDocument();
+  });
+
+  test('submitting keeps WhatsApp separate and sends the normalized Taiwan phone and free-text size', async () => {
+    let body: Record<string, unknown> | undefined;
+    await show();
+    server.use(http.post(url('/auth/register'), async ({ request }) => {
+      body = await request.json() as Record<string, unknown>;
+      return HttpResponse.json({ message: 'ok' });
+    }));
+    await fillForm();
+    await userEvent.click(screen.getByRole('button', { name: /Daftar/ }));
+    await waitFor(() => expect(body).toBeDefined());
+    expect(body).toMatchObject({
+      profile_fields_version: 1,
+      phone: '+6281234567890',
+      phone_taiwan: '+886912345678',
+      almamater_size: 'Ukuran khusus 2XL',
+    });
+  });
+
+  test('an invalid Taiwan number prevents registration and explains how to correct it', async () => {
+    let sent = false;
+    await show();
+    server.use(http.post(url('/auth/register'), () => { sent = true; return HttpResponse.json({}); }));
+    await fillForm();
+    const field = screen.getByLabelText(/Nomor Taiwan Aktif/);
+    await userEvent.clear(field);
+    await userEvent.type(field, '+6281234567890');
+    await userEvent.click(screen.getByRole('button', { name: /Daftar/ }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/nomor seluler Taiwan/);
+    expect(sent).toBe(false);
+  });
+
+  test('mismatched passwords cannot create an account', async () => {
+    let sent = false;
+    await show();
+    server.use(http.post(url('/auth/register'), () => { sent = true; return HttpResponse.json({}); }));
+    await fillForm();
+    await userEvent.type(screen.getByLabelText('Konfirmasi Password *'), 'x');
+    await userEvent.click(screen.getByRole('button', { name: /Daftar/ }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Konfirmasi password belum sesuai/);
+    expect(sent).toBe(false);
+  });
+
+  test('an older backend cannot silently discard the new registration fields', async () => {
+    server.use(http.get(url('/config/registration'), () => HttpResponse.json({}, { status: 404 })));
+    await show();
+    expect(await screen.findByRole('status')).toHaveTextContent(/Pendaftaran sedang diperbarui/);
+    expect(screen.getByRole('button', { name: 'Daftar Sekarang' })).toBeDisabled();
+  });
+
+  test('configuration can be retried without losing typed details', async () => {
+    server.use(http.get(url('/config/registration'), () => HttpResponse.json({}, { status: 503 })));
+    await show();
+    await screen.findByRole('status');
+    await userEvent.type(screen.getByLabelText(/Nama Lengkap/), 'Nama Dipertahankan');
+    server.use(http.get(url('/config/registration'), () => HttpResponse.json({
+      profile_fields_version: 1, required_fields: ['phone_taiwan', 'almamater_size'], almamater_size_max_length: 30,
+    })));
+    await userEvent.click(screen.getByRole('button', { name: 'Coba lagi' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Daftar Sekarang' })).toBeEnabled());
+    expect(screen.getByLabelText(/Nama Lengkap/)).toHaveValue('Nama Dipertahankan');
   });
 });

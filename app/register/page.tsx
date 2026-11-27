@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { api, type BankOption } from '@/lib/api';
+import { api, type BankOption, type RegistrationConfig } from '@/lib/api';
 import type { ProgramDTO } from '@/types';
 import Input from '@/components/ui/Input';
+import { normalizeTaiwanPhone, normalizeAlmamaterSize } from '@/lib/registration';
 
 const selectClass = "w-full border border-[var(--border-default)] rounded-[10px] px-3.5 py-2.5 text-sm text-[var(--foreground)] bg-[var(--surface)] placeholder:text-[var(--text-muted)] transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-indigo-400 focus:ring-[3px] focus:ring-[var(--ring-focus)]";
 
@@ -19,7 +20,7 @@ function SectionBox({ title, children }: { title: string; children: React.ReactN
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
-    email: '', password: '', confirmPassword: '', name: '', nim: '', phone: '',
+    email: '', password: '', confirmPassword: '', name: '', nim: '', phone: '', phone_taiwan: '', almamater_size: '',
     birth_place: '', birth_date: '',
     program_id: '', current_semester: '',
     address_zh_city: '', address_zh_district: '', address_zh_road: '',
@@ -33,8 +34,29 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [registrationConfig, setRegistrationConfig] = useState<RegistrationConfig | null>(null);
+  const [configLoading, setConfigLoading] = useState(true);
+  const [configError, setConfigError] = useState(false);
+
+  async function loadRegistrationConfig() {
+    setConfigLoading(true);
+    setConfigError(false);
+    try {
+      const config = await api.config.getRegistration();
+      if (config.profile_fields_version !== 1 || !config.required_fields?.includes('phone_taiwan') || !config.required_fields?.includes('almamater_size')) {
+        throw new Error('Konfigurasi pendaftaran belum tersedia');
+      }
+      setRegistrationConfig(config);
+    } catch {
+      setRegistrationConfig(null);
+      setConfigError(true);
+    } finally {
+      setConfigLoading(false);
+    }
+  }
 
   useEffect(() => {
+    void loadRegistrationConfig();
     Promise.all([
       api.catalog.getPrograms().catch(() => null),
       api.config.getBanks('NTD').catch(() => null),
@@ -53,6 +75,25 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    if (loading) return;
+    if (!registrationConfig) {
+      setError('Pendaftaran sedang diperbarui. Silakan coba lagi atau hubungi admin SALUT Taiwan.');
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError('Konfirmasi password belum sesuai. Silakan periksa kembali.');
+      return;
+    }
+    const phoneTaiwan = normalizeTaiwanPhone(form.phone_taiwan);
+    if (!phoneTaiwan) {
+      setError('Masukkan nomor seluler Taiwan dengan format 09xxxxxxxx atau +8869xxxxxxxx.');
+      return;
+    }
+    const almamaterSize = normalizeAlmamaterSize(form.almamater_size);
+    if (!almamaterSize) {
+      setError('Ukuran almamater wajib diisi, maksimal 30 karakter.');
+      return;
+    }
     setLoading(true);
     try {
       await api.auth.register({
@@ -61,6 +102,9 @@ export default function RegisterPage() {
         name: form.name,
         nim: form.nim,
         phone: form.phone,
+        phone_taiwan: phoneTaiwan,
+        almamater_size: almamaterSize,
+        profile_fields_version: 1,
         birth_place: form.birth_place,
         birth_date: form.birth_date,
         program_id: form.program_id,
@@ -110,10 +154,10 @@ export default function RegisterPage() {
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/[0.03] rounded-full pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-800/30 rounded-full pointer-events-none" />
         <div className="relative max-w-sm text-center">
-          <span className="text-4xl font-bold block mb-2 tracking-tight">UT Taiwan</span>
+          <span className="text-4xl font-bold block mb-2 tracking-tight">Bersama SALUT Taiwan</span>
           <span className="text-indigo-200/80 text-sm block mb-8">Sentra Layanan UT Taiwan</span>
           <p className="text-indigo-100/90 text-lg leading-relaxed">
-            Daftar dan nikmati layanan lengkap UT Taiwan - dari modul kuliah, bayar SKS, hingga keanggotaan SALUT.
+            Setiap perjalanan studi dimulai dari satu langkah. Buat akun untuk terhubung dengan informasi akademik, pendampingan perkuliahan, dan layanan mahasiswa Universitas Terbuka di Taiwan.
           </p>
         </div>
       </div>
@@ -123,12 +167,20 @@ export default function RegisterPage() {
         <div className="w-full max-w-md py-8">
           <div className="bg-[var(--surface)] rounded-3xl border border-[var(--border-subtle)] shadow-[var(--shadow-xl)] p-8">
             <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Daftar Akun</h1>
+            <p className="text-sm text-[var(--text-body)] mb-4">Mulai perjalanan studi yang lebih terarah bersama SALUT Taiwan. Lengkapi data Anda agar tim kami dapat membantu kebutuhan layanan dan pengiriman almamater.</p>
             <p className="text-sm text-[var(--text-body)] mb-6">
               Sudah punya akun? <Link href="/login" className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Masuk</Link>
             </p>
 
+            {configError && (
+              <div role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                Pendaftaran sedang diperbarui. Silakan coba lagi atau hubungi admin SALUT Taiwan.
+                <button type="button" onClick={() => void loadRegistrationConfig()} disabled={configLoading} className="mt-2 block font-semibold underline">Coba lagi</button>
+              </div>
+            )}
+
             {error && (
-              <div className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
+              <div role="alert" className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
                 {error}
               </div>
             )}
@@ -147,7 +199,29 @@ export default function RegisterPage() {
                 placeholder="+886 xxx xxx xxx"
                 hint="Gunakan nomor yang aktif di WhatsApp"
               />
-              <Input label="Password *" name="password" type="password" value={form.password} onChange={handleChange} required placeholder="Minimal 6 karakter" />
+              <Input
+                label="Nomor Taiwan Aktif *"
+                name="phone_taiwan"
+                type="tel"
+                autoComplete="tel-national"
+                maxLength={32}
+                value={form.phone_taiwan}
+                onChange={handleChange}
+                required
+                placeholder="Contoh: 0912 345 678"
+                hint="Gunakan nomor seluler Taiwan yang dapat dihubungi. Boleh sama dengan nomor WhatsApp."
+              />
+              <Input
+                label="Ukuran Almamater *"
+                name="almamater_size"
+                value={form.almamater_size}
+                onChange={handleChange}
+                required
+                maxLength={30}
+                placeholder="Contoh: M, L, XL, atau 2XL"
+                hint="Tulis ukuran yang Anda gunakan. Tim SALUT dapat mengonfirmasinya saat pengadaan almamater."
+              />
+              <Input label="Password *" name="password" type="password" minLength={6} value={form.password} onChange={handleChange} required placeholder="Minimal 6 karakter" />
               <Input label="Konfirmasi Password *" name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} required placeholder="Ulangi password" />
 
               {/* Data Kelahiran */}
@@ -239,10 +313,10 @@ export default function RegisterPage() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || configLoading || !registrationConfig}
                 className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 hover:-translate-y-px disabled:opacity-50 transition-[background-color,transform,box-shadow] duration-150 shadow-[var(--shadow-btn-primary)] hover:shadow-[var(--shadow-md)]"
               >
-                {loading ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" /> Mendaftar...</> : 'Daftar Sekarang'}
+                {configLoading ? 'Memeriksa formulir...' : loading ? <><span className="border-2 border-white border-t-transparent rounded-full animate-spin w-4 h-4" /> Mendaftar...</> : 'Daftar Sekarang'}
               </button>
             </form>
           </div>

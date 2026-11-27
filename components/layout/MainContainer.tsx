@@ -1,7 +1,7 @@
 'use client';
 import { usePathname } from 'next/navigation';
 
-const FULL_BLEED_PATHS = ['/login', '/register', '/'];
+const FULL_BLEED_PATHS = ['/login', '/register', '/', '/salut'];
 
 export default function MainContainer({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

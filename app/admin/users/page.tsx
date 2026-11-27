@@ -362,6 +362,8 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3">
                     <p className="font-medium text-[var(--foreground)]">{u.name}</p>
                     <p className="text-xs text-[var(--text-muted)] mt-0.5">{u.email}</p>
+                    {u.phone_taiwan && <p className="mt-1 text-sm text-[var(--text-body)]">Taiwan: <a href={`tel:${u.phone_taiwan}`} className="underline">{u.phone_taiwan}</a></p>}
+                    {u.almamater_size && <p className="mt-1 text-sm text-[var(--text-body)]">Almamater: {u.almamater_size}</p>}
                     {u.is_verified === false && (
                       <p className="text-[10px] text-amber-700 mt-0.5 uppercase tracking-wide">Belum verifikasi</p>
                     )}
