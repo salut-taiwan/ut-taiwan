@@ -64,7 +64,7 @@ describe('viewing the profile', () => {
       } as never),
     );
 
-    expect(await screen.findByText(/SALUT/)).toBeInTheDocument();
+    expect(await screen.findByText('Anggota SALUT Aktif')).toBeInTheDocument();
   });
 
   test('a historical expired record requests review before another payment', async () => {
@@ -192,5 +192,32 @@ describe('a visitor who is not signed in', () => {
     renderPage(<ProfilePage />);
 
     await waitFor(() => expect(push).toHaveBeenCalled());
+  });
+});
+
+describe('registration details on an existing profile', () => {
+  test('saved Taiwan contact and almamater size are shown and remain editable', async () => {
+    await show(fx.profile({ phone_taiwan: '+886912345678', almamater_size: 'Ukuran khusus 2XL' }));
+    const phone = screen.getByLabelText('Nomor Taiwan Aktif');
+    await waitFor(() => expect(phone).toBeEnabled());
+    expect(phone).toHaveValue('+886912345678');
+    expect(screen.getByLabelText('Ukuran Almamater')).toHaveValue('Ukuran khusus 2XL');
+    const seen = captureSave();
+    await userEvent.clear(phone);
+    await userEvent.type(phone, '0987 654 321');
+    await save();
+    await waitFor(() => expect(seen.body).toBeDefined());
+    expect(seen.body).toMatchObject({ phone_taiwan: '+886987654321', almamater_size: 'Ukuran khusus 2XL' });
+  });
+
+  test('saving through an older backend omits fields it cannot store', async () => {
+    server.use(http.get(url('/config/registration'), () => HttpResponse.json({}, { status: 404 })));
+    await show();
+    expect(screen.getByLabelText('Nomor Taiwan Aktif')).toBeDisabled();
+    const seen = captureSave();
+    await save();
+    await waitFor(() => expect(seen.body).toBeDefined());
+    expect(seen.body).not.toHaveProperty('phone_taiwan');
+    expect(seen.body).not.toHaveProperty('almamater_size');
   });
 });

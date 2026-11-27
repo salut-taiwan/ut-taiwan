@@ -6,11 +6,14 @@ import Link from 'next/link';
 import { api, type FeesConfig, type BankOption } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import type { ProgramDTO, UserProfileDTO } from '@/types';
+import { normalizeTaiwanPhone, normalizeAlmamaterSize } from '@/lib/registration';
 
 interface ProfileForm {
   name: string;
   nim: string;
   phone: string;
+  phone_taiwan: string;
+  almamater_size: string;
   program_id: string;
   current_semester: string;
   birth_place: string;
@@ -29,7 +32,7 @@ interface ProfileForm {
 }
 
 const EMPTY_FORM: ProfileForm = {
-  name: '', nim: '', phone: '',
+  name: '', nim: '', phone: '', phone_taiwan: '', almamater_size: '',
   program_id: '', current_semester: '',
   birth_place: '', birth_date: '',
   address_zh_city: '', address_zh_district: '',
@@ -60,6 +63,7 @@ export default function ProfilePage() {
   const [idrBanks, setIdrBanks] = useState<BankOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [registrationFieldsReady, setRegistrationFieldsReady] = useState(false);
   const [saved, setSaved] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
@@ -68,6 +72,9 @@ export default function ProfilePage() {
     if (authLoading) return;
     if (!user) { router.push('/login?redirect=/profile'); return; }
     api.config.getFees().then(setFees).catch(() => {});
+    api.config.getRegistration().then(config => {
+      setRegistrationFieldsReady(config.profile_fields_version === 1);
+    }).catch(() => setRegistrationFieldsReady(false));
     api.config.getBanks('NTD').then(r => setNtdBanks(r.banks)).catch(() => {});
     api.config.getBanks('IDR').then(r => setIdrBanks(r.banks)).catch(() => {});
     Promise.all([api.auth.getMe(), api.catalog.getPrograms()]).then(([p, progs]) => {
@@ -77,6 +84,8 @@ export default function ProfilePage() {
         name: p.name || '',
         nim: p.nim || '',
         phone: p.phone || '',
+        phone_taiwan: p.phone_taiwan || '',
+        almamater_size: p.almamater_size || '',
         program_id: p.program_id || '',
         current_semester: p.current_semester != null ? String(p.current_semester) : '',
         birth_place: p.birth_place || '',
@@ -107,6 +116,17 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       const payload: Record<string, unknown> = { ...form };
+      if (registrationFieldsReady) {
+        const phoneTaiwan = form.phone_taiwan.trim() ? normalizeTaiwanPhone(form.phone_taiwan) : null;
+        const almamaterSize = form.almamater_size.trim() ? normalizeAlmamaterSize(form.almamater_size) : null;
+        if (form.phone_taiwan.trim() && !phoneTaiwan) throw new Error('Nomor Taiwan harus berformat 09xxxxxxxx atau +8869xxxxxxxx.');
+        if (form.almamater_size.trim() && !almamaterSize) throw new Error('Ukuran almamater maksimal 30 karakter dan ditulis dalam satu baris.');
+        payload.phone_taiwan = phoneTaiwan;
+        payload.almamater_size = almamaterSize;
+      } else {
+        delete payload.phone_taiwan;
+        delete payload.almamater_size;
+      }
       await api.auth.updateMe(payload);
       setSaved(true);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -258,6 +278,18 @@ export default function ProfilePage() {
               <input id="profile-nomor-whatsapp-aktif" name="phone" type="tel" value={form.phone} onChange={handleChange}
                 className={inputClass} placeholder="+886 xxx xxx xxx" />
               <p className="text-xs text-[var(--text-muted)] mt-1">Gunakan nomor yang aktif di WhatsApp</p>
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="profile-phone-taiwan">Nomor Taiwan Aktif</label>
+              <input id="profile-phone-taiwan" name="phone_taiwan" type="tel" maxLength={32} value={form.phone_taiwan} onChange={handleChange}
+                disabled={!registrationFieldsReady} className={inputClass} placeholder="Contoh: 0912 345 678" />
+              <p className="text-xs text-[var(--text-muted)] mt-1">{registrationFieldsReady ? 'Nomor seluler Taiwan yang dapat dihubungi. Boleh sama dengan WhatsApp.' : 'Pembaruan data ini akan tersedia setelah layanan pendaftaran selesai diperbarui.'}</p>
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="profile-almamater-size">Ukuran Almamater</label>
+              <input id="profile-almamater-size" name="almamater_size" maxLength={30} value={form.almamater_size} onChange={handleChange}
+                disabled={!registrationFieldsReady} className={inputClass} placeholder="Contoh: M, L, XL, atau 2XL" />
+              <p className="text-xs text-[var(--text-muted)] mt-1">Tulis ukuran yang Anda gunakan; tim SALUT dapat mengonfirmasinya saat pengadaan.</p>
             </div>
             <div>
               <label className={labelClass} htmlFor="profile-tempat-lahir">Tempat Lahir</label>

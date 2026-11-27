@@ -365,3 +365,11 @@ describe('paging', () => {
     await waitFor(() => expect(queries.some((q) => q.get('offset') === '25')).toBe(true));
   });
 });
+
+describe('registration details for the admin', () => {
+  test('the local Taiwan contact and free-text almamater size are visible', async () => {
+    await show([student({ phone_taiwan: '+886912345678', almamater_size: 'Ukuran khusus 2XL' })]);
+    expect(screen.getByRole('link', { name: '+886912345678' })).toHaveAttribute('href', 'tel:+886912345678');
+    expect(screen.getByText('Almamater: Ukuran khusus 2XL')).toBeInTheDocument();
+  });
+});

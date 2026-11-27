@@ -301,6 +301,8 @@ export interface UserProfileDTO {
   name: string;
   nim: string | null;
   phone: string | null;
+  phone_taiwan?: string | null;
+  almamater_size?: string | null;
   program_id: string | null;
   current_semester: number | null;
   shipping_address: string | null;
@@ -364,6 +366,8 @@ export interface AdminUserDTO {
   name: string;
   nim: string | null;
   phone: string | null;
+  phone_taiwan?: string | null;
+  almamater_size?: string | null;
   current_semester: number | null;
   is_salut: boolean;
   salut_status?: 'none' | 'pending' | 'approved' | 'rejected' | 'expired';

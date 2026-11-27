@@ -141,6 +141,11 @@ export const handlers = [
   http.patch(url('/users/admin/:id/salut/reject'), () => HttpResponse.json({ message: 'ok' })),
 
   // --- config and misc ---
+  http.get(url('/config/registration'), () => HttpResponse.json({
+    profile_fields_version: 1,
+    required_fields: ['phone_taiwan', 'almamater_size'],
+    almamater_size_max_length: 30,
+  })),
   // Mirrors presenters/feesPresenter.js — salutMembership and its renewalPolicy
   // are always present, and the SALUT page reads them without guarding.
   http.get(url('/config/fees'), () =>
@@ -150,14 +155,15 @@ export const handlers = [
       admin: 0,
       salut_waives: ['box', 'admin'],
       salutMembership: {
+        billing: 'once_per_study',
         new: 1700,
-        returning: 1200,
+        returning: 1700,
         new_display: 'NT$1,700',
-        returning_display: 'NT$1,200',
-        new_display_idr: 'Rp952.000',
-        returning_display_idr: 'Rp672.000',
-        tier_combined_display: 'NT$1,700 (semester 1) atau NT$1,200 (semester 2+)',
-        tier_combined_display_idr: 'Rp952.000 (semester 1) atau Rp672.000 (semester 2+)',
+        returning_display: 'NT$1,700',
+        new_display_idr: null,
+        returning_display_idr: null,
+        tier_combined_display: 'NT$1,700 satu kali selama masa perkuliahan',
+        tier_combined_display_idr: '',
         renewalPolicy: { notice: null },
       },
     }),

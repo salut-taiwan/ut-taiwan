@@ -112,6 +112,12 @@ export interface SalutStatus {
   salut_applied_fee_amount_display?: string | null;
 }
 
+export interface RegistrationConfig {
+  profile_fields_version: 1;
+  required_fields: string[];
+  almamater_size_max_length: number;
+}
+
 export interface BankOption {
   code: string;
   name: string;
@@ -263,6 +269,7 @@ export const api = {
   auth: {
     register: (body: {
       email: string; password: string; name: string; nim?: string; phone?: string;
+      phone_taiwan?: string; almamater_size?: string; profile_fields_version?: 1;
       birth_place?: string; birth_date?: string;
       program_id: string;
       current_semester: number;
@@ -425,6 +432,7 @@ export const api = {
       apiFetch<{ claim_cta: ClaimCta | null }>(`/products/${id}/claim-cta`),
   },
   config: {
+    getRegistration: () => apiFetch<RegistrationConfig>('/config/registration'),
     getFees: () => apiFetch<FeesConfig>('/config/fees'),
     getBanks: (currency: 'NTD' | 'IDR') =>
       apiFetch<{ currency: string; banks: BankOption[] }>(`/config/banks?currency=${currency}`),
