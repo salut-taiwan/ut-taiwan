@@ -67,14 +67,14 @@ describe('viewing the profile', () => {
     expect(await screen.findByText(/SALUT/)).toBeInTheDocument();
   });
 
-  test('a lapsed membership reads as expired rather than active', async () => {
+  test('a historical expired record requests review before another payment', async () => {
     // The backend masks an approved-but-lapsed status; the page must not
     // re-interpret it.
     await show(
       fx.profile({ is_salut: true, is_salut_active: false, salut_status: 'expired' } as never),
     );
 
-    expect(await screen.findByText(/[Kk]edaluwarsa|[Ee]xpired|[Bb]erakhir/)).toBeInTheDocument();
+    expect(await screen.findByText(/catatan pembayaran perlu diperiksa/i)).toBeInTheDocument();
   });
 });
 

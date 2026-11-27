@@ -163,10 +163,10 @@ export default function ProfilePage() {
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-amber-800">Keanggotaan SALUT Telah Berakhir</p>
-                <p className="text-sm text-amber-700 mt-0.5">Perpanjang sekarang agar biaya layanan tetap dibebaskan.</p>
+                <p className="font-semibold text-amber-800">Catatan Pembayaran Perlu Diperiksa</p>
+                <p className="text-sm text-amber-700 mt-0.5">Hubungi bendahara untuk memeriksa pembayaran sebelumnya sebelum melakukan pembayaran baru.</p>
                 <Link href="/salut/apply" className="text-xs font-semibold text-amber-800 hover:underline mt-2 inline-block">
-                  Perpanjang SALUT →
+                  Periksa Catatan Pembayaran
                 </Link>
               </div>
             </div>
@@ -217,7 +217,7 @@ export default function ProfilePage() {
           </div>
           <div className="flex-1">
             <p className="font-semibold text-indigo-800">Belum Anggota SALUT</p>
-            <p className="text-sm text-indigo-700 mt-0.5">Hemat {fees?.totalServiceFees_display ?? '...'} biaya layanan per semester dengan bergabung SALUT.</p>
+            <p className="text-sm text-indigo-700 mt-0.5">Kenali layanan SALUT Taiwan dan kontribusi operasional sekali selama masa perkuliahan.</p>
             <Link href="/salut/apply" className="text-xs font-semibold text-indigo-700 hover:underline mt-2 inline-block">
               Daftar SALUT →
             </Link>

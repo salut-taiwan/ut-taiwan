@@ -22,8 +22,8 @@ import type {
 } from '@/types';
 
 export interface RenewalPolicy {
-  resetMonth: number;
-  resetDay: number;
+  resetMonth: number | null;
+  resetDay: number | null;
   resetDates?: { month: number; day: number }[];
   timezone: string;
   notice: string;
@@ -33,6 +33,7 @@ export interface RenewalPolicy {
 export interface FeesConfig {
   salutMembership: {
     currency: 'NTD';
+    billing?: 'once_per_study';
     new: number;
     returning: number;
     rule: string;
@@ -86,7 +87,7 @@ export interface ApplicableFee {
   currency: 'NTD';
   tier: 'new' | 'returning';
   amount_display: string;
-  amount_idr?: number;
+  amount_idr?: number | null;
   amount_idr_display?: string | null;
   tier_label: string;
 }
@@ -372,8 +373,8 @@ export const api = {
       if (!r.ok) { const e = (await r.json().catch(() => ({}))) as { error?: string }; throw new Error(e.error || 'Upload gagal'); }
       return r.json();
     },
-    apply: (proofUrl: string, currentSemester: number, waNumber: string): Promise<{ message: string; fee: { amount: number; currency: 'NTD'; tier: 'new' | 'returning' }; nextExpiry: string; renewalPolicy: RenewalPolicy }> =>
-      apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl, current_semester: currentSemester, wa_number: waNumber }) }),
+    apply: (proofUrl: string, currentSemester: number | null, waNumber: string, note?: string): Promise<{ message: string; fee: { amount: number; currency: 'NTD'; tier: 'new' | 'returning' }; nextExpiry: string | null; renewalPolicy: RenewalPolicy }> =>
+      apiFetch('/salut/apply', { method: 'POST', body: JSON.stringify({ proofUrl, current_semester: currentSemester, wa_number: waNumber, note }) }),
     getStatus: () => apiFetch<SalutStatus>('/salut/status'),
   },
   sksPayment: {

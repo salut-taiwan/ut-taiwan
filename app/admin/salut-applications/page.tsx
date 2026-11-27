@@ -239,6 +239,7 @@ export default function SalutApplicationsPage() {
                     <td className="px-4 py-3">
                       <p className="font-medium text-[var(--foreground)]">{app.name}</p>
                       <p className="text-xs text-[var(--text-muted)]">{app.email}</p>
+                      {app.salut_payment_note && <p className="mt-2 text-sm text-[var(--text-body)] whitespace-pre-wrap">Keterangan: {app.salut_payment_note}</p>}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-[var(--foreground)]">{app.nim ?? '-'}</td>
                     <td className="px-4 py-3 text-xs">

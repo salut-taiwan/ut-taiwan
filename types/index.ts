@@ -340,6 +340,7 @@ export interface UserProfileDTO {
 }
 
 export interface AdminSalutApplicationDTO {
+  salut_payment_note?: string | null;
   id: string;
   email: string;
   name: string;
