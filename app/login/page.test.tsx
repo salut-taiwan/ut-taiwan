@@ -168,7 +168,7 @@ describe('arriving from a verification link', () => {
   test('an ordinary visit shows no such banner', async () => {
     renderPage(<LoginPage />);
 
-    await screen.findByLabelText('Email');
+    await screen.findByLabelText('Email atau NIM');
     expect(screen.queryByText(/berhasil diverifikasi/)).not.toBeInTheDocument();
   });
 });

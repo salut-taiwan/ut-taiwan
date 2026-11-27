@@ -8,7 +8,6 @@ import {
   type FormEvent,
   type MouseEvent,
 } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { api, type FeesConfig, type SalutStatus } from "@/lib/api";
 import type { UserProfileDTO } from "@/types";
@@ -19,7 +18,6 @@ const TREASURER_WHATSAPP =
 
 export default function SalutPage() {
   const { user, isLoading } = useAuth();
-  const router = useRouter();
   const root = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
   const uploadedProof = useRef<{ file: File; url: string } | null>(null);
@@ -33,6 +31,7 @@ export default function SalutPage() {
   const [proofPreview, setProofPreview] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [paymentFeedback, setPaymentFeedback] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -143,45 +142,51 @@ export default function SalutPage() {
     root.current?.querySelector<HTMLDialogElement>("#" + id)?.showModal();
   }
 
+  function explainPayment(text: string) {
+    setNotice("");
+    setPaymentFeedback(text);
+    showDialog("payment-feedback-dialog");
+  }
+
   function openPayment(kind: string) {
     if (isLoading || !loaded) {
-      setNotice("Mohon tunggu sampai data akun selesai dimuat.");
+      explainPayment("Mohon tunggu sampai data akun selesai dimuat.");
       return;
     }
     if (!user) {
-      router.push("/login?redirect=" + encodeURIComponent("/salut?confirm=1"));
+      explainPayment("Silakan masuk ke akun mahasiswa untuk melanjutkan pembayaran atau mengirim bukti transfer.");
       return;
     }
     if (!profile || !status) {
-      setNotice("Data akun belum dapat dimuat. Silakan muat ulang halaman.");
+      explainPayment("Data akun belum dapat dimuat. Silakan muat ulang halaman.");
       return;
     }
     if (status.effective_status === "approved" || status.is_member) {
-      setNotice(
+      explainPayment(
         "Kontribusi Anda sudah terverifikasi. Anda tidak perlu melakukan pembayaran ulang selama masa perkuliahan.",
       );
       return;
     }
     if (status.effective_status === "pending" || status.is_pending) {
-      setNotice(
+      explainPayment(
         "Konfirmasi pembayaran Anda sedang menunggu verifikasi bendahara. Tidak perlu membayar atau mengirim ulang.",
       );
       return;
     }
     if (status.effective_status === "expired") {
-      setNotice(
+      explainPayment(
         "Catatan pembayaran lama Anda perlu diperiksa bendahara. Hubungi SALUT Taiwan sebelum melakukan pembayaran baru.",
       );
       return;
     }
     if (fees?.salutMembership.billing !== "once_per_study") {
-      setNotice(
+      explainPayment(
         "Pembayaran belum tersedia. Hubungi SALUT Taiwan untuk bantuan.",
       );
       return;
     }
     if (!profile.nim) {
-      setNotice(
+      explainPayment(
         "Lengkapi NIM pada profil mahasiswa sebelum melakukan pembayaran.",
       );
       return;
@@ -761,7 +766,7 @@ export default function SalutPage() {
                 className="button button-gold"
                 type="button"
                 data-open-payment="payment"
-                disabled={isLoading || !loaded}
+                aria-busy={isLoading || !loaded}
               >
                 Lanjutkan Pembayaran
               </button>
@@ -848,6 +853,35 @@ export default function SalutPage() {
           </aside>
         </div>
       </section>
+      <dialog
+        className="dialog"
+        id="payment-feedback-dialog"
+        aria-labelledby="payment-feedback-title"
+      >
+        <div className="dialog-top">
+          <strong>Informasi pembayaran</strong>
+          <button type="button" className="close-dialog" aria-label="Tutup">
+            Tutup
+          </button>
+        </div>
+        <h2 id="payment-feedback-title">Sebelum melanjutkan</h2>
+        <p role="status">{paymentFeedback}</p>
+        {!user && !isLoading && (
+          <a className="button button-blue" href="/login?redirect=%2Fsalut%3Fconfirm%3D1">
+            Masuk untuk melanjutkan
+          </a>
+        )}
+        {user && profile && !profile.nim && (
+          <a className="button button-blue" href="/profile">
+            Lengkapi NIM di profil
+          </a>
+        )}
+        {user && (
+          <button type="button" className="button button-blue" data-open-contact="salut">
+            Hubungi admin SALUT
+          </button>
+        )}
+      </dialog>
       <dialog
         className="dialog"
         id="payment-dialog"

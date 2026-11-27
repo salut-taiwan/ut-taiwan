@@ -144,6 +144,7 @@ export async function signIn(page: Page, token = 'e2e-token') {
 
 export const studentProfile = {
   id: 'u-student',
+  nim: '000000001',
   email: 'budi@example.com',
   name: 'Budi Santoso',
   role: 'student',

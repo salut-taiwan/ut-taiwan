@@ -36,8 +36,8 @@ test.describe('a visitor without an account', () => {
 
     await page.goto('/salut');
 
-    await expect(page.getByText('Rp 952.000')).toBeVisible();
-    await expect(page.getByText('Rp 672.000')).toBeVisible();
+    await expect(page.locator('.fee-card')).toContainText('1.700');
+    await expect(page.locator('.fee-card')).toContainText('Satu kali selama masa perkuliahan');
   });
 
   test('cannot see the QRIS or a bank account on the public SALUT page', async ({ page, api }) => {
@@ -50,13 +50,17 @@ test.describe('a visitor without an account', () => {
 
     await expect(page.getByRole('img', { name: /qris/i })).toHaveCount(0);
     await expect(page.getByText('2950211345')).toHaveCount(0);
-    await expect(page.getByText(/setelah Anda login/i)).toBeVisible();
+    await expect(page.locator('#payment-dialog')).not.toBeVisible();
+    await page.getByRole('button',{name:'Lanjutkan Pembayaran',exact:true}).click();
+    await expect(page.locator('#payment-feedback-dialog')).toBeVisible();
+    await expect(page.getByRole('link',{name:'Masuk untuk melanjutkan'})).toBeVisible();
   });
 
   test('is told where to go to pay', async ({ page, api }) => {
     await api();
     await page.goto('/salut');
-    await expect(page.getByRole('link', { name: /halaman pendaftaran/i })).toBeVisible();
+    await page.getByRole('button',{name:'Konfirmasi Pembayaran',exact:true}).click();
+    await expect(page.getByRole('link',{name:'Masuk untuk melanjutkan'})).toHaveAttribute('href','/login?redirect=%2Fsalut%3Fconfirm%3D1');
   });
 });
 
