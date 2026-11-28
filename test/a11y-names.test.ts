@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 /**
  * Every interactive control has to be nameable by a screen reader.
@@ -13,12 +13,13 @@ import { readFileSync } from 'node:fs';
  * them, not by anyone using the site.
  */
 
-const files = execSync("find app components -name '*.tsx' ! -name '*.test.tsx'", {
-  encoding: 'utf8',
-  cwd: process.cwd(),
-})
-  .trim()
-  .split('\n');
+// Node performs the same scan on Windows and Linux; no shell quoting or
+// platform-specific `find` executable is involved.
+const files = ['app', 'components'].flatMap(root =>
+  readdirSync(root, { recursive: true, withFileTypes: true })
+    .filter(entry => entry.isFile() && entry.name.endsWith('.tsx') && !entry.name.endsWith('.test.tsx'))
+    .map(entry => join(entry.parentPath, entry.name)),
+);
 
 /** An input is named if it has an id (for a <label htmlFor>), aria-label, or is wrapped in a <label>. */
 function unnamedInputs(src: string): string[] {
