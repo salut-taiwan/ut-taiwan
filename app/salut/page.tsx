@@ -23,6 +23,7 @@ export default function SalutPage() {
   const uploadedProof = useRef<{ file: File; url: string } | null>(null);
   const autoOpened = useRef(false);
   const [fees, setFees] = useState<FeesConfig | null>(null);
+  const [feesLoaded, setFeesLoaded] = useState(false);
   const [profile, setProfile] = useState<UserProfileDTO | null>(null);
   const [status, setStatus] = useState<SalutStatus | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -40,13 +41,18 @@ export default function SalutPage() {
     api.config
       .getFees()
       .then((data) => {
-        if (!cancelled) setFees(data);
+        if (!cancelled) {
+          setFees(data);
+          setFeesLoaded(true);
+        }
       })
       .catch(() => {
-        if (!cancelled)
+        if (!cancelled) {
+          setFeesLoaded(true);
           setNotice(
             "Informasi pembayaran belum dapat dimuat. Silakan coba lagi atau hubungi SALUT Taiwan.",
           );
+        }
       });
     return () => {
       cancelled = true;
@@ -149,7 +155,7 @@ export default function SalutPage() {
   }
 
   function openPayment(kind: string) {
-    if (isLoading || !loaded) {
+    if (isLoading || !loaded || !feesLoaded) {
       explainPayment("Mohon tunggu sampai data akun selesai dimuat.");
       return;
     }
@@ -766,7 +772,7 @@ export default function SalutPage() {
                 className="button button-gold"
                 type="button"
                 data-open-payment="payment"
-                aria-busy={isLoading || !loaded}
+                aria-busy={isLoading || !loaded || !feesLoaded}
               >
                 Lanjutkan Pembayaran
               </button>

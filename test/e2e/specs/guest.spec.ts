@@ -51,6 +51,7 @@ test.describe('a visitor without an account', () => {
     await expect(page.getByRole('img', { name: /qris/i })).toHaveCount(0);
     await expect(page.getByText('2950211345')).toHaveCount(0);
     await expect(page.locator('#payment-dialog')).not.toBeVisible();
+    await expect(page.getByRole('button',{name:'Lanjutkan Pembayaran',exact:true})).toHaveAttribute('aria-busy','false');
     await page.getByRole('button',{name:'Lanjutkan Pembayaran',exact:true}).click();
     await expect(page.locator('#payment-feedback-dialog')).toBeVisible();
     await expect(page.getByRole('link',{name:'Masuk untuk melanjutkan'})).toBeVisible();
@@ -59,6 +60,7 @@ test.describe('a visitor without an account', () => {
   test('is told where to go to pay', async ({ page, api }) => {
     await api();
     await page.goto('/salut');
+    await expect(page.getByRole('button',{name:'Lanjutkan Pembayaran',exact:true})).toHaveAttribute('aria-busy','false');
     await page.getByRole('button',{name:'Konfirmasi Pembayaran',exact:true}).click();
     await expect(page.getByRole('link',{name:'Masuk untuk melanjutkan'})).toHaveAttribute('href','/login?redirect=%2Fsalut%3Fconfirm%3D1');
   });
